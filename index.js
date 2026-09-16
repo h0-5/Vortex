@@ -12,6 +12,7 @@ const CHECK_MODE = process.argv.includes('--check');
 const LOCAL_HOSTS = new Set(['127.0.0.1', 'localhost']);
 const SHUTDOWN_SIGNALS = ['SIGINT', 'SIGTERM'];
 const SERVICE_START_TIMEOUT_MS = 30_000;
+const DASHBOARD_START_TIMEOUT_MS = 120_000;
 const BOT_READY_TIMEOUT_MS = 90_000;
 const BIN_EXT = process.platform === 'win32' ? '.cmd' : '';
 
@@ -54,17 +55,17 @@ async function main() {
     await waitForHttp(config.apiHealthUrl, 'API health');
 
     startService({
-      name: 'dashboard',
-      cwd: path.join(ROOT, 'apps', 'dashboard'),
-      command: process.execPath,
-      args: [
-        path.join(ROOT, 'apps', 'dashboard', 'node_modules', 'vite', 'bin', 'vite.js'),
-        '--config',
-        'vite.config.ts',
-      ],
+      name: 'dashboard-redesign',
+      cwd: path.join(ROOT, 'apps', 'dashboard-redesign'),
+      command: bin('apps', 'dashboard-redesign', 'node_modules', '.bin', 'next'),
+      args: ['dev', '-H', '127.0.0.1', '-p', String(config.apiPort)],
       env: { ...process.env, PORT: String(config.apiPort) },
     });
-    await waitForHttp(`http://127.0.0.1:${config.apiPort}/`, 'dashboard');
+    await waitForHttp(
+      `http://127.0.0.1:${config.apiPort}/`,
+      'dashboard-redesign',
+      DASHBOARD_START_TIMEOUT_MS,
+    );
 
     const botState = { ready: false };
     const bot = startService({
@@ -235,6 +236,7 @@ async function assertRequiredBinaries() {
     bin('apps', 'bot', 'node_modules', '.bin', 'tsc'),
     bin('apps', 'dashboard', 'node_modules', '.bin', 'tsc'),
     path.join(ROOT, 'apps', 'dashboard', 'node_modules', 'vite', 'bin', 'vite.js'),
+    bin('apps', 'dashboard-redesign', 'node_modules', '.bin', 'next'),
   ];
 
   const checkMissing = () => binaries.filter((b) => !fs.existsSync(b));
@@ -397,8 +399,8 @@ function startService({ name, cwd, command, args, onStdoutLine, env }) {
   return service;
 }
 
-async function waitForHttp(url, label) {
-  const deadline = Date.now() + SERVICE_START_TIMEOUT_MS;
+async function waitForHttp(url, label, timeoutMs = SERVICE_START_TIMEOUT_MS) {
+  const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     try {
       const controller = new AbortController();

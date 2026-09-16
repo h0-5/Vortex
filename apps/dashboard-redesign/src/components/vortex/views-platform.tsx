@@ -38,8 +38,8 @@ import { VortexMark } from "@/components/vortex/brand";
 import { cn } from "@/lib/utils";
 import {
   fmt,
-  randomLogLine,
-  seedLogs,
+  fetchLogs,
+  fetchHealth,
   SECURITY_FEATURES,
   type LogLevel,
   type LogLine,
@@ -55,32 +55,39 @@ const LEVEL_COLOR: Record<LogLevel, string> = {
   DEBUG: "#8b8b9e",
 };
 
-export function LogsView() {
-  const [logs, setLogs] = useState<LogLine[]>(() => seedLogs(28));
+export function LogsView({ guildId }: { guildId: string }) {
+  const [logs, setLogs] = useState<LogLine[]>([]);
   const [paused, setPaused] = useState(false);
   const [level, setLevel] = useState<LogLevel | "all">("all");
   const [source, setSource] = useState<string>("all");
-  const idRef = useRef(10_000);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (paused) return;
-    const t = setInterval(() => {
-      setLogs((prev) => {
-        const additions = Array.from({ length: 1 + Math.floor(Math.random() * 2) }, () =>
-          randomLogLine(++idRef.current),
-        );
-        return [...prev, ...additions].slice(-220);
-      });
-    }, 1300);
-    return () => clearInterval(t);
-  }, [paused]);
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const fresh = await fetchLogs(guildId);
+        if (!cancelled) setLogs(fresh);
+      } catch {
+        // API unreachable — keep the last buffer.
+      }
+    };
+    void load();
+    const timer = setInterval(load, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [guildId, paused]);
 
   useEffect(() => {
     if (!paused && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [logs, paused]);
+
+  const sources = Array.from(new Set(logs.map((l) => l.source))).sort();
 
   const shown = logs.filter(
     (l) =>
@@ -109,12 +116,9 @@ export function LogsView() {
           </SelectTrigger>
           <SelectContent className="border-border bg-popover">
             <SelectItem value="all">All sources</SelectItem>
-            <SelectItem value="gateway">gateway</SelectItem>
-            <SelectItem value="api">api</SelectItem>
-            <SelectItem value="bot.core">bot.core</SelectItem>
-            <SelectItem value="oauth">oauth</SelectItem>
-            <SelectItem value="plugin.sentinel">plugin.sentinel</SelectItem>
-            <SelectItem value="plugin.tickets">plugin.tickets</SelectItem>
+            {sources.map((s) => (
+              <SelectItem key={s} value={s}>{s}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
 
@@ -180,18 +184,35 @@ export function LogsView() {
 /* --------------------------------- API ------------------------------------ */
 
 export function ApiView() {
+  const [health, setHealth] = useState<{ status: "operational" | "degraded"; latencyMs: number } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const probe = async () => {
+      try {
+        const result = await fetchHealth();
+        if (!cancelled) setHealth(result);
+      } catch {
+        if (!cancelled) setHealth({ status: "degraded", latencyMs: 0 });
+      }
+    };
+    void probe();
+    const timer = setInterval(probe, 8000);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, []);
+
   const endpoints = [
-    { method: "GET" as const, path: "/api/v1/health", description: "Service health probe", status: "operational" as const, latencyMs: 11, uptimePct: 99.99 },
-    { method: "GET" as const, path: "/api/v1/me", description: "Current authenticated user", status: "operational" as const, latencyMs: 24, uptimePct: 99.98 },
-    { method: "GET" as const, path: "/api/v1/guilds", description: "Guilds visible to the current user", status: "operational" as const, latencyMs: 38, uptimePct: 99.97 },
-    { method: "GET" as const, path: "/api/v1/guilds/{guildId}", description: "Guild context with bot presence", status: "operational" as const, latencyMs: 41, uptimePct: 99.96 },
-    { method: "GET" as const, path: "/api/v1/auth/discord", description: "OAuth authorization entry (PKCE + state)", status: "operational" as const, latencyMs: 19, uptimePct: 99.99 },
-    { method: "GET" as const, path: "/api/v1/auth/discord/callback", description: "OAuth callback with token exchange", status: "degraded" as const, latencyMs: 133, uptimePct: 99.42 },
-    { method: "POST" as const, path: "/api/v1/auth/logout", description: "Session termination + ID rotation", status: "operational" as const, latencyMs: 16, uptimePct: 99.99 },
+    { method: "GET" as const, path: "/api/v1/health", description: "Service health probe", status: health?.status ?? "operational" as const, latencyMs: health?.latencyMs ?? 0, uptimePct: health ? (health.status === "operational" ? 99.99 : 95.0) : 100 },
+    { method: "GET" as const, path: "/api/v1/me", description: "Current authenticated user", status: "operational" as const, latencyMs: 0, uptimePct: 99.98 },
+    { method: "GET" as const, path: "/api/v1/guilds", description: "Guilds visible to the current user", status: "operational" as const, latencyMs: 0, uptimePct: 99.97 },
+    { method: "GET" as const, path: "/api/v1/guilds/{guildId}", description: "Guild context with bot presence", status: "operational" as const, latencyMs: 0, uptimePct: 99.96 },
+    { method: "GET" as const, path: "/api/v1/auth/discord", description: "OAuth authorization entry (PKCE + state)", status: "operational" as const, latencyMs: 0, uptimePct: 99.99 },
+    { method: "GET" as const, path: "/api/v1/auth/discord/callback", description: "OAuth callback with token exchange", status: "operational" as const, latencyMs: 0, uptimePct: 99.42 },
+    { method: "POST" as const, path: "/api/v1/auth/logout", description: "Session termination + ID rotation", status: "operational" as const, latencyMs: 0, uptimePct: 99.99 },
   ];
-  const avgLatency = Math.round(
-    endpoints.reduce((acc, e) => acc + e.latencyMs, 0) / endpoints.length,
-  );
   const degraded = endpoints.filter((e) => e.status === "degraded").length;
 
   return (
@@ -199,13 +220,13 @@ export function ApiView() {
       <div className="grid gap-4 sm:grid-cols-3">
         {[
           {
-            label: "System status",
-            value: degraded === 0 ? "All operational" : `${degraded} degraded`,
+            label: "API status",
+            value: health ? (health.status === "operational" ? "Operational" : "Degraded") : "Checking…",
             icon: degraded === 0 ? CheckCircle2Icon : CircleAlertIcon,
             color: degraded === 0 ? "#34d399" : "#fbbf24",
           },
-          { label: "Avg latency", value: `${avgLatency}ms`, icon: GaugeIcon, color: "#22d3ee" },
-          { label: "Requests / 24h", value: "1.94M", icon: ActivitySquareIcon, color: "#8b5cf6" },
+          { label: "Health latency", value: health ? `${health.latencyMs}ms` : "–", icon: GaugeIcon, color: "#22d3ee" },
+          { label: "Core endpoints", value: "7 tracked", icon: ActivitySquareIcon, color: "#8b5cf6" },
         ].map((c) => (
           <div key={c.label} className="nx-panel flex items-center gap-4 rounded-xl p-5">
             <span

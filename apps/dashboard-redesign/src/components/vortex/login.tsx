@@ -29,7 +29,7 @@ export function LoginScreen({ onLogin }: { onLogin: () => void }) {
 
   const handleLogin = () => {
     setLoading(true);
-    setTimeout(onLogin, 700);
+    onLogin();
   };
 
   return (

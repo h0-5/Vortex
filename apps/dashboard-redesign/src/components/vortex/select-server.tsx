@@ -88,7 +88,10 @@ export function SelectServerScreen({
                   <p className="truncate text-[15px] font-bold tracking-tight">{guild.name}</p>
                   <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
                     <UsersIcon className="size-3.5" aria-hidden="true" />
-                    {fmt.format(guild.memberCount)} members · {fmt.format(guild.onlineCount)} online
+                    {fmt.format(guild.memberCount)} members
+                    {guild.onlineCount > 0 && (
+                      <> · {fmt.format(guild.onlineCount)} online</>
+                    )}
                   </p>
                 </div>
                 <div className="mt-4 flex items-center justify-between border-t border-border/60 pt-3.5">

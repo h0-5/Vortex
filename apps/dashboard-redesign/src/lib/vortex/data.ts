@@ -1,8 +1,10 @@
 /**
  * Vortex dashboard data layer.
- * Mirrors the Phase 1 REST contract (docs/openapi.yaml):
- *   GET /api/v1/me, GET /api/v1/guilds, GET /api/v1/guilds/{guildId}
- * All data is mocked client-side for the redesign preview.
+ * Consumes the real Vortex REST contract (API v1) behind the Next.js rewrite:
+ *   GET  /api/v1/me, GET /api/v1/guilds
+ *   GET  /api/v1/guilds/{guildId}/plugins, POST .../{pluginId}/enable|disable
+ *   GET  /api/v1/activity?guildId=..., GET /api/v1/guilds/{guildId}/logs
+ *   POST /api/v1/auth/logout, GET /api/v1/health
  */
 
 export type GuildRole = "OWNER" | "ADMINISTRATOR" | "MANAGER";
@@ -63,69 +65,292 @@ export interface ActivityEvent {
 export type LogLevel = "INFO" | "WARN" | "ERROR" | "DEBUG";
 
 export interface LogLine {
-  id: number;
+  id: string;
   ts: string;
   level: LogLevel;
   source: string;
   message: string;
 }
 
-export interface ApiEndpoint {
-  method: "GET" | "POST";
-  path: string;
-  description: string;
-  status: "operational" | "degraded";
-  latencyMs: number;
-  uptimePct: number;
+/* ------------------------- real API response types ------------------------ */
+
+interface ApiUser {
+  id: string;
+  discordId: string;
+  username: string;
+  globalName: string | null;
+  avatar: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export const MOCK_USER: VortexUser = {
-  id: "1251665502242213979",
-  username: "hade",
-  globalName: "! 𝓗𝓪𝓭𝓮",
-  avatarUrl: null,
-};
+interface ApiGuild {
+  id: string;
+  name: string;
+  icon: string | null;
+  memberCount: number | null;
+  canManage: boolean;
+  isOwner: boolean;
+  hasAdmin: boolean;
+  hasManager: boolean;
+  botConnected: boolean;
+  action: string | null;
+  permissionRole: string | null;
+}
 
-export const MOCK_GUILDS: Guild[] = [
-  { id: "901", name: "Vortex Community", initials: "VC", hue: 265, memberCount: 18420, onlineCount: 3211, botPresent: true, role: "OWNER" },
-  { id: "902", name: "Vortex HQ", initials: "VH", hue: 200, memberCount: 7450, onlineCount: 1102, botPresent: true, role: "ADMINISTRATOR" },
-  { id: "903", name: "Blade Esports", initials: "BE", hue: 290, memberCount: 12310, onlineCount: 2450, botPresent: true, role: "ADMINISTRATOR" },
-  { id: "904", name: "Dev Lounge", initials: "DL", hue: 175, memberCount: 2890, onlineCount: 412, botPresent: false, role: "MANAGER" },
-  { id: "905", name: "Aurora Nation", initials: "AN", hue: 320, memberCount: 9600, onlineCount: 1840, botPresent: true, role: "MANAGER" },
-  { id: "906", name: "Zero Point", initials: "ZP", hue: 230, memberCount: 540, onlineCount: 96, botPresent: false, role: "MANAGER" },
-];
+interface ApiPlugin {
+  id: string;
+  name: string;
+  version: string;
+  description: string;
+  author: string;
+  status: string;
+  brokenReason: string | null;
+  enabled: boolean;
+  guildStatus: string;
+  installedAt: string | null;
+  updatedAt: string;
+  dashboard: unknown | null;
+}
 
-export const MOCK_PLUGINS: Plugin[] = [
-  { id: "p1", name: "Sentinel Moderation", description: "Auto-mod with AI spam scoring, raid shield, and appeal flow.", version: "2.4.1", author: "vortex-core", category: "Moderation", enabled: true, installs: 128400 },
-  { id: "p2", name: "TicketForge", description: "Multi-panel support tickets with transcripts and SLA timers.", version: "1.9.0", author: "vortex-core", category: "Tickets", enabled: true, installs: 96700 },
-  { id: "p3", name: "Pulse Analytics", description: "Member, channel, and engagement analytics with retention curves.", version: "0.8.3", author: "aurora-labs", category: "Analytics", enabled: true, installs: 41250 },
-  { id: "p4", name: "GateKeeper Verification", description: "Captcha + alt detection at the door, zero-friction for humans.", version: "3.1.2", author: "blade-sec", category: "Security", enabled: true, installs: 77800 },
-  { id: "p5", name: "RoleSync", description: "Bidirectional role sync with Twitch, YouTube, and Patreon.", version: "1.4.7", author: "community", category: "Utility", enabled: false, installs: 33900 },
-  { id: "p6", name: "AutoResponder", description: "Keyword-triggered replies with fuzzy matching and cooldowns.", version: "2.0.0", author: "community", category: "Utility", enabled: false, installs: 28100 },
-  { id: "p7", name: "RaidShield", description: "Join-burst detection with progressive lockdown modes.", version: "1.2.9", author: "blade-sec", category: "Security", enabled: true, installs: 64200 },
-  { id: "p8", name: "Arcade", description: "Trivia, races, and economy games with seasonal leaderboards.", version: "0.6.1", author: "community", category: "Fun", enabled: false, installs: 51600 },
-];
+interface ApiLog {
+  id: string;
+  guildId: string;
+  pluginId: string | null;
+  level: string;
+  message: string;
+  metadata: unknown;
+  destination: string | null;
+  createdAt: string;
+}
 
-export const MOCK_ACTIVITY: ActivityEvent[] = [
-  { id: "a1", type: "alert", actor: "RaidShield", message: "Join-burst flagged in #general — 23 accounts quarantined", minutesAgo: 2 },
-  { id: "a2", type: "command", actor: "@kx_raven", message: "/ticket open — billing question resolved in 4m 12s", minutesAgo: 6 },
-  { id: "a3", type: "join", actor: "+148 members", message: "New members joined in the last hour (82% above average)", minutesAgo: 14 },
-  { id: "a4", type: "moderation", actor: "@nyx.mod", message: "Timeout issued to @spicy_meme_lord — 7 days, spam", minutesAgo: 23 },
-  { id: "a5", type: "update", actor: "Sentinel Moderation", message: "Updated to v2.4.1 — appeal flow improvements", minutesAgo: 47 },
-  { id: "a6", type: "command", actor: "@luna.exe", message: "/stats export — monthly report generated", minutesAgo: 62 },
-  { id: "a7", type: "leave", actor: "-36 members", message: "Members left in the last 24h (within normal range)", minutesAgo: 95 },
-  { id: "a8", type: "alert", actor: "GateKeeper", message: "3 alt accounts blocked at verification gate", minutesAgo: 121 },
-];
+interface ApiActivity {
+  id: string;
+  actorId: string;
+  actorName: string;
+  guildId: string | null;
+  pluginId: string | null;
+  action: string;
+  resourceType: string;
+  resourceId: string | null;
+  type: string;
+  message: string;
+  oldValue: unknown;
+  newValue: unknown;
+  metadata: unknown;
+  createdAt: string;
+}
 
-export const MOCK_ENDPOINTS: ApiEndpoint[] = [
-  { method: "GET", path: "/api/v1/health", description: "Service health probe", status: "operational", latencyMs: 11, uptimePct: 99.99 },
-  { method: "GET", path: "/api/v1/me", description: "Current authenticated user", status: "operational", latencyMs: 24, uptimePct: 99.98 },
-  { method: "GET", path: "/api/v1/guilds", description: "Guilds visible to the current user", status: "operational", latencyMs: 38, uptimePct: 99.97 },
-  { method: "GET", path: "/api/v1/guilds/{guildId}", description: "Guild context with bot presence", status: "operational", latencyMs: 41, uptimePct: 99.96 },
-  { method: "GET", path: "/api/v1/auth/discord", description: "OAuth authorization entry (PKCE + state)", status: "operational", latencyMs: 19, uptimePct: 99.99 },
-  { method: "GET", path: "/api/v1/auth/discord/callback", description: "OAuth callback with token exchange", status: "degraded", latencyMs: 133, uptimePct: 99.42 },
-  { method: "POST", path: "/api/v1/auth/logout", description: "Session termination + ID rotation", status: "operational", latencyMs: 16, uptimePct: 99.99 },
-];
+export class ApiError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.status = status;
+    this.name = "ApiError";
+  }
+}
+
+export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(path, {
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    ...init,
+  });
+  if (response.status === 204) {
+    return undefined as T;
+  }
+  if (!response.ok) {
+    throw new ApiError(response.status, await response.text());
+  }
+  return (await response.json()) as T;
+}
+
+/* -------------------------------- mappers --------------------------------- */
+
+function initialsFromName(name: string): string {
+  const words = name.trim().split(/\s+/);
+  if (words.length >= 2) {
+    return (words[0][0] ?? "" + words[1][0] ?? "").toUpperCase();
+  }
+  return name.trim().slice(0, 2).toUpperCase() || "?";
+}
+
+function hueFromId(id: string): number {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = Math.imul(31, hash) + id.charCodeAt(i);
+  }
+  return Math.abs(hash) % 360;
+}
+
+function mapRole(permissionRole: string | null, guild: ApiGuild): GuildRole {
+  if (permissionRole === "OWNER" || permissionRole === "ADMINISTRATOR" || permissionRole === "MANAGER") {
+    return permissionRole;
+  }
+  if (guild.isOwner) return "OWNER";
+  if (guild.hasAdmin) return "ADMINISTRATOR";
+  return "MANAGER";
+}
+
+function categoryForPlugin(plugin: ApiPlugin): PluginCategory {
+  const haystack = `${plugin.id} ${plugin.name}`.toLowerCase();
+  if (haystack.includes("ticket")) return "Tickets";
+  if (haystack.includes("mod") || haystack.includes("moderation")) return "Moderation";
+  if (haystack.includes("sec") || haystack.includes("shield") || haystack.includes("gate")
+    || haystack.includes("verify")) return "Security";
+  if (haystack.includes("analytic") || haystack.includes("stat") || haystack.includes("metric")) return "Analytics";
+  if (haystack.includes("game") || haystack.includes("fun") || haystack.includes("arcade")) return "Fun";
+  return "Utility";
+}
+
+function mapActivityType(event: ApiActivity): ActivityType {
+  const haystack = `${event.type} ${event.action} ${event.resourceType}`.toLowerCase();
+  if (haystack.includes("join") || haystack.includes("member_add")) return "join";
+  if (haystack.includes("leave") || haystack.includes("member_remove") || haystack.includes("kick")) return "leave";
+  if (haystack.includes("command") || haystack.includes("slash")) return "command";
+  if (haystack.includes("warn") || haystack.includes("mute") || haystack.includes("ban")
+    || haystack.includes("timeout") || haystack.includes("mod")) return "moderation";
+  if (haystack.includes("alert") || haystack.includes("raid") || haystack.includes("spam")
+    || haystack.includes("block") || haystack.includes("quarant")) return "alert";
+  return "update";
+}
+
+function timeOnly(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "--:--:--";
+  return date.toTimeString().slice(0, 8);
+}
+
+function minutesSince(iso: string): number {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return 0;
+  return Math.max(0, Math.round((Date.now() - date.getTime()) / 60000));
+}
+
+function mapLevel(level: string): LogLevel {
+  if (level === "INFO" || level === "WARN" || level === "ERROR" || level === "DEBUG") return level;
+  if (level === "AUDIT") return "DEBUG";
+  return "INFO";
+}
+
+function mapUser(user: ApiUser): VortexUser {
+  return {
+    id: user.discordId,
+    username: user.username,
+    globalName: user.globalName ?? user.username,
+    avatarUrl: user.avatar,
+  };
+}
+
+function mapGuild(guild: ApiGuild): Guild {
+  return {
+    id: guild.id,
+    name: guild.name,
+    initials: initialsFromName(guild.name),
+    hue: hueFromId(guild.id),
+    memberCount: guild.memberCount ?? 0,
+    onlineCount: 0,
+    botPresent: guild.botConnected,
+    role: mapRole(guild.permissionRole, guild),
+  };
+}
+
+function mapPlugin(plugin: ApiPlugin): Plugin {
+  return {
+    id: plugin.id,
+    name: plugin.name,
+    description: plugin.description,
+    version: plugin.version,
+    author: plugin.author || "vortex-core",
+    category: categoryForPlugin(plugin),
+    enabled: Boolean(plugin.enabled),
+    installs: 0,
+  };
+}
+
+function mapActivity(event: ApiActivity): ActivityEvent {
+  return {
+    id: event.id,
+    type: mapActivityType(event),
+    actor: event.actorName,
+    message: event.message,
+    minutesAgo: minutesSince(event.createdAt),
+  };
+}
+
+function mapLog(log: ApiLog): LogLine {
+  return {
+    id: log.id,
+    ts: timeOnly(log.createdAt),
+    level: mapLevel(log.level),
+    source: log.destination ?? log.pluginId ?? "bot",
+    message: log.message,
+  };
+}
+
+/* ------------------------------- API calls -------------------------------- */
+
+export async function fetchMe(): Promise<VortexUser | null> {
+  try {
+    return mapUser(await apiFetch<ApiUser>("/api/v1/me"));
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) return null;
+    throw error;
+  }
+}
+
+export async function fetchGuilds(): Promise<Guild[]> {
+  const response = await apiFetch<{ data: ApiGuild[] }>("/api/v1/guilds");
+  return (response.data ?? []).map(mapGuild);
+}
+
+export async function fetchPlugins(guildId: string): Promise<Plugin[]> {
+  const response = await apiFetch<{ data: ApiPlugin[] }>(
+    `/api/v1/guilds/${guildId}/plugins`,
+  );
+  return (response.data ?? []).map(mapPlugin);
+}
+
+export async function fetchActivity(guildId: string): Promise<ActivityEvent[]> {
+  const response = await apiFetch<{ data: ApiActivity[] }>(
+    `/api/v1/activity?guildId=${encodeURIComponent(guildId)}&limit=20`,
+  );
+  return (response.data ?? []).map(mapActivity);
+}
+
+export async function fetchLogs(guildId: string): Promise<LogLine[]> {
+  const response = await apiFetch<{ data: ApiLog[] }>(
+    `/api/v1/guilds/${guildId}/logs`,
+  );
+  return (response.data ?? []).map(mapLog).slice(-220);
+}
+
+export async function setPluginEnabled(
+  guildId: string,
+  pluginId: string,
+  enabled: boolean,
+): Promise<void> {
+  await apiFetch<void>(
+    `/api/v1/guilds/${guildId}/plugins/${pluginId}/${enabled ? "enable" : "disable"}`,
+    { method: "POST" },
+  );
+}
+
+export async function logout(): Promise<void> {
+  try {
+    await apiFetch<void>("/api/v1/auth/logout", { method: "POST" });
+  } catch {
+    // Session may already be gone — treat as success.
+  }
+}
+
+export async function fetchHealth(): Promise<{ status: "operational" | "degraded"; latencyMs: number }> {
+  const start = performance.now();
+  const response = await fetch("/api/v1/health", { credentials: "include" });
+  const latencyMs = Math.round(performance.now() - start);
+  return { status: response.ok ? "operational" : "degraded", latencyMs };
+}
 
 export const SECURITY_FEATURES = [
   { title: "OAuth 2.0 + PKCE", detail: "Authorization code flow with state validation and PKCE verifier." },
@@ -133,41 +358,5 @@ export const SECURITY_FEATURES = [
   { title: "Opaque HTTP-only sessions", detail: "Server-side PostgreSQL sessions, ID rotation after login." },
   { title: "Same-origin enforcement", detail: "State-changing requests reject cross-site origins." },
 ];
-
-const LOG_SOURCES = ["gateway", "api", "bot.core", "plugin.sentinel", "plugin.tickets", "scheduler", "oauth"];
-const LOG_SAMPLES: Array<{ level: LogLevel; message: string }> = [
-  { level: "INFO", message: "Heartbeat ACK received — shard 0 (seq 48291)" },
-  { level: "INFO", message: "Guild synced: Vortex Community (18,420 members)" },
-  { level: "DEBUG", message: "Cache hit ratio 97.2% — guild member store" },
-  { level: "INFO", message: "Session refreshed via refresh-token rotation" },
-  { level: "WARN", message: "Rate limit bucket 15s/5 approaching 80% — backing off" },
-  { level: "INFO", message: "Ticket #4812 closed — transcript archived to storage" },
-  { level: "ERROR", message: "OAuth callback upstream timeout (retry 1/3)" },
-  { level: "INFO", message: "Scheduled job: nightly analytics rollup queued" },
-  { level: "DEBUG", message: "AES-256-GCM token envelope rewrapped" },
-  { level: "WARN", message: "Plugin AutoResponder cooldown triggered on #memes" },
-  { level: "INFO", message: "RaidShield quarantine list pruned (23 -> 0 stale)" },
-  { level: "DEBUG", message: "WebSocket shard 0 resume OK — replayed 0 events" },
-];
-
-export function randomLogLine(id: number): LogLine {
-  const sample = LOG_SAMPLES[Math.floor(Math.random() * LOG_SAMPLES.length)];
-  const now = new Date();
-  const ts = now.toTimeString().slice(0, 8);
-  return {
-    id,
-    ts,
-    level: sample.level,
-    source: LOG_SOURCES[Math.floor(Math.random() * LOG_SOURCES.length)],
-    message: sample.message,
-  };
-}
-
-export function seedLogs(count: number): LogLine[] {
-  let id = 1;
-  const out: LogLine[] = [];
-  for (let i = 0; i < count; i++) out.push(randomLogLine(id++));
-  return out;
-}
 
 export const fmt = new Intl.NumberFormat("en-US");

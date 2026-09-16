@@ -151,7 +151,7 @@ export function OverviewView({
               </Badge>
             </div>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              {fmt.format(guild.onlineCount)} online now · guild id{" "}
+              {fmt.format(guild.memberCount)} members · guild id{" "}
               <span className="font-mono">{guild.id}</span> · {guild.role.toLowerCase()} access
             </p>
           </div>

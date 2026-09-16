@@ -5,6 +5,8 @@ node_modules/
 # Build output
 dist/
 *.tsbuildinfo
+.next/
+.next/*
 
 # Turbo cache
 .turbo/
