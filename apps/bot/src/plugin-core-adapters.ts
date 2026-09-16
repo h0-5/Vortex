@@ -824,6 +824,7 @@ const AUDIT_TYPE_MAP: Record<PluginAuditEventType, AuditLogEvent> = {
   ROLE_CREATE: AuditLogEvent.RoleCreate,
   ROLE_DELETE: AuditLogEvent.RoleDelete,
   WEBHOOK_CREATE: AuditLogEvent.WebhookCreate,
+  MEMBER_ROLE_UPDATE: AuditLogEvent.MemberRoleUpdate,
 };
 
 function toDiscordOverwrite(override: PluginPermissionOverride) {

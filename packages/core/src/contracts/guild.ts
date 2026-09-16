@@ -6,7 +6,8 @@ export type PluginAuditEventType =
   | 'CHANNEL_DELETE'
   | 'ROLE_CREATE'
   | 'ROLE_DELETE'
-  | 'WEBHOOK_CREATE';
+  | 'WEBHOOK_CREATE'
+  | 'MEMBER_ROLE_UPDATE';
 
 export interface PluginMemberRecord {
   userId: string;

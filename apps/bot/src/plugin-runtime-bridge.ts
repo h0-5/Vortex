@@ -316,6 +316,22 @@ export function registerPluginEventBridge(
   );
   bridge(
     client,
+    'guildMemberUpdate',
+    'guildMemberUpdate',
+    (oldMember, newMember) => ({
+      guildId: newMember.guild.id,
+      serverId: newMember.guild.id,
+      serverName: newMember.guild.name,
+      userId: newMember.id,
+      userBot: newMember.user?.bot ?? false,
+      oldRoleIds: 'roles' in oldMember ? [...oldMember.roles.cache.keys()] : [],
+      newRoleIds: [...newMember.roles.cache.keys()],
+    }),
+    runtime,
+    logger,
+  );
+  bridge(
+    client,
     'inviteCreate',
     'inviteCreate',
     (invite) => ({

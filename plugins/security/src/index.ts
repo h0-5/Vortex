@@ -37,6 +37,7 @@ interface SecuritySettings {
     anti_channel_delete: AntiLimitFeature;
     anti_role_create: AntiLimitFeature;
     anti_role_delete: AntiLimitFeature;
+    anti_role_add: AntiLimitFeature;
     anti_bots: AntiActionFeature;
     anti_webhooks: AntiActionFeature;
   };
@@ -60,6 +61,7 @@ const DEFAULTS: SecuritySettings = {
     anti_channel_delete: { enabled: true, action: '1', limit: 3 },
     anti_role_create: { enabled: true, action: '1', limit: 5 },
     anti_role_delete: { enabled: true, action: '1', limit: 3 },
+    anti_role_add: { enabled: true, action: '1', limit: 3 },
     anti_bots: { enabled: true, action: '1' },
     anti_webhooks: { enabled: true, action: '1' },
   },
@@ -405,6 +407,44 @@ async function handleRoleDelete(ctx: PluginContext, _payload: PluginEventPayload
   );
 }
 
+async function handleMemberUpdate(ctx: PluginContext, payload: PluginEventPayload): Promise<void> {
+  if (!settings.protection.enable || !settings.protection.anti_role_add.enabled) {
+    return;
+  }
+  const config = settings.protection.anti_role_add;
+  const userId = asString(payload.userId);
+  if (!userId) {
+    return;
+  }
+  const oldRoleIds = Array.isArray(payload.oldRoleIds) ? (payload.oldRoleIds as string[]) : [];
+  const newRoleIds = Array.isArray(payload.newRoleIds) ? (payload.newRoleIds as string[]) : [];
+  const addedRoleIds = newRoleIds.filter((id) => !oldRoleIds.includes(id));
+  if (addedRoleIds.length === 0) {
+    return;
+  }
+  await delay(AUDIT_WAIT_MS);
+  const result = await hasAudit(ctx, 'MEMBER_ROLE_UPDATE');
+  if (!result.ok || !result.audit.executorId) {
+    return;
+  }
+  const botId = await ctx.guild.getBotUserId();
+  if (result.audit.executorId === botId) {
+    return;
+  }
+  await handleLimitEvent(
+    ctx,
+    result.audit.executorId,
+    'role_add',
+    config,
+    async () => {
+      for (const roleId of addedRoleIds) {
+        await ctx.guild.removeRole(userId, roleId).catch(() => undefined);
+      }
+    },
+    'منع إضافة الرتب (Anti Role-Add)',
+  );
+}
+
 async function handleGuildMemberAdd(ctx: PluginContext, payload: PluginEventPayload): Promise<void> {
   if (!settings.protection.enable || !settings.protection.anti_bots.enabled) {
     return;
@@ -515,6 +555,13 @@ function registerListeners(ctx: PluginContext): void {
     ctx.events.on('guildMemberAdd', (payload) => {
       void handleGuildMemberAdd(ctx, payload).catch((error: unknown) =>
         ctx.logger.warn(`security guildMemberAdd: ${getErrorMessage(error)}`),
+      );
+    }),
+  );
+  offs.push(
+    ctx.events.on('guildMemberUpdate', (payload) => {
+      void handleMemberUpdate(ctx, payload).catch((error: unknown) =>
+        ctx.logger.warn(`security guildMemberUpdate: ${getErrorMessage(error)}`),
       );
     }),
   );

@@ -96,6 +96,7 @@ interface ProtectionSettings {
   anti_channel_delete: AntiConfig;
   anti_role_create: AntiConfig;
   anti_role_delete: AntiConfig;
+  anti_role_add: AntiConfig;
 }
 
 const CASE_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -127,13 +128,13 @@ const ALL_COMMAND_IDS: string[] = [
   'ping', 'help', 'user', 'server', 'roles', 'avatar', 'banner_server', 'banner_user',
   'logo_server', 'afk', 'say', 'ban', 'kick', 'mute', 'unmute', 'unban', 'unban_all',
   'jail', 'unjail', 'warn', 'unwarn', 'warning', 'clear', 'lock', 'unlock', 'slowmode',
-  'rename', 'temp_role', 'add_role', 'remove_role', 'multi_role', 'auto_role',
+  'rename', 'temp_role', 'add_role', 'remove_role', 'multi_role', 'auto_role', 'come',
   'set_prefix', 'set_perm', 'set_perm_all', 'set_perm_reset', 'set_whitelist',
   'actions_role_mute', 'actions_role_jail', 'actions_show_room_jail', 'actions_color',
   'actions_enabled', 'actions_label', 'actions_log', 'court_set_color', 'court_set_log',
   'court_set_logo', 'court_set_name', 'anti_ban', 'anti_kick', 'anti_bots',
   'anti_webhooks', 'anti_channel_create', 'anti_channel_delete', 'anti_role_create',
-  'anti_role_delete',
+  'anti_role_delete', 'anti_role_add',
 ];
 
 function defaultCommandConfig(commandId: string): CommandConfig {
@@ -164,6 +165,7 @@ const DEFAULT_PROTECTION: ProtectionSettings = {
   anti_channel_delete: { enabled: false, limit: 3, action: '3' },
   anti_role_create: { enabled: false, limit: 3, action: '3' },
   anti_role_delete: { enabled: false, limit: 3, action: '3' },
+  anti_role_add: { enabled: false, limit: 3, action: '3' },
 };
 
 const ADMIN_COMMANDS = new Set([
@@ -1328,6 +1330,7 @@ const COMMAND_NAMES: Record<string, { name: string; aliases: string[] }> = {
   anti_channel_delete: { name: 'antichdelete', aliases: ['anti-channel-delete', 'anti_channel_delete'] },
   anti_role_create: { name: 'antirolecreate', aliases: ['anti-role-create', 'anti_role_create'] },
   anti_role_delete: { name: 'antiroledelete', aliases: ['anti-role-delete', 'anti_role_delete'] },
+  anti_role_add: { name: 'antiroleadd', aliases: ['anti-role-add', 'anti_role_add'] },
 };
 
 const COMMAND_DESCRIPTIONS: Record<string, string> = {
@@ -1363,6 +1366,7 @@ const COMMAND_DESCRIPTIONS: Record<string, string> = {
   remove_role: 'إزالة رتبة من عضو',
   multi_role: 'تعديل رتبة لجميع الأعضاء',
   auto_role: 'رتبة الترحيب التلقائية',
+  come: 'استدعاء مستخدم إلى الخاص',
   set_prefix: 'تغيير بادئة الأوامر',
   set_perm: 'منح رتبة صلاحية أمر',
   set_perm_all: 'منح رتبة صلاحية جميع الأوامر',
@@ -1387,6 +1391,7 @@ const COMMAND_DESCRIPTIONS: Record<string, string> = {
   anti_channel_delete: 'الحماية من حذف القنوات',
   anti_role_create: 'الحماية من إنشاء الرتب',
   anti_role_delete: 'الحماية من حذف الرتب',
+  anti_role_add: 'الحماية من إضافة الرتب',
 };
 
 function findCommand(input: string): string | null {
@@ -1779,6 +1784,7 @@ async function syncProtectionToSecurity(ctx: PluginContext, protection: Protecti
       anti_channel_delete: protection.anti_channel_delete,
       anti_role_create: protection.anti_role_create,
       anti_role_delete: protection.anti_role_delete,
+      anti_role_add: protection.anti_role_add,
     },
   });
 }
@@ -1986,6 +1992,7 @@ const OPTIONS: Record<string, CommandOptionRegistration[]> = {
 for (const feature of [
   'anti_ban', 'anti_kick', 'anti_bots', 'anti_webhooks',
   'anti_channel_create', 'anti_channel_delete', 'anti_role_create', 'anti_role_delete',
+  'anti_role_add',
 ] as const) {
   OPTIONS[feature] = [
     { name: 'enabled', description: 'تفعيل أو تعطيل', type: 'BOOLEAN' },
@@ -2062,6 +2069,7 @@ function buildHandlers(ctx: PluginContext): Record<string, CommandHandler> {
     anti_channel_delete: handler(ctx, 'anti_channel_delete', makeAntiHandler(ctx, 'anti_channel_delete')),
     anti_role_create: handler(ctx, 'anti_role_create', makeAntiHandler(ctx, 'anti_role_create')),
     anti_role_delete: handler(ctx, 'anti_role_delete', makeAntiHandler(ctx, 'anti_role_delete')),
+    anti_role_add: handler(ctx, 'anti_role_add', makeAntiHandler(ctx, 'anti_role_add')),
   };
 }
 
