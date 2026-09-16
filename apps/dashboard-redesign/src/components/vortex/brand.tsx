@@ -37,18 +37,20 @@ export function VortexBrand({
 export function GuildAvatar({
   initials,
   hue,
+  iconUrl,
   size = 40,
   className,
 }: {
   initials: string;
   hue: number;
+  iconUrl?: string | null;
   size?: number;
   className?: string;
 }) {
   return (
     <span
       className={cn(
-        "inline-flex shrink-0 items-center justify-center rounded-lg font-bold text-white/90",
+        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-lg font-bold text-white/90",
         className,
       )}
       style={{
@@ -59,12 +61,38 @@ export function GuildAvatar({
         boxShadow: `inset 0 0 0 1px rgba(255,255,255,0.14), 0 0 18px -8px hsl(${hue} 80% 55% / 0.7)`,
       }}
     >
-      {initials}
+      {iconUrl ? (
+        <>
+          <span aria-hidden="true">{initials}</span>
+          <img
+            src={iconUrl}
+            alt={initials}
+            width={size}
+            height={size}
+            className="absolute inset-0 size-full object-cover select-none"
+            draggable={false}
+            loading="lazy"
+            onError={(event) => {
+              event.currentTarget.style.display = "none";
+            }}
+          />
+        </>
+      ) : (
+        initials
+      )}
     </span>
   );
 }
 
-export function UserAvatar({ name, size = 36 }: { name: string; size?: number }) {
+export function UserAvatar({
+  name,
+  avatarUrl,
+  size = 36,
+}: {
+  name: string;
+  avatarUrl?: string | null;
+  size?: number;
+}) {
   const initials = name
     .split(/\s+/)
     .map((w) => w[0])
@@ -72,7 +100,7 @@ export function UserAvatar({ name, size = 36 }: { name: string; size?: number })
     .join("");
   return (
     <span
-      className="inline-flex shrink-0 items-center justify-center rounded-full font-bold text-white"
+      className="relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full font-bold text-white"
       style={{
         width: size,
         height: size,
@@ -81,7 +109,24 @@ export function UserAvatar({ name, size = 36 }: { name: string; size?: number })
         boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.2)",
       }}
     >
-      {initials}
+      {avatarUrl ? (
+        <>
+          <span aria-hidden="true">{initials}</span>
+          <img
+            src={avatarUrl}
+            alt={name}
+            width={size}
+            height={size}
+            className="absolute inset-0 size-full object-cover select-none"
+            draggable={false}
+            onError={(event) => {
+              event.currentTarget.style.display = "none";
+            }}
+          />
+        </>
+      ) : (
+        initials
+      )}
     </span>
   );
 }

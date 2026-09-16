@@ -25,6 +25,7 @@ export interface Guild {
   onlineCount: number;
   botPresent: boolean;
   role: GuildRole;
+  iconUrl: string | null;
 }
 
 export type PluginCategory =
@@ -170,10 +171,8 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
 
 function initialsFromName(name: string): string {
   const words = name.trim().split(/\s+/);
-  if (words.length >= 2) {
-    return (words[0][0] ?? "" + words[1][0] ?? "").toUpperCase();
-  }
-  return name.trim().slice(0, 2).toUpperCase() || "?";
+  const initials = (words[0]?.[0] ?? "") + (words[1]?.[0] ?? "");
+  return initials.toUpperCase() || "?";
 }
 
 function hueFromId(id: string): number {
@@ -234,12 +233,26 @@ function mapLevel(level: string): LogLevel {
   return "INFO";
 }
 
+/* --------------------------- discord CDN helpers -------------------------- */
+
+function discordAvatarUrl(discordId: string, avatar: string | null): string | null {
+  if (!avatar) return null;
+  const ext = avatar.startsWith("a_") ? "gif" : "png";
+  return `https://cdn.discordapp.com/avatars/${discordId}/${avatar}.${ext}?size=128`;
+}
+
+function discordIconUrl(guildId: string, icon: string | null): string | null {
+  if (!icon) return null;
+  const ext = icon.startsWith("a_") ? "gif" : "png";
+  return `https://cdn.discordapp.com/icons/${guildId}/${icon}.${ext}?size=128`;
+}
+
 function mapUser(user: ApiUser): VortexUser {
   return {
     id: user.discordId,
     username: user.username,
     globalName: user.globalName ?? user.username,
-    avatarUrl: user.avatar,
+    avatarUrl: discordAvatarUrl(user.discordId, user.avatar),
   };
 }
 
@@ -249,6 +262,7 @@ function mapGuild(guild: ApiGuild): Guild {
     name: guild.name,
     initials: initialsFromName(guild.name),
     hue: hueFromId(guild.id),
+    iconUrl: discordIconUrl(guild.id, guild.icon),
     memberCount: guild.memberCount ?? 0,
     onlineCount: 0,
     botPresent: guild.botConnected,

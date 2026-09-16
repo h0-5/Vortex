@@ -24,12 +24,13 @@ export function SelectServerScreen({
   onLogout: () => void;
 }) {
   return (
-    <div className="nx-grid-bg min-h-screen bg-black">
-      <header className="flex items-center justify-between border-b border-border/60 px-6 py-4 sm:px-10">
+    <div className="nx-grid-bg relative min-h-screen overflow-hidden bg-black">
+      <div aria-hidden="true" className="nx-aurora" />
+      <header className="relative flex items-center justify-between border-b border-border/60 px-6 py-4 sm:px-10">
         <VortexBrand size={30} />
         <div className="flex items-center gap-3">
           <div className="hidden items-center gap-2.5 sm:flex">
-            <UserAvatar name={user.globalName} size={30} />
+            <UserAvatar name={user.globalName} avatarUrl={user.avatarUrl} size={30} />
             <span className="text-sm font-semibold">{user.globalName}</span>
           </div>
           <Button variant="ghost" size="sm" onClick={onLogout} className="text-muted-foreground hover:text-foreground">
@@ -39,13 +40,14 @@ export function SelectServerScreen({
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-12 sm:px-10">
+      <main className="relative mx-auto flex w-full max-w-5xl flex-col gap-8 px-6 py-12 sm:px-10">
         <div className="flex flex-col gap-2.5">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+          <p className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/30 bg-primary/[0.08] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+            <span className="nx-live-dot inline-block size-1.5 rounded-full bg-[#34d399] text-[#34d399]" />
             Authenticated · OAuth session active
           </p>
-          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-            Choose a <span className="nx-gradient-text">server</span> to manage
+          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
+            Choose a <span className="nx-shimmer nx-gradient-text">server</span> to manage
           </h1>
           <p className="max-w-lg text-sm leading-relaxed text-muted-foreground">
             Servers where you hold Owner, Administrator, or Manager access. The bot joins
@@ -61,9 +63,9 @@ export function SelectServerScreen({
                 key={guild.id}
                 onClick={() => manageable && onSelect(guild)}
                 disabled={!manageable}
-                className={`nx-panel group relative overflow-hidden rounded-xl p-5 text-left transition-all duration-200 focus-visible:outline-ring ${
+                className={`nx-glass nx-lift group relative overflow-hidden rounded-xl p-5 text-left focus-visible:outline-ring ${
                   manageable
-                    ? "cursor-pointer hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[0_0_36px_-12px_rgba(139,92,246,0.55)]"
+                    ? "cursor-pointer"
                     : "cursor-not-allowed opacity-45"
                 }`}
               >
@@ -72,7 +74,7 @@ export function SelectServerScreen({
                   style={{ background: "linear-gradient(90deg, transparent, #8b5cf6, #06b6d4, transparent)" }}
                 />
                 <div className="flex items-start justify-between gap-3">
-                  <GuildAvatar initials={guild.initials} hue={guild.hue} size={46} />
+                  <GuildAvatar initials={guild.initials} hue={guild.hue} iconUrl={guild.iconUrl} size={46} />
                   {guild.botPresent ? (
                     <Badge className="border-transparent bg-[#34d399]/12 text-[#34d399] hover:bg-[#34d399]/20">
                       <span className="nx-live-dot mr-1.5 inline-block size-1.5 rounded-full bg-[#34d399] text-[#34d399]" />

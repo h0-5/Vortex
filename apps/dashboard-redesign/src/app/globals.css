@@ -136,6 +136,18 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+    filter: drop-shadow(0 0 22px rgba(139, 92, 246, 0.35));
+  }
+  /* Animated gradient sweep for hero text */
+  .nx-shimmer {
+    background-image: linear-gradient(120deg, #a78bfa 0%, #818cf8 30%, #22d3ee 55%, #818cf8 80%, #a78bfa 100%);
+    background-size: 220% auto;
+    animation: nx-shine 7s linear infinite;
+  }
+  @keyframes nx-shine {
+    to {
+      background-position: 220% center;
+    }
   }
   .nx-gradient-border {
     position: relative;
@@ -174,6 +186,114 @@
   .nx-panel {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0.012));
     border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 16px 40px -28px rgba(0, 0, 0, 0.9);
+  }
+  /* Glassmorphism surface — premium depth */
+  .nx-glass {
+    background: linear-gradient(165deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.018) 45%, rgba(255, 255, 255, 0.03));
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      0 24px 60px -28px rgba(0, 0, 0, 0.95);
+  }
+  /* Hover lift + brand glow */
+  .nx-lift {
+    transition:
+      transform 0.28s cubic-bezier(0.2, 0.7, 0.3, 1),
+      box-shadow 0.28s cubic-bezier(0.2, 0.7, 0.3, 1),
+      border-color 0.28s;
+  }
+  .nx-lift:hover {
+    transform: translateY(-3px);
+    border-color: rgba(139, 92, 246, 0.5);
+    box-shadow:
+      0 14px 44px -14px rgba(139, 92, 246, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  }
+  /* Glowing gradient icon chip */
+  .nx-chip {
+    background: linear-gradient(135deg, #8b5cf6, #6366f1 55%, #06b6d4);
+    box-shadow:
+      0 0 22px -6px rgba(139, 92, 246, 0.75),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+  /* Big data numbers glow */
+  .nx-num {
+    text-shadow: 0 0 34px rgba(139, 92, 246, 0.5);
+  }
+  /* Pulsing halo ring for the brand mark */
+  .nx-pulse-ring {
+    position: relative;
+  }
+  .nx-pulse-ring::after {
+    content: "";
+    position: absolute;
+    inset: -7px;
+    border-radius: inherit;
+    border: 1px solid rgba(139, 92, 246, 0.55);
+    animation: nx-halo 2.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+    pointer-events: none;
+  }
+  @keyframes nx-halo {
+    0% {
+      transform: scale(0.92);
+      opacity: 0.8;
+    }
+    70%,
+    100% {
+      transform: scale(1.28);
+      opacity: 0;
+    }
+  }
+  /* Drifting aurora layer — depth on pure black */
+  .nx-aurora {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .nx-aurora::before,
+  .nx-aurora::after {
+    content: "";
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(110px);
+  }
+  .nx-aurora::before {
+    width: 680px;
+    height: 680px;
+    top: -260px;
+    left: -160px;
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.32), transparent 65%);
+    animation: nx-drift 26s ease-in-out infinite alternate;
+  }
+  .nx-aurora::after {
+    width: 620px;
+    height: 620px;
+    bottom: -280px;
+    right: -140px;
+    background: radial-gradient(circle, rgba(6, 182, 212, 0.24), transparent 65%);
+    animation: nx-drift 34s ease-in-out infinite alternate-reverse;
+  }
+  /* Softer variant for the dashboard content area */
+  .nx-aurora-soft::before {
+    opacity: 0.45;
+  }
+  .nx-aurora-soft::after {
+    opacity: 0.4;
+  }
+  @keyframes nx-drift {
+    0% {
+      transform: translate(0, 0) scale(1);
+    }
+    50% {
+      transform: translate(72px, 42px) scale(1.12);
+    }
+    100% {
+      transform: translate(-44px, -34px) scale(0.96);
+    }
   }
   .nx-live-dot {
     position: relative;
@@ -201,8 +321,12 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nx-live-dot::after {
-    animation: none;
+  .nx-live-dot::after,
+  .nx-pulse-ring::after,
+  .nx-aurora::before,
+  .nx-aurora::after,
+  .nx-shimmer {
+    animation: none !important;
   }
   * {
     transition-duration: 0.01ms !important;

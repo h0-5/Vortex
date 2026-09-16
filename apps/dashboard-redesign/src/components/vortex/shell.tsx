@@ -116,7 +116,7 @@ function SidebarContent({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="nx-panel flex w-full items-center gap-2.5 rounded-lg p-2.5 text-left transition-colors duration-150 hover:border-primary/40 focus-visible:outline-ring">
-              <GuildAvatar initials={guild.initials} hue={guild.hue} size={32} />
+              <GuildAvatar initials={guild.initials} hue={guild.hue} iconUrl={guild.iconUrl} size={32} />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-[13px] font-bold">{guild.name}</span>
                 <span className="block font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -134,7 +134,7 @@ function SidebarContent({
               .filter((g) => g.botPresent && g.id !== guild.id)
               .map((g) => (
                 <DropdownMenuItem key={g.id} onClick={() => onSwitchGuild(g)} className="gap-2.5">
-                  <GuildAvatar initials={g.initials} hue={g.hue} size={22} />
+                  <GuildAvatar initials={g.initials} hue={g.hue} iconUrl={g.iconUrl} size={22} />
                   <span className="truncate text-[13px]">{g.name}</span>
                 </DropdownMenuItem>
               ))}
@@ -192,7 +192,7 @@ function SidebarContent({
       {/* User card */}
       <div className="border-t border-border/60 p-3">
         <div className="nx-panel flex items-center gap-2.5 rounded-lg p-2.5">
-          <UserAvatar name={user.globalName} size={32} />
+          <UserAvatar name={user.globalName} avatarUrl={user.avatarUrl} size={32} />
           <span className="min-w-0 flex-1">
             <span className="block truncate text-[13px] font-bold">{user.globalName}</span>
             <span className="block truncate font-mono text-[10px] text-muted-foreground">
@@ -235,7 +235,8 @@ export function DashboardShell(props: ShellProps) {
   };
 
   return (
-    <div className="flex min-h-screen bg-black">
+    <div className="relative flex min-h-screen overflow-clip bg-black">
+      <div aria-hidden="true" className="nx-aurora nx-aurora-soft z-0" />
       {/* Desktop sidebar */}
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 border-r border-border/60 bg-sidebar lg:block">
         <SidebarContent {...props} />
@@ -258,7 +259,7 @@ export function DashboardShell(props: ShellProps) {
       </Sheet>
 
       {/* Main column */}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="relative z-10 flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border/60 bg-black/85 px-5 backdrop-blur-md sm:px-7 lg:pl-7">
           <div className="pl-12 lg:pl-0">
             <h1 className="text-[15px] font-bold tracking-tight">{VIEW_META[view].title}</h1>
@@ -279,7 +280,7 @@ export function DashboardShell(props: ShellProps) {
             </button>
             <GatewayPill />
             <div className="lg:hidden">
-              <UserAvatar name={user.globalName} size={32} />
+              <UserAvatar name={user.globalName} avatarUrl={user.avatarUrl} size={32} />
             </div>
           </div>
         </header>

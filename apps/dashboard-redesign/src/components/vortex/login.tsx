@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { DatabaseIcon, Loader2Icon, ServerIcon, ShieldCheckIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { VortexBrand } from "@/components/vortex/brand";
+import { VortexBrand, VortexMark } from "@/components/vortex/brand";
 import { SECURITY_FEATURES } from "@/lib/vortex/data";
 
 const PLATFORM_POINTS = [
@@ -33,20 +33,29 @@ export function LoginScreen({ onLogin }: { onLogin: () => void }) {
   };
 
   return (
-    <div className="nx-grid-bg flex min-h-screen flex-col bg-black">
-      <div className="grid flex-1 lg:grid-cols-[1.1fr_0.9fr]">
+    <div className="nx-grid-bg relative flex min-h-screen flex-col overflow-hidden bg-black">
+      <div aria-hidden="true" className="nx-aurora" />
+      <div className="relative grid flex-1 lg:grid-cols-[1.1fr_0.9fr]">
         {/* Brand hero */}
         <section className="hidden flex-col border-r border-border/60 p-10 lg:flex">
-          <VortexBrand size={36} />
+          <div className="flex items-center gap-3">
+            <span className="nx-pulse-ring rounded-xl">
+              <VortexMark size={36} className="nx-glow-soft rounded-xl" />
+            </span>
+            <span className="text-[17px] font-extrabold tracking-tight">
+              Vor<span className="nx-gradient-text">tex</span>
+            </span>
+          </div>
           <div className="my-auto flex max-w-xl flex-col gap-9">
             <div className="flex flex-col gap-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+              <p className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/30 bg-primary/[0.08] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+                <span className="nx-live-dot inline-block size-1.5 rounded-full bg-[#34d399] text-[#34d399]" />
                 Open-source Discord bot platform
               </p>
-              <h1 className="text-5xl font-extrabold leading-[1.08] tracking-tight">
+              <h1 className="text-6xl font-extrabold leading-[1.05] tracking-tight">
                 Discord infrastructure,
                 <br />
-                <span className="nx-gradient-text">organized & sharp.</span>
+                <span className="nx-shimmer nx-gradient-text">organized & sharp.</span>
               </h1>
               <p className="max-w-md text-[15px] leading-relaxed text-muted-foreground">
                 Vortex gives your community a secure control room — authenticate with Discord,
@@ -56,7 +65,7 @@ export function LoginScreen({ onLogin }: { onLogin: () => void }) {
             <div className="flex flex-col gap-5">
               {PLATFORM_POINTS.map((point) => (
                 <div key={point.title} className="flex items-start gap-4">
-                  <span className="nx-panel flex size-10 shrink-0 items-center justify-center rounded-lg text-primary">
+                  <span className="nx-chip flex size-10 shrink-0 items-center justify-center rounded-lg text-white">
                     <point.icon className="size-4.5" aria-hidden="true" />
                   </span>
                   <div>
@@ -74,7 +83,7 @@ export function LoginScreen({ onLogin }: { onLogin: () => void }) {
 
         {/* Auth card */}
         <section className="flex items-center justify-center p-6 sm:p-10">
-          <div className="nx-gradient-border nx-glow-soft w-full max-w-md rounded-xl bg-card/80 p-8 backdrop-blur-sm sm:p-10">
+          <div className="nx-gradient-border nx-glass w-full max-w-md rounded-xl p-8 sm:p-10">
             <div className="mb-8 flex flex-col items-center gap-4 text-center lg:hidden">
               <VortexBrand size={44} />
             </div>
@@ -89,7 +98,8 @@ export function LoginScreen({ onLogin }: { onLogin: () => void }) {
               size="lg"
               onClick={handleLogin}
               disabled={loading}
-              className="nx-gradient nx-glow mt-8 h-12 w-full rounded-lg text-[15px] font-bold text-white transition-all duration-200 hover:opacity-90 disabled:opacity-70"
+              className="nx-gradient mt-8 h-12 w-full rounded-lg text-[15px] font-bold text-white transition-all duration-200 hover:scale-[1.015] hover:brightness-110 focus-visible:outline-ring active:scale-[0.99] disabled:opacity-70"
+              style={{ boxShadow: "0 0 34px -8px rgba(139, 92, 246, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.35)" }}
             >
               {loading ? (
                 <>

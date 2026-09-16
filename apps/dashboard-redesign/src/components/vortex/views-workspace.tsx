@@ -142,7 +142,7 @@ export function OverviewView({
       {/* Guild header */}
       <Panel className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <GuildAvatar initials={guild.initials} hue={guild.hue} size={52} />
+          <GuildAvatar initials={guild.initials} hue={guild.hue} iconUrl={guild.iconUrl} size={52} />
           <div>
             <div className="flex flex-wrap items-center gap-2.5">
               <h2 className="text-lg font-extrabold tracking-tight">{guild.name}</h2>
@@ -170,14 +170,16 @@ export function OverviewView({
       {/* KPI cards */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((s) => (
-          <Panel key={s.label} className="group p-5 transition-colors duration-200 hover:border-primary/35">
+          <Panel key={s.label} className="nx-lift group p-5">
             <div className="flex items-center justify-between">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {s.label}
               </p>
-              <s.icon className="size-4 text-muted-foreground/70 transition-colors duration-200 group-hover:text-primary" aria-hidden="true" />
+              <span className="flex size-8 items-center justify-center rounded-lg border border-border/60 bg-white/[0.02] transition-all duration-200 group-hover:border-primary/40 group-hover:bg-primary/10">
+                <s.icon className="size-4 text-muted-foreground/80 transition-colors duration-200 group-hover:text-primary" aria-hidden="true" />
+              </span>
             </div>
-            <p className="nx-gradient-text mt-2.5 font-mono text-[26px] font-bold leading-none tracking-tight">
+            <p className="nx-num nx-gradient-text mt-3 font-mono text-[30px] font-bold leading-none tracking-tight">
               {s.value}
             </p>
             <p className="mt-1.5 text-[11px] text-muted-foreground">{s.delta}</p>
@@ -200,9 +202,9 @@ export function OverviewView({
               <button
                 key={a.label}
                 onClick={() => onQuickAction(a.label)}
-                className="flex items-center gap-3 rounded-lg border border-border/70 bg-white/[0.015] px-4 py-3.5 text-left text-[13px] font-semibold transition-all duration-150 hover:border-primary/45 hover:bg-primary/[0.07] focus-visible:outline-ring"
+                className="nx-lift flex items-center gap-3 rounded-lg border border-border/70 bg-white/[0.015] px-4 py-3.5 text-left text-[13px] font-semibold focus-visible:outline-ring"
               >
-                <span className="nx-gradient flex size-8 items-center justify-center rounded-md text-white">
+                <span className="nx-chip flex size-8 items-center justify-center rounded-md text-white">
                   <a.icon className="size-4" aria-hidden="true" />
                 </span>
                 {a.label}
@@ -405,7 +407,7 @@ export function PluginsView({
             <Panel
               key={plugin.id}
               className={cn(
-                "flex flex-col p-5 transition-all duration-200 hover:border-primary/35",
+                "nx-lift flex flex-col p-5",
                 plugin.enabled && "nx-gradient-border",
               )}
             >
