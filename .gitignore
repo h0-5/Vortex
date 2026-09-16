@@ -38,5 +38,9 @@ coverage/
 # Agents
 .agents/
 
+# Auto-deploy runtime state
+.deploy-state.json
+.deploy-watcher.log
+
 # Plugins (plugin code is now included in this public repository)
 plugins/installed/
