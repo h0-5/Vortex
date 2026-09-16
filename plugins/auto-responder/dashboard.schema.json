@@ -1,0 +1,3331 @@
+{
+  "version": 1,
+  "contentMode": "schema",
+  "tabs": [
+    {
+      "id": "general",
+      "label": "عام",
+      "description": "تفعيل أو تعطيل جميع الردود التلقائية دفعة واحدة.",
+      "sections": [
+        {
+          "id": "general.main",
+          "title": "الإعدادات العامة",
+          "description": "المفتاح الرئيسي لنظام الردود التلقائية.",
+          "fields": [
+            {
+              "id": "enabled",
+              "type": "switch",
+              "label": "تفعيل الردود التلقائية",
+              "description": "عند الإيقاف لا يستجيب البوت لأي قاعدة.",
+              "storageKey": "auto_responder",
+              "path": "enabled",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "general.save",
+              "type": "save_storage",
+              "label": "حفظ الإعدادات",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rules",
+      "label": "الردود",
+      "description": "أنشئ قواعد ردود تلقائية لكل كلمة مفتاحية.",
+      "sections": [
+        {
+          "id": "rules.rule_01",
+          "title": "القاعدة 1",
+          "description": "اضبط مشغلات الرسالة والردود والفلترة الخاصة بهذه القاعدة.",
+          "fields": [
+            {
+              "id": "rule_01_enabled",
+              "type": "switch",
+              "label": "تفعيل القاعدة",
+              "storageKey": "auto_responder",
+              "path": "rule_01.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_01_trigger_type",
+              "type": "select",
+              "label": "نوع المشغل",
+              "description": "كيف تُطابق كلمة المشغل مع محتوى الرسالة.",
+              "storageKey": "auto_responder",
+              "path": "rule_01.triggerType",
+              "defaultValue": "contains",
+              "options": [
+                {
+                  "label": "يساوي",
+                  "value": "equals"
+                },
+                {
+                  "label": "يحتوي",
+                  "value": "contains"
+                },
+                {
+                  "label": "يبدأ بـ",
+                  "value": "startsWith"
+                },
+                {
+                  "label": "ينتهي بـ",
+                  "value": "endsWith"
+                }
+              ]
+            },
+            {
+              "id": "rule_01_triggers",
+              "type": "text",
+              "label": "المشغلات",
+              "description": "الكلمات المفتاحية، مفصولة بفاصلة أو بسطر جديد.",
+              "storageKey": "auto_responder",
+              "path": "rule_01.triggers",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_01_send_type",
+              "type": "select",
+              "label": "نوع الإرسال",
+              "description": "كيف يرسل البوت الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_01.sendType",
+              "defaultValue": "reply",
+              "options": [
+                {
+                  "label": "رد",
+                  "value": "reply"
+                },
+                {
+                  "label": "رد مع منشن",
+                  "value": "reply_mention"
+                },
+                {
+                  "label": "إرسال رسالة",
+                  "value": "send"
+                },
+                {
+                  "label": "رسالة خاصة",
+                  "value": "dm"
+                }
+              ]
+            },
+            {
+              "id": "rule_01_messages",
+              "type": "text",
+              "label": "الردود",
+              "description": "رد واحد في كل سطر، ويُختار واحد عشوائياً.",
+              "storageKey": "auto_responder",
+              "path": "rule_01.messages",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_01_give_role",
+              "type": "text",
+              "label": "رول يُمنح عند الاستجابة",
+              "description": "معرّف الرول الذي يُمنح للعضو عند تحقق القاعدة.",
+              "storageKey": "auto_responder",
+              "path": "rule_01.giveRole",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_01_channels",
+              "type": "text",
+              "label": "القنوات المسموحة",
+              "description": "معرّفات القنوات المسموح فيها، مفصولة بفاصلة. تُترك فارغة لتفعيلها في كل القنوات.",
+              "storageKey": "auto_responder",
+              "path": "rule_01.enabledChannels",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_01_roles",
+              "type": "text",
+              "label": "الرتب المسموحة",
+              "description": "معرّفات الرتب التي يُسمح لأعضائها بتفعيل الرد، مفصولة بفاصلة. تُترك فارغة للجميع.",
+              "storageKey": "auto_responder",
+              "path": "rule_01.allowedRoles",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_01_remove_trigger",
+              "type": "switch",
+              "label": "حذف رسالة المستخدم",
+              "description": "حذف الرسالة التي فعلت الرد مباشرة بعد الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_01.deleteUserMessage",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_01_auto_delete",
+              "type": "switch",
+              "label": "حذف الرد تلقائياً",
+              "description": "حذف رد البوت بعد 5 ثوانٍ من إرساله.",
+              "storageKey": "auto_responder",
+              "path": "rule_01.autoDeleteBotReply",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_01_delete_on_delete",
+              "type": "switch",
+              "label": "حذف الرد عند حذف الرسالة",
+              "description": "حذف رد البوت إذا حذف العضو رسالته الأصلية.",
+              "storageKey": "auto_responder",
+              "path": "rule_01.deleteOnAuthorDelete",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "rule_01.save",
+              "type": "save_storage",
+              "label": "حفظ القاعدة",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rules.rule_02",
+          "title": "القاعدة 2",
+          "description": "اضبط مشغلات الرسالة والردود والفلترة الخاصة بهذه القاعدة.",
+          "fields": [
+            {
+              "id": "rule_02_enabled",
+              "type": "switch",
+              "label": "تفعيل القاعدة",
+              "storageKey": "auto_responder",
+              "path": "rule_02.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_02_trigger_type",
+              "type": "select",
+              "label": "نوع المشغل",
+              "description": "كيف تُطابق كلمة المشغل مع محتوى الرسالة.",
+              "storageKey": "auto_responder",
+              "path": "rule_02.triggerType",
+              "defaultValue": "contains",
+              "options": [
+                {
+                  "label": "يساوي",
+                  "value": "equals"
+                },
+                {
+                  "label": "يحتوي",
+                  "value": "contains"
+                },
+                {
+                  "label": "يبدأ بـ",
+                  "value": "startsWith"
+                },
+                {
+                  "label": "ينتهي بـ",
+                  "value": "endsWith"
+                }
+              ]
+            },
+            {
+              "id": "rule_02_triggers",
+              "type": "text",
+              "label": "المشغلات",
+              "description": "الكلمات المفتاحية، مفصولة بفاصلة أو بسطر جديد.",
+              "storageKey": "auto_responder",
+              "path": "rule_02.triggers",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_02_send_type",
+              "type": "select",
+              "label": "نوع الإرسال",
+              "description": "كيف يرسل البوت الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_02.sendType",
+              "defaultValue": "reply",
+              "options": [
+                {
+                  "label": "رد",
+                  "value": "reply"
+                },
+                {
+                  "label": "رد مع منشن",
+                  "value": "reply_mention"
+                },
+                {
+                  "label": "إرسال رسالة",
+                  "value": "send"
+                },
+                {
+                  "label": "رسالة خاصة",
+                  "value": "dm"
+                }
+              ]
+            },
+            {
+              "id": "rule_02_messages",
+              "type": "text",
+              "label": "الردود",
+              "description": "رد واحد في كل سطر، ويُختار واحد عشوائياً.",
+              "storageKey": "auto_responder",
+              "path": "rule_02.messages",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_02_give_role",
+              "type": "text",
+              "label": "رول يُمنح عند الاستجابة",
+              "description": "معرّف الرول الذي يُمنح للعضو عند تحقق القاعدة.",
+              "storageKey": "auto_responder",
+              "path": "rule_02.giveRole",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_02_channels",
+              "type": "text",
+              "label": "القنوات المسموحة",
+              "description": "معرّفات القنوات المسموح فيها، مفصولة بفاصلة. تُترك فارغة لتفعيلها في كل القنوات.",
+              "storageKey": "auto_responder",
+              "path": "rule_02.enabledChannels",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_02_roles",
+              "type": "text",
+              "label": "الرتب المسموحة",
+              "description": "معرّفات الرتب التي يُسمح لأعضائها بتفعيل الرد، مفصولة بفاصلة. تُترك فارغة للجميع.",
+              "storageKey": "auto_responder",
+              "path": "rule_02.allowedRoles",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_02_remove_trigger",
+              "type": "switch",
+              "label": "حذف رسالة المستخدم",
+              "description": "حذف الرسالة التي فعلت الرد مباشرة بعد الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_02.deleteUserMessage",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_02_auto_delete",
+              "type": "switch",
+              "label": "حذف الرد تلقائياً",
+              "description": "حذف رد البوت بعد 5 ثوانٍ من إرساله.",
+              "storageKey": "auto_responder",
+              "path": "rule_02.autoDeleteBotReply",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_02_delete_on_delete",
+              "type": "switch",
+              "label": "حذف الرد عند حذف الرسالة",
+              "description": "حذف رد البوت إذا حذف العضو رسالته الأصلية.",
+              "storageKey": "auto_responder",
+              "path": "rule_02.deleteOnAuthorDelete",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "rule_02.save",
+              "type": "save_storage",
+              "label": "حفظ القاعدة",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rules.rule_03",
+          "title": "القاعدة 3",
+          "description": "اضبط مشغلات الرسالة والردود والفلترة الخاصة بهذه القاعدة.",
+          "fields": [
+            {
+              "id": "rule_03_enabled",
+              "type": "switch",
+              "label": "تفعيل القاعدة",
+              "storageKey": "auto_responder",
+              "path": "rule_03.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_03_trigger_type",
+              "type": "select",
+              "label": "نوع المشغل",
+              "description": "كيف تُطابق كلمة المشغل مع محتوى الرسالة.",
+              "storageKey": "auto_responder",
+              "path": "rule_03.triggerType",
+              "defaultValue": "contains",
+              "options": [
+                {
+                  "label": "يساوي",
+                  "value": "equals"
+                },
+                {
+                  "label": "يحتوي",
+                  "value": "contains"
+                },
+                {
+                  "label": "يبدأ بـ",
+                  "value": "startsWith"
+                },
+                {
+                  "label": "ينتهي بـ",
+                  "value": "endsWith"
+                }
+              ]
+            },
+            {
+              "id": "rule_03_triggers",
+              "type": "text",
+              "label": "المشغلات",
+              "description": "الكلمات المفتاحية، مفصولة بفاصلة أو بسطر جديد.",
+              "storageKey": "auto_responder",
+              "path": "rule_03.triggers",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_03_send_type",
+              "type": "select",
+              "label": "نوع الإرسال",
+              "description": "كيف يرسل البوت الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_03.sendType",
+              "defaultValue": "reply",
+              "options": [
+                {
+                  "label": "رد",
+                  "value": "reply"
+                },
+                {
+                  "label": "رد مع منشن",
+                  "value": "reply_mention"
+                },
+                {
+                  "label": "إرسال رسالة",
+                  "value": "send"
+                },
+                {
+                  "label": "رسالة خاصة",
+                  "value": "dm"
+                }
+              ]
+            },
+            {
+              "id": "rule_03_messages",
+              "type": "text",
+              "label": "الردود",
+              "description": "رد واحد في كل سطر، ويُختار واحد عشوائياً.",
+              "storageKey": "auto_responder",
+              "path": "rule_03.messages",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_03_give_role",
+              "type": "text",
+              "label": "رول يُمنح عند الاستجابة",
+              "description": "معرّف الرول الذي يُمنح للعضو عند تحقق القاعدة.",
+              "storageKey": "auto_responder",
+              "path": "rule_03.giveRole",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_03_channels",
+              "type": "text",
+              "label": "القنوات المسموحة",
+              "description": "معرّفات القنوات المسموح فيها، مفصولة بفاصلة. تُترك فارغة لتفعيلها في كل القنوات.",
+              "storageKey": "auto_responder",
+              "path": "rule_03.enabledChannels",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_03_roles",
+              "type": "text",
+              "label": "الرتب المسموحة",
+              "description": "معرّفات الرتب التي يُسمح لأعضائها بتفعيل الرد، مفصولة بفاصلة. تُترك فارغة للجميع.",
+              "storageKey": "auto_responder",
+              "path": "rule_03.allowedRoles",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_03_remove_trigger",
+              "type": "switch",
+              "label": "حذف رسالة المستخدم",
+              "description": "حذف الرسالة التي فعلت الرد مباشرة بعد الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_03.deleteUserMessage",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_03_auto_delete",
+              "type": "switch",
+              "label": "حذف الرد تلقائياً",
+              "description": "حذف رد البوت بعد 5 ثوانٍ من إرساله.",
+              "storageKey": "auto_responder",
+              "path": "rule_03.autoDeleteBotReply",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_03_delete_on_delete",
+              "type": "switch",
+              "label": "حذف الرد عند حذف الرسالة",
+              "description": "حذف رد البوت إذا حذف العضو رسالته الأصلية.",
+              "storageKey": "auto_responder",
+              "path": "rule_03.deleteOnAuthorDelete",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "rule_03.save",
+              "type": "save_storage",
+              "label": "حفظ القاعدة",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rules.rule_04",
+          "title": "القاعدة 4",
+          "description": "اضبط مشغلات الرسالة والردود والفلترة الخاصة بهذه القاعدة.",
+          "fields": [
+            {
+              "id": "rule_04_enabled",
+              "type": "switch",
+              "label": "تفعيل القاعدة",
+              "storageKey": "auto_responder",
+              "path": "rule_04.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_04_trigger_type",
+              "type": "select",
+              "label": "نوع المشغل",
+              "description": "كيف تُطابق كلمة المشغل مع محتوى الرسالة.",
+              "storageKey": "auto_responder",
+              "path": "rule_04.triggerType",
+              "defaultValue": "contains",
+              "options": [
+                {
+                  "label": "يساوي",
+                  "value": "equals"
+                },
+                {
+                  "label": "يحتوي",
+                  "value": "contains"
+                },
+                {
+                  "label": "يبدأ بـ",
+                  "value": "startsWith"
+                },
+                {
+                  "label": "ينتهي بـ",
+                  "value": "endsWith"
+                }
+              ]
+            },
+            {
+              "id": "rule_04_triggers",
+              "type": "text",
+              "label": "المشغلات",
+              "description": "الكلمات المفتاحية، مفصولة بفاصلة أو بسطر جديد.",
+              "storageKey": "auto_responder",
+              "path": "rule_04.triggers",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_04_send_type",
+              "type": "select",
+              "label": "نوع الإرسال",
+              "description": "كيف يرسل البوت الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_04.sendType",
+              "defaultValue": "reply",
+              "options": [
+                {
+                  "label": "رد",
+                  "value": "reply"
+                },
+                {
+                  "label": "رد مع منشن",
+                  "value": "reply_mention"
+                },
+                {
+                  "label": "إرسال رسالة",
+                  "value": "send"
+                },
+                {
+                  "label": "رسالة خاصة",
+                  "value": "dm"
+                }
+              ]
+            },
+            {
+              "id": "rule_04_messages",
+              "type": "text",
+              "label": "الردود",
+              "description": "رد واحد في كل سطر، ويُختار واحد عشوائياً.",
+              "storageKey": "auto_responder",
+              "path": "rule_04.messages",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_04_give_role",
+              "type": "text",
+              "label": "رول يُمنح عند الاستجابة",
+              "description": "معرّف الرول الذي يُمنح للعضو عند تحقق القاعدة.",
+              "storageKey": "auto_responder",
+              "path": "rule_04.giveRole",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_04_channels",
+              "type": "text",
+              "label": "القنوات المسموحة",
+              "description": "معرّفات القنوات المسموح فيها، مفصولة بفاصلة. تُترك فارغة لتفعيلها في كل القنوات.",
+              "storageKey": "auto_responder",
+              "path": "rule_04.enabledChannels",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_04_roles",
+              "type": "text",
+              "label": "الرتب المسموحة",
+              "description": "معرّفات الرتب التي يُسمح لأعضائها بتفعيل الرد، مفصولة بفاصلة. تُترك فارغة للجميع.",
+              "storageKey": "auto_responder",
+              "path": "rule_04.allowedRoles",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_04_remove_trigger",
+              "type": "switch",
+              "label": "حذف رسالة المستخدم",
+              "description": "حذف الرسالة التي فعلت الرد مباشرة بعد الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_04.deleteUserMessage",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_04_auto_delete",
+              "type": "switch",
+              "label": "حذف الرد تلقائياً",
+              "description": "حذف رد البوت بعد 5 ثوانٍ من إرساله.",
+              "storageKey": "auto_responder",
+              "path": "rule_04.autoDeleteBotReply",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_04_delete_on_delete",
+              "type": "switch",
+              "label": "حذف الرد عند حذف الرسالة",
+              "description": "حذف رد البوت إذا حذف العضو رسالته الأصلية.",
+              "storageKey": "auto_responder",
+              "path": "rule_04.deleteOnAuthorDelete",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "rule_04.save",
+              "type": "save_storage",
+              "label": "حفظ القاعدة",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rules.rule_05",
+          "title": "القاعدة 5",
+          "description": "اضبط مشغلات الرسالة والردود والفلترة الخاصة بهذه القاعدة.",
+          "fields": [
+            {
+              "id": "rule_05_enabled",
+              "type": "switch",
+              "label": "تفعيل القاعدة",
+              "storageKey": "auto_responder",
+              "path": "rule_05.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_05_trigger_type",
+              "type": "select",
+              "label": "نوع المشغل",
+              "description": "كيف تُطابق كلمة المشغل مع محتوى الرسالة.",
+              "storageKey": "auto_responder",
+              "path": "rule_05.triggerType",
+              "defaultValue": "contains",
+              "options": [
+                {
+                  "label": "يساوي",
+                  "value": "equals"
+                },
+                {
+                  "label": "يحتوي",
+                  "value": "contains"
+                },
+                {
+                  "label": "يبدأ بـ",
+                  "value": "startsWith"
+                },
+                {
+                  "label": "ينتهي بـ",
+                  "value": "endsWith"
+                }
+              ]
+            },
+            {
+              "id": "rule_05_triggers",
+              "type": "text",
+              "label": "المشغلات",
+              "description": "الكلمات المفتاحية، مفصولة بفاصلة أو بسطر جديد.",
+              "storageKey": "auto_responder",
+              "path": "rule_05.triggers",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_05_send_type",
+              "type": "select",
+              "label": "نوع الإرسال",
+              "description": "كيف يرسل البوت الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_05.sendType",
+              "defaultValue": "reply",
+              "options": [
+                {
+                  "label": "رد",
+                  "value": "reply"
+                },
+                {
+                  "label": "رد مع منشن",
+                  "value": "reply_mention"
+                },
+                {
+                  "label": "إرسال رسالة",
+                  "value": "send"
+                },
+                {
+                  "label": "رسالة خاصة",
+                  "value": "dm"
+                }
+              ]
+            },
+            {
+              "id": "rule_05_messages",
+              "type": "text",
+              "label": "الردود",
+              "description": "رد واحد في كل سطر، ويُختار واحد عشوائياً.",
+              "storageKey": "auto_responder",
+              "path": "rule_05.messages",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_05_give_role",
+              "type": "text",
+              "label": "رول يُمنح عند الاستجابة",
+              "description": "معرّف الرول الذي يُمنح للعضو عند تحقق القاعدة.",
+              "storageKey": "auto_responder",
+              "path": "rule_05.giveRole",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_05_channels",
+              "type": "text",
+              "label": "القنوات المسموحة",
+              "description": "معرّفات القنوات المسموح فيها، مفصولة بفاصلة. تُترك فارغة لتفعيلها في كل القنوات.",
+              "storageKey": "auto_responder",
+              "path": "rule_05.enabledChannels",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_05_roles",
+              "type": "text",
+              "label": "الرتب المسموحة",
+              "description": "معرّفات الرتب التي يُسمح لأعضائها بتفعيل الرد، مفصولة بفاصلة. تُترك فارغة للجميع.",
+              "storageKey": "auto_responder",
+              "path": "rule_05.allowedRoles",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_05_remove_trigger",
+              "type": "switch",
+              "label": "حذف رسالة المستخدم",
+              "description": "حذف الرسالة التي فعلت الرد مباشرة بعد الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_05.deleteUserMessage",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_05_auto_delete",
+              "type": "switch",
+              "label": "حذف الرد تلقائياً",
+              "description": "حذف رد البوت بعد 5 ثوانٍ من إرساله.",
+              "storageKey": "auto_responder",
+              "path": "rule_05.autoDeleteBotReply",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_05_delete_on_delete",
+              "type": "switch",
+              "label": "حذف الرد عند حذف الرسالة",
+              "description": "حذف رد البوت إذا حذف العضو رسالته الأصلية.",
+              "storageKey": "auto_responder",
+              "path": "rule_05.deleteOnAuthorDelete",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "rule_05.save",
+              "type": "save_storage",
+              "label": "حفظ القاعدة",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rules.rule_06",
+          "title": "القاعدة 6",
+          "description": "اضبط مشغلات الرسالة والردود والفلترة الخاصة بهذه القاعدة.",
+          "fields": [
+            {
+              "id": "rule_06_enabled",
+              "type": "switch",
+              "label": "تفعيل القاعدة",
+              "storageKey": "auto_responder",
+              "path": "rule_06.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_06_trigger_type",
+              "type": "select",
+              "label": "نوع المشغل",
+              "description": "كيف تُطابق كلمة المشغل مع محتوى الرسالة.",
+              "storageKey": "auto_responder",
+              "path": "rule_06.triggerType",
+              "defaultValue": "contains",
+              "options": [
+                {
+                  "label": "يساوي",
+                  "value": "equals"
+                },
+                {
+                  "label": "يحتوي",
+                  "value": "contains"
+                },
+                {
+                  "label": "يبدأ بـ",
+                  "value": "startsWith"
+                },
+                {
+                  "label": "ينتهي بـ",
+                  "value": "endsWith"
+                }
+              ]
+            },
+            {
+              "id": "rule_06_triggers",
+              "type": "text",
+              "label": "المشغلات",
+              "description": "الكلمات المفتاحية، مفصولة بفاصلة أو بسطر جديد.",
+              "storageKey": "auto_responder",
+              "path": "rule_06.triggers",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_06_send_type",
+              "type": "select",
+              "label": "نوع الإرسال",
+              "description": "كيف يرسل البوت الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_06.sendType",
+              "defaultValue": "reply",
+              "options": [
+                {
+                  "label": "رد",
+                  "value": "reply"
+                },
+                {
+                  "label": "رد مع منشن",
+                  "value": "reply_mention"
+                },
+                {
+                  "label": "إرسال رسالة",
+                  "value": "send"
+                },
+                {
+                  "label": "رسالة خاصة",
+                  "value": "dm"
+                }
+              ]
+            },
+            {
+              "id": "rule_06_messages",
+              "type": "text",
+              "label": "الردود",
+              "description": "رد واحد في كل سطر، ويُختار واحد عشوائياً.",
+              "storageKey": "auto_responder",
+              "path": "rule_06.messages",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_06_give_role",
+              "type": "text",
+              "label": "رول يُمنح عند الاستجابة",
+              "description": "معرّف الرول الذي يُمنح للعضو عند تحقق القاعدة.",
+              "storageKey": "auto_responder",
+              "path": "rule_06.giveRole",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_06_channels",
+              "type": "text",
+              "label": "القنوات المسموحة",
+              "description": "معرّفات القنوات المسموح فيها، مفصولة بفاصلة. تُترك فارغة لتفعيلها في كل القنوات.",
+              "storageKey": "auto_responder",
+              "path": "rule_06.enabledChannels",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_06_roles",
+              "type": "text",
+              "label": "الرتب المسموحة",
+              "description": "معرّفات الرتب التي يُسمح لأعضائها بتفعيل الرد، مفصولة بفاصلة. تُترك فارغة للجميع.",
+              "storageKey": "auto_responder",
+              "path": "rule_06.allowedRoles",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_06_remove_trigger",
+              "type": "switch",
+              "label": "حذف رسالة المستخدم",
+              "description": "حذف الرسالة التي فعلت الرد مباشرة بعد الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_06.deleteUserMessage",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_06_auto_delete",
+              "type": "switch",
+              "label": "حذف الرد تلقائياً",
+              "description": "حذف رد البوت بعد 5 ثوانٍ من إرساله.",
+              "storageKey": "auto_responder",
+              "path": "rule_06.autoDeleteBotReply",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_06_delete_on_delete",
+              "type": "switch",
+              "label": "حذف الرد عند حذف الرسالة",
+              "description": "حذف رد البوت إذا حذف العضو رسالته الأصلية.",
+              "storageKey": "auto_responder",
+              "path": "rule_06.deleteOnAuthorDelete",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "rule_06.save",
+              "type": "save_storage",
+              "label": "حفظ القاعدة",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rules.rule_07",
+          "title": "القاعدة 7",
+          "description": "اضبط مشغلات الرسالة والردود والفلترة الخاصة بهذه القاعدة.",
+          "fields": [
+            {
+              "id": "rule_07_enabled",
+              "type": "switch",
+              "label": "تفعيل القاعدة",
+              "storageKey": "auto_responder",
+              "path": "rule_07.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_07_trigger_type",
+              "type": "select",
+              "label": "نوع المشغل",
+              "description": "كيف تُطابق كلمة المشغل مع محتوى الرسالة.",
+              "storageKey": "auto_responder",
+              "path": "rule_07.triggerType",
+              "defaultValue": "contains",
+              "options": [
+                {
+                  "label": "يساوي",
+                  "value": "equals"
+                },
+                {
+                  "label": "يحتوي",
+                  "value": "contains"
+                },
+                {
+                  "label": "يبدأ بـ",
+                  "value": "startsWith"
+                },
+                {
+                  "label": "ينتهي بـ",
+                  "value": "endsWith"
+                }
+              ]
+            },
+            {
+              "id": "rule_07_triggers",
+              "type": "text",
+              "label": "المشغلات",
+              "description": "الكلمات المفتاحية، مفصولة بفاصلة أو بسطر جديد.",
+              "storageKey": "auto_responder",
+              "path": "rule_07.triggers",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_07_send_type",
+              "type": "select",
+              "label": "نوع الإرسال",
+              "description": "كيف يرسل البوت الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_07.sendType",
+              "defaultValue": "reply",
+              "options": [
+                {
+                  "label": "رد",
+                  "value": "reply"
+                },
+                {
+                  "label": "رد مع منشن",
+                  "value": "reply_mention"
+                },
+                {
+                  "label": "إرسال رسالة",
+                  "value": "send"
+                },
+                {
+                  "label": "رسالة خاصة",
+                  "value": "dm"
+                }
+              ]
+            },
+            {
+              "id": "rule_07_messages",
+              "type": "text",
+              "label": "الردود",
+              "description": "رد واحد في كل سطر، ويُختار واحد عشوائياً.",
+              "storageKey": "auto_responder",
+              "path": "rule_07.messages",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_07_give_role",
+              "type": "text",
+              "label": "رول يُمنح عند الاستجابة",
+              "description": "معرّف الرول الذي يُمنح للعضو عند تحقق القاعدة.",
+              "storageKey": "auto_responder",
+              "path": "rule_07.giveRole",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_07_channels",
+              "type": "text",
+              "label": "القنوات المسموحة",
+              "description": "معرّفات القنوات المسموح فيها، مفصولة بفاصلة. تُترك فارغة لتفعيلها في كل القنوات.",
+              "storageKey": "auto_responder",
+              "path": "rule_07.enabledChannels",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_07_roles",
+              "type": "text",
+              "label": "الرتب المسموحة",
+              "description": "معرّفات الرتب التي يُسمح لأعضائها بتفعيل الرد، مفصولة بفاصلة. تُترك فارغة للجميع.",
+              "storageKey": "auto_responder",
+              "path": "rule_07.allowedRoles",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_07_remove_trigger",
+              "type": "switch",
+              "label": "حذف رسالة المستخدم",
+              "description": "حذف الرسالة التي فعلت الرد مباشرة بعد الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_07.deleteUserMessage",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_07_auto_delete",
+              "type": "switch",
+              "label": "حذف الرد تلقائياً",
+              "description": "حذف رد البوت بعد 5 ثوانٍ من إرساله.",
+              "storageKey": "auto_responder",
+              "path": "rule_07.autoDeleteBotReply",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_07_delete_on_delete",
+              "type": "switch",
+              "label": "حذف الرد عند حذف الرسالة",
+              "description": "حذف رد البوت إذا حذف العضو رسالته الأصلية.",
+              "storageKey": "auto_responder",
+              "path": "rule_07.deleteOnAuthorDelete",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "rule_07.save",
+              "type": "save_storage",
+              "label": "حفظ القاعدة",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rules.rule_08",
+          "title": "القاعدة 8",
+          "description": "اضبط مشغلات الرسالة والردود والفلترة الخاصة بهذه القاعدة.",
+          "fields": [
+            {
+              "id": "rule_08_enabled",
+              "type": "switch",
+              "label": "تفعيل القاعدة",
+              "storageKey": "auto_responder",
+              "path": "rule_08.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_08_trigger_type",
+              "type": "select",
+              "label": "نوع المشغل",
+              "description": "كيف تُطابق كلمة المشغل مع محتوى الرسالة.",
+              "storageKey": "auto_responder",
+              "path": "rule_08.triggerType",
+              "defaultValue": "contains",
+              "options": [
+                {
+                  "label": "يساوي",
+                  "value": "equals"
+                },
+                {
+                  "label": "يحتوي",
+                  "value": "contains"
+                },
+                {
+                  "label": "يبدأ بـ",
+                  "value": "startsWith"
+                },
+                {
+                  "label": "ينتهي بـ",
+                  "value": "endsWith"
+                }
+              ]
+            },
+            {
+              "id": "rule_08_triggers",
+              "type": "text",
+              "label": "المشغلات",
+              "description": "الكلمات المفتاحية، مفصولة بفاصلة أو بسطر جديد.",
+              "storageKey": "auto_responder",
+              "path": "rule_08.triggers",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_08_send_type",
+              "type": "select",
+              "label": "نوع الإرسال",
+              "description": "كيف يرسل البوت الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_08.sendType",
+              "defaultValue": "reply",
+              "options": [
+                {
+                  "label": "رد",
+                  "value": "reply"
+                },
+                {
+                  "label": "رد مع منشن",
+                  "value": "reply_mention"
+                },
+                {
+                  "label": "إرسال رسالة",
+                  "value": "send"
+                },
+                {
+                  "label": "رسالة خاصة",
+                  "value": "dm"
+                }
+              ]
+            },
+            {
+              "id": "rule_08_messages",
+              "type": "text",
+              "label": "الردود",
+              "description": "رد واحد في كل سطر، ويُختار واحد عشوائياً.",
+              "storageKey": "auto_responder",
+              "path": "rule_08.messages",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_08_give_role",
+              "type": "text",
+              "label": "رول يُمنح عند الاستجابة",
+              "description": "معرّف الرول الذي يُمنح للعضو عند تحقق القاعدة.",
+              "storageKey": "auto_responder",
+              "path": "rule_08.giveRole",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_08_channels",
+              "type": "text",
+              "label": "القنوات المسموحة",
+              "description": "معرّفات القنوات المسموح فيها، مفصولة بفاصلة. تُترك فارغة لتفعيلها في كل القنوات.",
+              "storageKey": "auto_responder",
+              "path": "rule_08.enabledChannels",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_08_roles",
+              "type": "text",
+              "label": "الرتب المسموحة",
+              "description": "معرّفات الرتب التي يُسمح لأعضائها بتفعيل الرد، مفصولة بفاصلة. تُترك فارغة للجميع.",
+              "storageKey": "auto_responder",
+              "path": "rule_08.allowedRoles",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_08_remove_trigger",
+              "type": "switch",
+              "label": "حذف رسالة المستخدم",
+              "description": "حذف الرسالة التي فعلت الرد مباشرة بعد الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_08.deleteUserMessage",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_08_auto_delete",
+              "type": "switch",
+              "label": "حذف الرد تلقائياً",
+              "description": "حذف رد البوت بعد 5 ثوانٍ من إرساله.",
+              "storageKey": "auto_responder",
+              "path": "rule_08.autoDeleteBotReply",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_08_delete_on_delete",
+              "type": "switch",
+              "label": "حذف الرد عند حذف الرسالة",
+              "description": "حذف رد البوت إذا حذف العضو رسالته الأصلية.",
+              "storageKey": "auto_responder",
+              "path": "rule_08.deleteOnAuthorDelete",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "rule_08.save",
+              "type": "save_storage",
+              "label": "حفظ القاعدة",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rules.rule_09",
+          "title": "القاعدة 9",
+          "description": "اضبط مشغلات الرسالة والردود والفلترة الخاصة بهذه القاعدة.",
+          "fields": [
+            {
+              "id": "rule_09_enabled",
+              "type": "switch",
+              "label": "تفعيل القاعدة",
+              "storageKey": "auto_responder",
+              "path": "rule_09.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_09_trigger_type",
+              "type": "select",
+              "label": "نوع المشغل",
+              "description": "كيف تُطابق كلمة المشغل مع محتوى الرسالة.",
+              "storageKey": "auto_responder",
+              "path": "rule_09.triggerType",
+              "defaultValue": "contains",
+              "options": [
+                {
+                  "label": "يساوي",
+                  "value": "equals"
+                },
+                {
+                  "label": "يحتوي",
+                  "value": "contains"
+                },
+                {
+                  "label": "يبدأ بـ",
+                  "value": "startsWith"
+                },
+                {
+                  "label": "ينتهي بـ",
+                  "value": "endsWith"
+                }
+              ]
+            },
+            {
+              "id": "rule_09_triggers",
+              "type": "text",
+              "label": "المشغلات",
+              "description": "الكلمات المفتاحية، مفصولة بفاصلة أو بسطر جديد.",
+              "storageKey": "auto_responder",
+              "path": "rule_09.triggers",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_09_send_type",
+              "type": "select",
+              "label": "نوع الإرسال",
+              "description": "كيف يرسل البوت الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_09.sendType",
+              "defaultValue": "reply",
+              "options": [
+                {
+                  "label": "رد",
+                  "value": "reply"
+                },
+                {
+                  "label": "رد مع منشن",
+                  "value": "reply_mention"
+                },
+                {
+                  "label": "إرسال رسالة",
+                  "value": "send"
+                },
+                {
+                  "label": "رسالة خاصة",
+                  "value": "dm"
+                }
+              ]
+            },
+            {
+              "id": "rule_09_messages",
+              "type": "text",
+              "label": "الردود",
+              "description": "رد واحد في كل سطر، ويُختار واحد عشوائياً.",
+              "storageKey": "auto_responder",
+              "path": "rule_09.messages",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_09_give_role",
+              "type": "text",
+              "label": "رول يُمنح عند الاستجابة",
+              "description": "معرّف الرول الذي يُمنح للعضو عند تحقق القاعدة.",
+              "storageKey": "auto_responder",
+              "path": "rule_09.giveRole",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_09_channels",
+              "type": "text",
+              "label": "القنوات المسموحة",
+              "description": "معرّفات القنوات المسموح فيها، مفصولة بفاصلة. تُترك فارغة لتفعيلها في كل القنوات.",
+              "storageKey": "auto_responder",
+              "path": "rule_09.enabledChannels",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_09_roles",
+              "type": "text",
+              "label": "الرتب المسموحة",
+              "description": "معرّفات الرتب التي يُسمح لأعضائها بتفعيل الرد، مفصولة بفاصلة. تُترك فارغة للجميع.",
+              "storageKey": "auto_responder",
+              "path": "rule_09.allowedRoles",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_09_remove_trigger",
+              "type": "switch",
+              "label": "حذف رسالة المستخدم",
+              "description": "حذف الرسالة التي فعلت الرد مباشرة بعد الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_09.deleteUserMessage",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_09_auto_delete",
+              "type": "switch",
+              "label": "حذف الرد تلقائياً",
+              "description": "حذف رد البوت بعد 5 ثوانٍ من إرساله.",
+              "storageKey": "auto_responder",
+              "path": "rule_09.autoDeleteBotReply",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_09_delete_on_delete",
+              "type": "switch",
+              "label": "حذف الرد عند حذف الرسالة",
+              "description": "حذف رد البوت إذا حذف العضو رسالته الأصلية.",
+              "storageKey": "auto_responder",
+              "path": "rule_09.deleteOnAuthorDelete",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "rule_09.save",
+              "type": "save_storage",
+              "label": "حفظ القاعدة",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rules.rule_10",
+          "title": "القاعدة 10",
+          "description": "اضبط مشغلات الرسالة والردود والفلترة الخاصة بهذه القاعدة.",
+          "fields": [
+            {
+              "id": "rule_10_enabled",
+              "type": "switch",
+              "label": "تفعيل القاعدة",
+              "storageKey": "auto_responder",
+              "path": "rule_10.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_10_trigger_type",
+              "type": "select",
+              "label": "نوع المشغل",
+              "description": "كيف تُطابق كلمة المشغل مع محتوى الرسالة.",
+              "storageKey": "auto_responder",
+              "path": "rule_10.triggerType",
+              "defaultValue": "contains",
+              "options": [
+                {
+                  "label": "يساوي",
+                  "value": "equals"
+                },
+                {
+                  "label": "يحتوي",
+                  "value": "contains"
+                },
+                {
+                  "label": "يبدأ بـ",
+                  "value": "startsWith"
+                },
+                {
+                  "label": "ينتهي بـ",
+                  "value": "endsWith"
+                }
+              ]
+            },
+            {
+              "id": "rule_10_triggers",
+              "type": "text",
+              "label": "المشغلات",
+              "description": "الكلمات المفتاحية، مفصولة بفاصلة أو بسطر جديد.",
+              "storageKey": "auto_responder",
+              "path": "rule_10.triggers",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_10_send_type",
+              "type": "select",
+              "label": "نوع الإرسال",
+              "description": "كيف يرسل البوت الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_10.sendType",
+              "defaultValue": "reply",
+              "options": [
+                {
+                  "label": "رد",
+                  "value": "reply"
+                },
+                {
+                  "label": "رد مع منشن",
+                  "value": "reply_mention"
+                },
+                {
+                  "label": "إرسال رسالة",
+                  "value": "send"
+                },
+                {
+                  "label": "رسالة خاصة",
+                  "value": "dm"
+                }
+              ]
+            },
+            {
+              "id": "rule_10_messages",
+              "type": "text",
+              "label": "الردود",
+              "description": "رد واحد في كل سطر، ويُختار واحد عشوائياً.",
+              "storageKey": "auto_responder",
+              "path": "rule_10.messages",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_10_give_role",
+              "type": "text",
+              "label": "رول يُمنح عند الاستجابة",
+              "description": "معرّف الرول الذي يُمنح للعضو عند تحقق القاعدة.",
+              "storageKey": "auto_responder",
+              "path": "rule_10.giveRole",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_10_channels",
+              "type": "text",
+              "label": "القنوات المسموحة",
+              "description": "معرّفات القنوات المسموح فيها، مفصولة بفاصلة. تُترك فارغة لتفعيلها في كل القنوات.",
+              "storageKey": "auto_responder",
+              "path": "rule_10.enabledChannels",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_10_roles",
+              "type": "text",
+              "label": "الرتب المسموحة",
+              "description": "معرّفات الرتب التي يُسمح لأعضائها بتفعيل الرد، مفصولة بفاصلة. تُترك فارغة للجميع.",
+              "storageKey": "auto_responder",
+              "path": "rule_10.allowedRoles",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_10_remove_trigger",
+              "type": "switch",
+              "label": "حذف رسالة المستخدم",
+              "description": "حذف الرسالة التي فعلت الرد مباشرة بعد الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_10.deleteUserMessage",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_10_auto_delete",
+              "type": "switch",
+              "label": "حذف الرد تلقائياً",
+              "description": "حذف رد البوت بعد 5 ثوانٍ من إرساله.",
+              "storageKey": "auto_responder",
+              "path": "rule_10.autoDeleteBotReply",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_10_delete_on_delete",
+              "type": "switch",
+              "label": "حذف الرد عند حذف الرسالة",
+              "description": "حذف رد البوت إذا حذف العضو رسالته الأصلية.",
+              "storageKey": "auto_responder",
+              "path": "rule_10.deleteOnAuthorDelete",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "rule_10.save",
+              "type": "save_storage",
+              "label": "حفظ القاعدة",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rules.rule_11",
+          "title": "القاعدة 11",
+          "description": "اضبط مشغلات الرسالة والردود والفلترة الخاصة بهذه القاعدة.",
+          "fields": [
+            {
+              "id": "rule_11_enabled",
+              "type": "switch",
+              "label": "تفعيل القاعدة",
+              "storageKey": "auto_responder",
+              "path": "rule_11.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_11_trigger_type",
+              "type": "select",
+              "label": "نوع المشغل",
+              "description": "كيف تُطابق كلمة المشغل مع محتوى الرسالة.",
+              "storageKey": "auto_responder",
+              "path": "rule_11.triggerType",
+              "defaultValue": "contains",
+              "options": [
+                {
+                  "label": "يساوي",
+                  "value": "equals"
+                },
+                {
+                  "label": "يحتوي",
+                  "value": "contains"
+                },
+                {
+                  "label": "يبدأ بـ",
+                  "value": "startsWith"
+                },
+                {
+                  "label": "ينتهي بـ",
+                  "value": "endsWith"
+                }
+              ]
+            },
+            {
+              "id": "rule_11_triggers",
+              "type": "text",
+              "label": "المشغلات",
+              "description": "الكلمات المفتاحية، مفصولة بفاصلة أو بسطر جديد.",
+              "storageKey": "auto_responder",
+              "path": "rule_11.triggers",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_11_send_type",
+              "type": "select",
+              "label": "نوع الإرسال",
+              "description": "كيف يرسل البوت الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_11.sendType",
+              "defaultValue": "reply",
+              "options": [
+                {
+                  "label": "رد",
+                  "value": "reply"
+                },
+                {
+                  "label": "رد مع منشن",
+                  "value": "reply_mention"
+                },
+                {
+                  "label": "إرسال رسالة",
+                  "value": "send"
+                },
+                {
+                  "label": "رسالة خاصة",
+                  "value": "dm"
+                }
+              ]
+            },
+            {
+              "id": "rule_11_messages",
+              "type": "text",
+              "label": "الردود",
+              "description": "رد واحد في كل سطر، ويُختار واحد عشوائياً.",
+              "storageKey": "auto_responder",
+              "path": "rule_11.messages",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_11_give_role",
+              "type": "text",
+              "label": "رول يُمنح عند الاستجابة",
+              "description": "معرّف الرول الذي يُمنح للعضو عند تحقق القاعدة.",
+              "storageKey": "auto_responder",
+              "path": "rule_11.giveRole",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_11_channels",
+              "type": "text",
+              "label": "القنوات المسموحة",
+              "description": "معرّفات القنوات المسموح فيها، مفصولة بفاصلة. تُترك فارغة لتفعيلها في كل القنوات.",
+              "storageKey": "auto_responder",
+              "path": "rule_11.enabledChannels",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_11_roles",
+              "type": "text",
+              "label": "الرتب المسموحة",
+              "description": "معرّفات الرتب التي يُسمح لأعضائها بتفعيل الرد، مفصولة بفاصلة. تُترك فارغة للجميع.",
+              "storageKey": "auto_responder",
+              "path": "rule_11.allowedRoles",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_11_remove_trigger",
+              "type": "switch",
+              "label": "حذف رسالة المستخدم",
+              "description": "حذف الرسالة التي فعلت الرد مباشرة بعد الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_11.deleteUserMessage",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_11_auto_delete",
+              "type": "switch",
+              "label": "حذف الرد تلقائياً",
+              "description": "حذف رد البوت بعد 5 ثوانٍ من إرساله.",
+              "storageKey": "auto_responder",
+              "path": "rule_11.autoDeleteBotReply",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_11_delete_on_delete",
+              "type": "switch",
+              "label": "حذف الرد عند حذف الرسالة",
+              "description": "حذف رد البوت إذا حذف العضو رسالته الأصلية.",
+              "storageKey": "auto_responder",
+              "path": "rule_11.deleteOnAuthorDelete",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "rule_11.save",
+              "type": "save_storage",
+              "label": "حفظ القاعدة",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rules.rule_12",
+          "title": "القاعدة 12",
+          "description": "اضبط مشغلات الرسالة والردود والفلترة الخاصة بهذه القاعدة.",
+          "fields": [
+            {
+              "id": "rule_12_enabled",
+              "type": "switch",
+              "label": "تفعيل القاعدة",
+              "storageKey": "auto_responder",
+              "path": "rule_12.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_12_trigger_type",
+              "type": "select",
+              "label": "نوع المشغل",
+              "description": "كيف تُطابق كلمة المشغل مع محتوى الرسالة.",
+              "storageKey": "auto_responder",
+              "path": "rule_12.triggerType",
+              "defaultValue": "contains",
+              "options": [
+                {
+                  "label": "يساوي",
+                  "value": "equals"
+                },
+                {
+                  "label": "يحتوي",
+                  "value": "contains"
+                },
+                {
+                  "label": "يبدأ بـ",
+                  "value": "startsWith"
+                },
+                {
+                  "label": "ينتهي بـ",
+                  "value": "endsWith"
+                }
+              ]
+            },
+            {
+              "id": "rule_12_triggers",
+              "type": "text",
+              "label": "المشغلات",
+              "description": "الكلمات المفتاحية، مفصولة بفاصلة أو بسطر جديد.",
+              "storageKey": "auto_responder",
+              "path": "rule_12.triggers",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_12_send_type",
+              "type": "select",
+              "label": "نوع الإرسال",
+              "description": "كيف يرسل البوت الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_12.sendType",
+              "defaultValue": "reply",
+              "options": [
+                {
+                  "label": "رد",
+                  "value": "reply"
+                },
+                {
+                  "label": "رد مع منشن",
+                  "value": "reply_mention"
+                },
+                {
+                  "label": "إرسال رسالة",
+                  "value": "send"
+                },
+                {
+                  "label": "رسالة خاصة",
+                  "value": "dm"
+                }
+              ]
+            },
+            {
+              "id": "rule_12_messages",
+              "type": "text",
+              "label": "الردود",
+              "description": "رد واحد في كل سطر، ويُختار واحد عشوائياً.",
+              "storageKey": "auto_responder",
+              "path": "rule_12.messages",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_12_give_role",
+              "type": "text",
+              "label": "رول يُمنح عند الاستجابة",
+              "description": "معرّف الرول الذي يُمنح للعضو عند تحقق القاعدة.",
+              "storageKey": "auto_responder",
+              "path": "rule_12.giveRole",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_12_channels",
+              "type": "text",
+              "label": "القنوات المسموحة",
+              "description": "معرّفات القنوات المسموح فيها، مفصولة بفاصلة. تُترك فارغة لتفعيلها في كل القنوات.",
+              "storageKey": "auto_responder",
+              "path": "rule_12.enabledChannels",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_12_roles",
+              "type": "text",
+              "label": "الرتب المسموحة",
+              "description": "معرّفات الرتب التي يُسمح لأعضائها بتفعيل الرد، مفصولة بفاصلة. تُترك فارغة للجميع.",
+              "storageKey": "auto_responder",
+              "path": "rule_12.allowedRoles",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_12_remove_trigger",
+              "type": "switch",
+              "label": "حذف رسالة المستخدم",
+              "description": "حذف الرسالة التي فعلت الرد مباشرة بعد الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_12.deleteUserMessage",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_12_auto_delete",
+              "type": "switch",
+              "label": "حذف الرد تلقائياً",
+              "description": "حذف رد البوت بعد 5 ثوانٍ من إرساله.",
+              "storageKey": "auto_responder",
+              "path": "rule_12.autoDeleteBotReply",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_12_delete_on_delete",
+              "type": "switch",
+              "label": "حذف الرد عند حذف الرسالة",
+              "description": "حذف رد البوت إذا حذف العضو رسالته الأصلية.",
+              "storageKey": "auto_responder",
+              "path": "rule_12.deleteOnAuthorDelete",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "rule_12.save",
+              "type": "save_storage",
+              "label": "حفظ القاعدة",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rules.rule_13",
+          "title": "القاعدة 13",
+          "description": "اضبط مشغلات الرسالة والردود والفلترة الخاصة بهذه القاعدة.",
+          "fields": [
+            {
+              "id": "rule_13_enabled",
+              "type": "switch",
+              "label": "تفعيل القاعدة",
+              "storageKey": "auto_responder",
+              "path": "rule_13.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_13_trigger_type",
+              "type": "select",
+              "label": "نوع المشغل",
+              "description": "كيف تُطابق كلمة المشغل مع محتوى الرسالة.",
+              "storageKey": "auto_responder",
+              "path": "rule_13.triggerType",
+              "defaultValue": "contains",
+              "options": [
+                {
+                  "label": "يساوي",
+                  "value": "equals"
+                },
+                {
+                  "label": "يحتوي",
+                  "value": "contains"
+                },
+                {
+                  "label": "يبدأ بـ",
+                  "value": "startsWith"
+                },
+                {
+                  "label": "ينتهي بـ",
+                  "value": "endsWith"
+                }
+              ]
+            },
+            {
+              "id": "rule_13_triggers",
+              "type": "text",
+              "label": "المشغلات",
+              "description": "الكلمات المفتاحية، مفصولة بفاصلة أو بسطر جديد.",
+              "storageKey": "auto_responder",
+              "path": "rule_13.triggers",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_13_send_type",
+              "type": "select",
+              "label": "نوع الإرسال",
+              "description": "كيف يرسل البوت الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_13.sendType",
+              "defaultValue": "reply",
+              "options": [
+                {
+                  "label": "رد",
+                  "value": "reply"
+                },
+                {
+                  "label": "رد مع منشن",
+                  "value": "reply_mention"
+                },
+                {
+                  "label": "إرسال رسالة",
+                  "value": "send"
+                },
+                {
+                  "label": "رسالة خاصة",
+                  "value": "dm"
+                }
+              ]
+            },
+            {
+              "id": "rule_13_messages",
+              "type": "text",
+              "label": "الردود",
+              "description": "رد واحد في كل سطر، ويُختار واحد عشوائياً.",
+              "storageKey": "auto_responder",
+              "path": "rule_13.messages",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_13_give_role",
+              "type": "text",
+              "label": "رول يُمنح عند الاستجابة",
+              "description": "معرّف الرول الذي يُمنح للعضو عند تحقق القاعدة.",
+              "storageKey": "auto_responder",
+              "path": "rule_13.giveRole",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_13_channels",
+              "type": "text",
+              "label": "القنوات المسموحة",
+              "description": "معرّفات القنوات المسموح فيها، مفصولة بفاصلة. تُترك فارغة لتفعيلها في كل القنوات.",
+              "storageKey": "auto_responder",
+              "path": "rule_13.enabledChannels",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_13_roles",
+              "type": "text",
+              "label": "الرتب المسموحة",
+              "description": "معرّفات الرتب التي يُسمح لأعضائها بتفعيل الرد، مفصولة بفاصلة. تُترك فارغة للجميع.",
+              "storageKey": "auto_responder",
+              "path": "rule_13.allowedRoles",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_13_remove_trigger",
+              "type": "switch",
+              "label": "حذف رسالة المستخدم",
+              "description": "حذف الرسالة التي فعلت الرد مباشرة بعد الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_13.deleteUserMessage",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_13_auto_delete",
+              "type": "switch",
+              "label": "حذف الرد تلقائياً",
+              "description": "حذف رد البوت بعد 5 ثوانٍ من إرساله.",
+              "storageKey": "auto_responder",
+              "path": "rule_13.autoDeleteBotReply",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_13_delete_on_delete",
+              "type": "switch",
+              "label": "حذف الرد عند حذف الرسالة",
+              "description": "حذف رد البوت إذا حذف العضو رسالته الأصلية.",
+              "storageKey": "auto_responder",
+              "path": "rule_13.deleteOnAuthorDelete",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "rule_13.save",
+              "type": "save_storage",
+              "label": "حفظ القاعدة",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rules.rule_14",
+          "title": "القاعدة 14",
+          "description": "اضبط مشغلات الرسالة والردود والفلترة الخاصة بهذه القاعدة.",
+          "fields": [
+            {
+              "id": "rule_14_enabled",
+              "type": "switch",
+              "label": "تفعيل القاعدة",
+              "storageKey": "auto_responder",
+              "path": "rule_14.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_14_trigger_type",
+              "type": "select",
+              "label": "نوع المشغل",
+              "description": "كيف تُطابق كلمة المشغل مع محتوى الرسالة.",
+              "storageKey": "auto_responder",
+              "path": "rule_14.triggerType",
+              "defaultValue": "contains",
+              "options": [
+                {
+                  "label": "يساوي",
+                  "value": "equals"
+                },
+                {
+                  "label": "يحتوي",
+                  "value": "contains"
+                },
+                {
+                  "label": "يبدأ بـ",
+                  "value": "startsWith"
+                },
+                {
+                  "label": "ينتهي بـ",
+                  "value": "endsWith"
+                }
+              ]
+            },
+            {
+              "id": "rule_14_triggers",
+              "type": "text",
+              "label": "المشغلات",
+              "description": "الكلمات المفتاحية، مفصولة بفاصلة أو بسطر جديد.",
+              "storageKey": "auto_responder",
+              "path": "rule_14.triggers",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_14_send_type",
+              "type": "select",
+              "label": "نوع الإرسال",
+              "description": "كيف يرسل البوت الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_14.sendType",
+              "defaultValue": "reply",
+              "options": [
+                {
+                  "label": "رد",
+                  "value": "reply"
+                },
+                {
+                  "label": "رد مع منشن",
+                  "value": "reply_mention"
+                },
+                {
+                  "label": "إرسال رسالة",
+                  "value": "send"
+                },
+                {
+                  "label": "رسالة خاصة",
+                  "value": "dm"
+                }
+              ]
+            },
+            {
+              "id": "rule_14_messages",
+              "type": "text",
+              "label": "الردود",
+              "description": "رد واحد في كل سطر، ويُختار واحد عشوائياً.",
+              "storageKey": "auto_responder",
+              "path": "rule_14.messages",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_14_give_role",
+              "type": "text",
+              "label": "رول يُمنح عند الاستجابة",
+              "description": "معرّف الرول الذي يُمنح للعضو عند تحقق القاعدة.",
+              "storageKey": "auto_responder",
+              "path": "rule_14.giveRole",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_14_channels",
+              "type": "text",
+              "label": "القنوات المسموحة",
+              "description": "معرّفات القنوات المسموح فيها، مفصولة بفاصلة. تُترك فارغة لتفعيلها في كل القنوات.",
+              "storageKey": "auto_responder",
+              "path": "rule_14.enabledChannels",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_14_roles",
+              "type": "text",
+              "label": "الرتب المسموحة",
+              "description": "معرّفات الرتب التي يُسمح لأعضائها بتفعيل الرد، مفصولة بفاصلة. تُترك فارغة للجميع.",
+              "storageKey": "auto_responder",
+              "path": "rule_14.allowedRoles",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_14_remove_trigger",
+              "type": "switch",
+              "label": "حذف رسالة المستخدم",
+              "description": "حذف الرسالة التي فعلت الرد مباشرة بعد الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_14.deleteUserMessage",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_14_auto_delete",
+              "type": "switch",
+              "label": "حذف الرد تلقائياً",
+              "description": "حذف رد البوت بعد 5 ثوانٍ من إرساله.",
+              "storageKey": "auto_responder",
+              "path": "rule_14.autoDeleteBotReply",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_14_delete_on_delete",
+              "type": "switch",
+              "label": "حذف الرد عند حذف الرسالة",
+              "description": "حذف رد البوت إذا حذف العضو رسالته الأصلية.",
+              "storageKey": "auto_responder",
+              "path": "rule_14.deleteOnAuthorDelete",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "rule_14.save",
+              "type": "save_storage",
+              "label": "حفظ القاعدة",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rules.rule_15",
+          "title": "القاعدة 15",
+          "description": "اضبط مشغلات الرسالة والردود والفلترة الخاصة بهذه القاعدة.",
+          "fields": [
+            {
+              "id": "rule_15_enabled",
+              "type": "switch",
+              "label": "تفعيل القاعدة",
+              "storageKey": "auto_responder",
+              "path": "rule_15.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_15_trigger_type",
+              "type": "select",
+              "label": "نوع المشغل",
+              "description": "كيف تُطابق كلمة المشغل مع محتوى الرسالة.",
+              "storageKey": "auto_responder",
+              "path": "rule_15.triggerType",
+              "defaultValue": "contains",
+              "options": [
+                {
+                  "label": "يساوي",
+                  "value": "equals"
+                },
+                {
+                  "label": "يحتوي",
+                  "value": "contains"
+                },
+                {
+                  "label": "يبدأ بـ",
+                  "value": "startsWith"
+                },
+                {
+                  "label": "ينتهي بـ",
+                  "value": "endsWith"
+                }
+              ]
+            },
+            {
+              "id": "rule_15_triggers",
+              "type": "text",
+              "label": "المشغلات",
+              "description": "الكلمات المفتاحية، مفصولة بفاصلة أو بسطر جديد.",
+              "storageKey": "auto_responder",
+              "path": "rule_15.triggers",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_15_send_type",
+              "type": "select",
+              "label": "نوع الإرسال",
+              "description": "كيف يرسل البوت الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_15.sendType",
+              "defaultValue": "reply",
+              "options": [
+                {
+                  "label": "رد",
+                  "value": "reply"
+                },
+                {
+                  "label": "رد مع منشن",
+                  "value": "reply_mention"
+                },
+                {
+                  "label": "إرسال رسالة",
+                  "value": "send"
+                },
+                {
+                  "label": "رسالة خاصة",
+                  "value": "dm"
+                }
+              ]
+            },
+            {
+              "id": "rule_15_messages",
+              "type": "text",
+              "label": "الردود",
+              "description": "رد واحد في كل سطر، ويُختار واحد عشوائياً.",
+              "storageKey": "auto_responder",
+              "path": "rule_15.messages",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_15_give_role",
+              "type": "text",
+              "label": "رول يُمنح عند الاستجابة",
+              "description": "معرّف الرول الذي يُمنح للعضو عند تحقق القاعدة.",
+              "storageKey": "auto_responder",
+              "path": "rule_15.giveRole",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_15_channels",
+              "type": "text",
+              "label": "القنوات المسموحة",
+              "description": "معرّفات القنوات المسموح فيها، مفصولة بفاصلة. تُترك فارغة لتفعيلها في كل القنوات.",
+              "storageKey": "auto_responder",
+              "path": "rule_15.enabledChannels",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_15_roles",
+              "type": "text",
+              "label": "الرتب المسموحة",
+              "description": "معرّفات الرتب التي يُسمح لأعضائها بتفعيل الرد، مفصولة بفاصلة. تُترك فارغة للجميع.",
+              "storageKey": "auto_responder",
+              "path": "rule_15.allowedRoles",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_15_remove_trigger",
+              "type": "switch",
+              "label": "حذف رسالة المستخدم",
+              "description": "حذف الرسالة التي فعلت الرد مباشرة بعد الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_15.deleteUserMessage",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_15_auto_delete",
+              "type": "switch",
+              "label": "حذف الرد تلقائياً",
+              "description": "حذف رد البوت بعد 5 ثوانٍ من إرساله.",
+              "storageKey": "auto_responder",
+              "path": "rule_15.autoDeleteBotReply",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_15_delete_on_delete",
+              "type": "switch",
+              "label": "حذف الرد عند حذف الرسالة",
+              "description": "حذف رد البوت إذا حذف العضو رسالته الأصلية.",
+              "storageKey": "auto_responder",
+              "path": "rule_15.deleteOnAuthorDelete",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "rule_15.save",
+              "type": "save_storage",
+              "label": "حفظ القاعدة",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rules.rule_16",
+          "title": "القاعدة 16",
+          "description": "اضبط مشغلات الرسالة والردود والفلترة الخاصة بهذه القاعدة.",
+          "fields": [
+            {
+              "id": "rule_16_enabled",
+              "type": "switch",
+              "label": "تفعيل القاعدة",
+              "storageKey": "auto_responder",
+              "path": "rule_16.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_16_trigger_type",
+              "type": "select",
+              "label": "نوع المشغل",
+              "description": "كيف تُطابق كلمة المشغل مع محتوى الرسالة.",
+              "storageKey": "auto_responder",
+              "path": "rule_16.triggerType",
+              "defaultValue": "contains",
+              "options": [
+                {
+                  "label": "يساوي",
+                  "value": "equals"
+                },
+                {
+                  "label": "يحتوي",
+                  "value": "contains"
+                },
+                {
+                  "label": "يبدأ بـ",
+                  "value": "startsWith"
+                },
+                {
+                  "label": "ينتهي بـ",
+                  "value": "endsWith"
+                }
+              ]
+            },
+            {
+              "id": "rule_16_triggers",
+              "type": "text",
+              "label": "المشغلات",
+              "description": "الكلمات المفتاحية، مفصولة بفاصلة أو بسطر جديد.",
+              "storageKey": "auto_responder",
+              "path": "rule_16.triggers",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_16_send_type",
+              "type": "select",
+              "label": "نوع الإرسال",
+              "description": "كيف يرسل البوت الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_16.sendType",
+              "defaultValue": "reply",
+              "options": [
+                {
+                  "label": "رد",
+                  "value": "reply"
+                },
+                {
+                  "label": "رد مع منشن",
+                  "value": "reply_mention"
+                },
+                {
+                  "label": "إرسال رسالة",
+                  "value": "send"
+                },
+                {
+                  "label": "رسالة خاصة",
+                  "value": "dm"
+                }
+              ]
+            },
+            {
+              "id": "rule_16_messages",
+              "type": "text",
+              "label": "الردود",
+              "description": "رد واحد في كل سطر، ويُختار واحد عشوائياً.",
+              "storageKey": "auto_responder",
+              "path": "rule_16.messages",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_16_give_role",
+              "type": "text",
+              "label": "رول يُمنح عند الاستجابة",
+              "description": "معرّف الرول الذي يُمنح للعضو عند تحقق القاعدة.",
+              "storageKey": "auto_responder",
+              "path": "rule_16.giveRole",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_16_channels",
+              "type": "text",
+              "label": "القنوات المسموحة",
+              "description": "معرّفات القنوات المسموح فيها، مفصولة بفاصلة. تُترك فارغة لتفعيلها في كل القنوات.",
+              "storageKey": "auto_responder",
+              "path": "rule_16.enabledChannels",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_16_roles",
+              "type": "text",
+              "label": "الرتب المسموحة",
+              "description": "معرّفات الرتب التي يُسمح لأعضائها بتفعيل الرد، مفصولة بفاصلة. تُترك فارغة للجميع.",
+              "storageKey": "auto_responder",
+              "path": "rule_16.allowedRoles",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_16_remove_trigger",
+              "type": "switch",
+              "label": "حذف رسالة المستخدم",
+              "description": "حذف الرسالة التي فعلت الرد مباشرة بعد الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_16.deleteUserMessage",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_16_auto_delete",
+              "type": "switch",
+              "label": "حذف الرد تلقائياً",
+              "description": "حذف رد البوت بعد 5 ثوانٍ من إرساله.",
+              "storageKey": "auto_responder",
+              "path": "rule_16.autoDeleteBotReply",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_16_delete_on_delete",
+              "type": "switch",
+              "label": "حذف الرد عند حذف الرسالة",
+              "description": "حذف رد البوت إذا حذف العضو رسالته الأصلية.",
+              "storageKey": "auto_responder",
+              "path": "rule_16.deleteOnAuthorDelete",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "rule_16.save",
+              "type": "save_storage",
+              "label": "حفظ القاعدة",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rules.rule_17",
+          "title": "القاعدة 17",
+          "description": "اضبط مشغلات الرسالة والردود والفلترة الخاصة بهذه القاعدة.",
+          "fields": [
+            {
+              "id": "rule_17_enabled",
+              "type": "switch",
+              "label": "تفعيل القاعدة",
+              "storageKey": "auto_responder",
+              "path": "rule_17.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_17_trigger_type",
+              "type": "select",
+              "label": "نوع المشغل",
+              "description": "كيف تُطابق كلمة المشغل مع محتوى الرسالة.",
+              "storageKey": "auto_responder",
+              "path": "rule_17.triggerType",
+              "defaultValue": "contains",
+              "options": [
+                {
+                  "label": "يساوي",
+                  "value": "equals"
+                },
+                {
+                  "label": "يحتوي",
+                  "value": "contains"
+                },
+                {
+                  "label": "يبدأ بـ",
+                  "value": "startsWith"
+                },
+                {
+                  "label": "ينتهي بـ",
+                  "value": "endsWith"
+                }
+              ]
+            },
+            {
+              "id": "rule_17_triggers",
+              "type": "text",
+              "label": "المشغلات",
+              "description": "الكلمات المفتاحية، مفصولة بفاصلة أو بسطر جديد.",
+              "storageKey": "auto_responder",
+              "path": "rule_17.triggers",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_17_send_type",
+              "type": "select",
+              "label": "نوع الإرسال",
+              "description": "كيف يرسل البوت الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_17.sendType",
+              "defaultValue": "reply",
+              "options": [
+                {
+                  "label": "رد",
+                  "value": "reply"
+                },
+                {
+                  "label": "رد مع منشن",
+                  "value": "reply_mention"
+                },
+                {
+                  "label": "إرسال رسالة",
+                  "value": "send"
+                },
+                {
+                  "label": "رسالة خاصة",
+                  "value": "dm"
+                }
+              ]
+            },
+            {
+              "id": "rule_17_messages",
+              "type": "text",
+              "label": "الردود",
+              "description": "رد واحد في كل سطر، ويُختار واحد عشوائياً.",
+              "storageKey": "auto_responder",
+              "path": "rule_17.messages",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_17_give_role",
+              "type": "text",
+              "label": "رول يُمنح عند الاستجابة",
+              "description": "معرّف الرول الذي يُمنح للعضو عند تحقق القاعدة.",
+              "storageKey": "auto_responder",
+              "path": "rule_17.giveRole",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_17_channels",
+              "type": "text",
+              "label": "القنوات المسموحة",
+              "description": "معرّفات القنوات المسموح فيها، مفصولة بفاصلة. تُترك فارغة لتفعيلها في كل القنوات.",
+              "storageKey": "auto_responder",
+              "path": "rule_17.enabledChannels",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_17_roles",
+              "type": "text",
+              "label": "الرتب المسموحة",
+              "description": "معرّفات الرتب التي يُسمح لأعضائها بتفعيل الرد، مفصولة بفاصلة. تُترك فارغة للجميع.",
+              "storageKey": "auto_responder",
+              "path": "rule_17.allowedRoles",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_17_remove_trigger",
+              "type": "switch",
+              "label": "حذف رسالة المستخدم",
+              "description": "حذف الرسالة التي فعلت الرد مباشرة بعد الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_17.deleteUserMessage",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_17_auto_delete",
+              "type": "switch",
+              "label": "حذف الرد تلقائياً",
+              "description": "حذف رد البوت بعد 5 ثوانٍ من إرساله.",
+              "storageKey": "auto_responder",
+              "path": "rule_17.autoDeleteBotReply",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_17_delete_on_delete",
+              "type": "switch",
+              "label": "حذف الرد عند حذف الرسالة",
+              "description": "حذف رد البوت إذا حذف العضو رسالته الأصلية.",
+              "storageKey": "auto_responder",
+              "path": "rule_17.deleteOnAuthorDelete",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "rule_17.save",
+              "type": "save_storage",
+              "label": "حفظ القاعدة",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rules.rule_18",
+          "title": "القاعدة 18",
+          "description": "اضبط مشغلات الرسالة والردود والفلترة الخاصة بهذه القاعدة.",
+          "fields": [
+            {
+              "id": "rule_18_enabled",
+              "type": "switch",
+              "label": "تفعيل القاعدة",
+              "storageKey": "auto_responder",
+              "path": "rule_18.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_18_trigger_type",
+              "type": "select",
+              "label": "نوع المشغل",
+              "description": "كيف تُطابق كلمة المشغل مع محتوى الرسالة.",
+              "storageKey": "auto_responder",
+              "path": "rule_18.triggerType",
+              "defaultValue": "contains",
+              "options": [
+                {
+                  "label": "يساوي",
+                  "value": "equals"
+                },
+                {
+                  "label": "يحتوي",
+                  "value": "contains"
+                },
+                {
+                  "label": "يبدأ بـ",
+                  "value": "startsWith"
+                },
+                {
+                  "label": "ينتهي بـ",
+                  "value": "endsWith"
+                }
+              ]
+            },
+            {
+              "id": "rule_18_triggers",
+              "type": "text",
+              "label": "المشغلات",
+              "description": "الكلمات المفتاحية، مفصولة بفاصلة أو بسطر جديد.",
+              "storageKey": "auto_responder",
+              "path": "rule_18.triggers",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_18_send_type",
+              "type": "select",
+              "label": "نوع الإرسال",
+              "description": "كيف يرسل البوت الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_18.sendType",
+              "defaultValue": "reply",
+              "options": [
+                {
+                  "label": "رد",
+                  "value": "reply"
+                },
+                {
+                  "label": "رد مع منشن",
+                  "value": "reply_mention"
+                },
+                {
+                  "label": "إرسال رسالة",
+                  "value": "send"
+                },
+                {
+                  "label": "رسالة خاصة",
+                  "value": "dm"
+                }
+              ]
+            },
+            {
+              "id": "rule_18_messages",
+              "type": "text",
+              "label": "الردود",
+              "description": "رد واحد في كل سطر، ويُختار واحد عشوائياً.",
+              "storageKey": "auto_responder",
+              "path": "rule_18.messages",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_18_give_role",
+              "type": "text",
+              "label": "رول يُمنح عند الاستجابة",
+              "description": "معرّف الرول الذي يُمنح للعضو عند تحقق القاعدة.",
+              "storageKey": "auto_responder",
+              "path": "rule_18.giveRole",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_18_channels",
+              "type": "text",
+              "label": "القنوات المسموحة",
+              "description": "معرّفات القنوات المسموح فيها، مفصولة بفاصلة. تُترك فارغة لتفعيلها في كل القنوات.",
+              "storageKey": "auto_responder",
+              "path": "rule_18.enabledChannels",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_18_roles",
+              "type": "text",
+              "label": "الرتب المسموحة",
+              "description": "معرّفات الرتب التي يُسمح لأعضائها بتفعيل الرد، مفصولة بفاصلة. تُترك فارغة للجميع.",
+              "storageKey": "auto_responder",
+              "path": "rule_18.allowedRoles",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_18_remove_trigger",
+              "type": "switch",
+              "label": "حذف رسالة المستخدم",
+              "description": "حذف الرسالة التي فعلت الرد مباشرة بعد الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_18.deleteUserMessage",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_18_auto_delete",
+              "type": "switch",
+              "label": "حذف الرد تلقائياً",
+              "description": "حذف رد البوت بعد 5 ثوانٍ من إرساله.",
+              "storageKey": "auto_responder",
+              "path": "rule_18.autoDeleteBotReply",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_18_delete_on_delete",
+              "type": "switch",
+              "label": "حذف الرد عند حذف الرسالة",
+              "description": "حذف رد البوت إذا حذف العضو رسالته الأصلية.",
+              "storageKey": "auto_responder",
+              "path": "rule_18.deleteOnAuthorDelete",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "rule_18.save",
+              "type": "save_storage",
+              "label": "حفظ القاعدة",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rules.rule_19",
+          "title": "القاعدة 19",
+          "description": "اضبط مشغلات الرسالة والردود والفلترة الخاصة بهذه القاعدة.",
+          "fields": [
+            {
+              "id": "rule_19_enabled",
+              "type": "switch",
+              "label": "تفعيل القاعدة",
+              "storageKey": "auto_responder",
+              "path": "rule_19.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_19_trigger_type",
+              "type": "select",
+              "label": "نوع المشغل",
+              "description": "كيف تُطابق كلمة المشغل مع محتوى الرسالة.",
+              "storageKey": "auto_responder",
+              "path": "rule_19.triggerType",
+              "defaultValue": "contains",
+              "options": [
+                {
+                  "label": "يساوي",
+                  "value": "equals"
+                },
+                {
+                  "label": "يحتوي",
+                  "value": "contains"
+                },
+                {
+                  "label": "يبدأ بـ",
+                  "value": "startsWith"
+                },
+                {
+                  "label": "ينتهي بـ",
+                  "value": "endsWith"
+                }
+              ]
+            },
+            {
+              "id": "rule_19_triggers",
+              "type": "text",
+              "label": "المشغلات",
+              "description": "الكلمات المفتاحية، مفصولة بفاصلة أو بسطر جديد.",
+              "storageKey": "auto_responder",
+              "path": "rule_19.triggers",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_19_send_type",
+              "type": "select",
+              "label": "نوع الإرسال",
+              "description": "كيف يرسل البوت الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_19.sendType",
+              "defaultValue": "reply",
+              "options": [
+                {
+                  "label": "رد",
+                  "value": "reply"
+                },
+                {
+                  "label": "رد مع منشن",
+                  "value": "reply_mention"
+                },
+                {
+                  "label": "إرسال رسالة",
+                  "value": "send"
+                },
+                {
+                  "label": "رسالة خاصة",
+                  "value": "dm"
+                }
+              ]
+            },
+            {
+              "id": "rule_19_messages",
+              "type": "text",
+              "label": "الردود",
+              "description": "رد واحد في كل سطر، ويُختار واحد عشوائياً.",
+              "storageKey": "auto_responder",
+              "path": "rule_19.messages",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_19_give_role",
+              "type": "text",
+              "label": "رول يُمنح عند الاستجابة",
+              "description": "معرّف الرول الذي يُمنح للعضو عند تحقق القاعدة.",
+              "storageKey": "auto_responder",
+              "path": "rule_19.giveRole",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_19_channels",
+              "type": "text",
+              "label": "القنوات المسموحة",
+              "description": "معرّفات القنوات المسموح فيها، مفصولة بفاصلة. تُترك فارغة لتفعيلها في كل القنوات.",
+              "storageKey": "auto_responder",
+              "path": "rule_19.enabledChannels",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_19_roles",
+              "type": "text",
+              "label": "الرتب المسموحة",
+              "description": "معرّفات الرتب التي يُسمح لأعضائها بتفعيل الرد، مفصولة بفاصلة. تُترك فارغة للجميع.",
+              "storageKey": "auto_responder",
+              "path": "rule_19.allowedRoles",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_19_remove_trigger",
+              "type": "switch",
+              "label": "حذف رسالة المستخدم",
+              "description": "حذف الرسالة التي فعلت الرد مباشرة بعد الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_19.deleteUserMessage",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_19_auto_delete",
+              "type": "switch",
+              "label": "حذف الرد تلقائياً",
+              "description": "حذف رد البوت بعد 5 ثوانٍ من إرساله.",
+              "storageKey": "auto_responder",
+              "path": "rule_19.autoDeleteBotReply",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_19_delete_on_delete",
+              "type": "switch",
+              "label": "حذف الرد عند حذف الرسالة",
+              "description": "حذف رد البوت إذا حذف العضو رسالته الأصلية.",
+              "storageKey": "auto_responder",
+              "path": "rule_19.deleteOnAuthorDelete",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "rule_19.save",
+              "type": "save_storage",
+              "label": "حفظ القاعدة",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "rules.rule_20",
+          "title": "القاعدة 20",
+          "description": "اضبط مشغلات الرسالة والردود والفلترة الخاصة بهذه القاعدة.",
+          "fields": [
+            {
+              "id": "rule_20_enabled",
+              "type": "switch",
+              "label": "تفعيل القاعدة",
+              "storageKey": "auto_responder",
+              "path": "rule_20.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_20_trigger_type",
+              "type": "select",
+              "label": "نوع المشغل",
+              "description": "كيف تُطابق كلمة المشغل مع محتوى الرسالة.",
+              "storageKey": "auto_responder",
+              "path": "rule_20.triggerType",
+              "defaultValue": "contains",
+              "options": [
+                {
+                  "label": "يساوي",
+                  "value": "equals"
+                },
+                {
+                  "label": "يحتوي",
+                  "value": "contains"
+                },
+                {
+                  "label": "يبدأ بـ",
+                  "value": "startsWith"
+                },
+                {
+                  "label": "ينتهي بـ",
+                  "value": "endsWith"
+                }
+              ]
+            },
+            {
+              "id": "rule_20_triggers",
+              "type": "text",
+              "label": "المشغلات",
+              "description": "الكلمات المفتاحية، مفصولة بفاصلة أو بسطر جديد.",
+              "storageKey": "auto_responder",
+              "path": "rule_20.triggers",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_20_send_type",
+              "type": "select",
+              "label": "نوع الإرسال",
+              "description": "كيف يرسل البوت الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_20.sendType",
+              "defaultValue": "reply",
+              "options": [
+                {
+                  "label": "رد",
+                  "value": "reply"
+                },
+                {
+                  "label": "رد مع منشن",
+                  "value": "reply_mention"
+                },
+                {
+                  "label": "إرسال رسالة",
+                  "value": "send"
+                },
+                {
+                  "label": "رسالة خاصة",
+                  "value": "dm"
+                }
+              ]
+            },
+            {
+              "id": "rule_20_messages",
+              "type": "text",
+              "label": "الردود",
+              "description": "رد واحد في كل سطر، ويُختار واحد عشوائياً.",
+              "storageKey": "auto_responder",
+              "path": "rule_20.messages",
+              "defaultValue": "",
+              "multiline": true
+            },
+            {
+              "id": "rule_20_give_role",
+              "type": "text",
+              "label": "رول يُمنح عند الاستجابة",
+              "description": "معرّف الرول الذي يُمنح للعضو عند تحقق القاعدة.",
+              "storageKey": "auto_responder",
+              "path": "rule_20.giveRole",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_20_channels",
+              "type": "text",
+              "label": "القنوات المسموحة",
+              "description": "معرّفات القنوات المسموح فيها، مفصولة بفاصلة. تُترك فارغة لتفعيلها في كل القنوات.",
+              "storageKey": "auto_responder",
+              "path": "rule_20.enabledChannels",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_20_roles",
+              "type": "text",
+              "label": "الرتب المسموحة",
+              "description": "معرّفات الرتب التي يُسمح لأعضائها بتفعيل الرد، مفصولة بفاصلة. تُترك فارغة للجميع.",
+              "storageKey": "auto_responder",
+              "path": "rule_20.allowedRoles",
+              "defaultValue": ""
+            },
+            {
+              "id": "rule_20_remove_trigger",
+              "type": "switch",
+              "label": "حذف رسالة المستخدم",
+              "description": "حذف الرسالة التي فعلت الرد مباشرة بعد الرد.",
+              "storageKey": "auto_responder",
+              "path": "rule_20.deleteUserMessage",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_20_auto_delete",
+              "type": "switch",
+              "label": "حذف الرد تلقائياً",
+              "description": "حذف رد البوت بعد 5 ثوانٍ من إرساله.",
+              "storageKey": "auto_responder",
+              "path": "rule_20.autoDeleteBotReply",
+              "defaultValue": false
+            },
+            {
+              "id": "rule_20_delete_on_delete",
+              "type": "switch",
+              "label": "حذف الرد عند حذف الرسالة",
+              "description": "حذف رد البوت إذا حذف العضو رسالته الأصلية.",
+              "storageKey": "auto_responder",
+              "path": "rule_20.deleteOnAuthorDelete",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "rule_20.save",
+              "type": "save_storage",
+              "label": "حفظ القاعدة",
+              "storageKeys": [
+                "auto_responder"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "defaults": {
+    "auto_responder.enabled": false,
+    "auto_responder.rule_01.enabled": false,
+    "auto_responder.rule_01.triggerType": "contains",
+    "auto_responder.rule_01.triggers": "",
+    "auto_responder.rule_01.sendType": "reply",
+    "auto_responder.rule_01.messages": "",
+    "auto_responder.rule_01.giveRole": "",
+    "auto_responder.rule_01.enabledChannels": "",
+    "auto_responder.rule_01.allowedRoles": "",
+    "auto_responder.rule_01.deleteUserMessage": false,
+    "auto_responder.rule_01.autoDeleteBotReply": false,
+    "auto_responder.rule_01.deleteOnAuthorDelete": false,
+    "auto_responder.rule_02.enabled": false,
+    "auto_responder.rule_02.triggerType": "contains",
+    "auto_responder.rule_02.triggers": "",
+    "auto_responder.rule_02.sendType": "reply",
+    "auto_responder.rule_02.messages": "",
+    "auto_responder.rule_02.giveRole": "",
+    "auto_responder.rule_02.enabledChannels": "",
+    "auto_responder.rule_02.allowedRoles": "",
+    "auto_responder.rule_02.deleteUserMessage": false,
+    "auto_responder.rule_02.autoDeleteBotReply": false,
+    "auto_responder.rule_02.deleteOnAuthorDelete": false,
+    "auto_responder.rule_03.enabled": false,
+    "auto_responder.rule_03.triggerType": "contains",
+    "auto_responder.rule_03.triggers": "",
+    "auto_responder.rule_03.sendType": "reply",
+    "auto_responder.rule_03.messages": "",
+    "auto_responder.rule_03.giveRole": "",
+    "auto_responder.rule_03.enabledChannels": "",
+    "auto_responder.rule_03.allowedRoles": "",
+    "auto_responder.rule_03.deleteUserMessage": false,
+    "auto_responder.rule_03.autoDeleteBotReply": false,
+    "auto_responder.rule_03.deleteOnAuthorDelete": false,
+    "auto_responder.rule_04.enabled": false,
+    "auto_responder.rule_04.triggerType": "contains",
+    "auto_responder.rule_04.triggers": "",
+    "auto_responder.rule_04.sendType": "reply",
+    "auto_responder.rule_04.messages": "",
+    "auto_responder.rule_04.giveRole": "",
+    "auto_responder.rule_04.enabledChannels": "",
+    "auto_responder.rule_04.allowedRoles": "",
+    "auto_responder.rule_04.deleteUserMessage": false,
+    "auto_responder.rule_04.autoDeleteBotReply": false,
+    "auto_responder.rule_04.deleteOnAuthorDelete": false,
+    "auto_responder.rule_05.enabled": false,
+    "auto_responder.rule_05.triggerType": "contains",
+    "auto_responder.rule_05.triggers": "",
+    "auto_responder.rule_05.sendType": "reply",
+    "auto_responder.rule_05.messages": "",
+    "auto_responder.rule_05.giveRole": "",
+    "auto_responder.rule_05.enabledChannels": "",
+    "auto_responder.rule_05.allowedRoles": "",
+    "auto_responder.rule_05.deleteUserMessage": false,
+    "auto_responder.rule_05.autoDeleteBotReply": false,
+    "auto_responder.rule_05.deleteOnAuthorDelete": false,
+    "auto_responder.rule_06.enabled": false,
+    "auto_responder.rule_06.triggerType": "contains",
+    "auto_responder.rule_06.triggers": "",
+    "auto_responder.rule_06.sendType": "reply",
+    "auto_responder.rule_06.messages": "",
+    "auto_responder.rule_06.giveRole": "",
+    "auto_responder.rule_06.enabledChannels": "",
+    "auto_responder.rule_06.allowedRoles": "",
+    "auto_responder.rule_06.deleteUserMessage": false,
+    "auto_responder.rule_06.autoDeleteBotReply": false,
+    "auto_responder.rule_06.deleteOnAuthorDelete": false,
+    "auto_responder.rule_07.enabled": false,
+    "auto_responder.rule_07.triggerType": "contains",
+    "auto_responder.rule_07.triggers": "",
+    "auto_responder.rule_07.sendType": "reply",
+    "auto_responder.rule_07.messages": "",
+    "auto_responder.rule_07.giveRole": "",
+    "auto_responder.rule_07.enabledChannels": "",
+    "auto_responder.rule_07.allowedRoles": "",
+    "auto_responder.rule_07.deleteUserMessage": false,
+    "auto_responder.rule_07.autoDeleteBotReply": false,
+    "auto_responder.rule_07.deleteOnAuthorDelete": false,
+    "auto_responder.rule_08.enabled": false,
+    "auto_responder.rule_08.triggerType": "contains",
+    "auto_responder.rule_08.triggers": "",
+    "auto_responder.rule_08.sendType": "reply",
+    "auto_responder.rule_08.messages": "",
+    "auto_responder.rule_08.giveRole": "",
+    "auto_responder.rule_08.enabledChannels": "",
+    "auto_responder.rule_08.allowedRoles": "",
+    "auto_responder.rule_08.deleteUserMessage": false,
+    "auto_responder.rule_08.autoDeleteBotReply": false,
+    "auto_responder.rule_08.deleteOnAuthorDelete": false,
+    "auto_responder.rule_09.enabled": false,
+    "auto_responder.rule_09.triggerType": "contains",
+    "auto_responder.rule_09.triggers": "",
+    "auto_responder.rule_09.sendType": "reply",
+    "auto_responder.rule_09.messages": "",
+    "auto_responder.rule_09.giveRole": "",
+    "auto_responder.rule_09.enabledChannels": "",
+    "auto_responder.rule_09.allowedRoles": "",
+    "auto_responder.rule_09.deleteUserMessage": false,
+    "auto_responder.rule_09.autoDeleteBotReply": false,
+    "auto_responder.rule_09.deleteOnAuthorDelete": false,
+    "auto_responder.rule_10.enabled": false,
+    "auto_responder.rule_10.triggerType": "contains",
+    "auto_responder.rule_10.triggers": "",
+    "auto_responder.rule_10.sendType": "reply",
+    "auto_responder.rule_10.messages": "",
+    "auto_responder.rule_10.giveRole": "",
+    "auto_responder.rule_10.enabledChannels": "",
+    "auto_responder.rule_10.allowedRoles": "",
+    "auto_responder.rule_10.deleteUserMessage": false,
+    "auto_responder.rule_10.autoDeleteBotReply": false,
+    "auto_responder.rule_10.deleteOnAuthorDelete": false,
+    "auto_responder.rule_11.enabled": false,
+    "auto_responder.rule_11.triggerType": "contains",
+    "auto_responder.rule_11.triggers": "",
+    "auto_responder.rule_11.sendType": "reply",
+    "auto_responder.rule_11.messages": "",
+    "auto_responder.rule_11.giveRole": "",
+    "auto_responder.rule_11.enabledChannels": "",
+    "auto_responder.rule_11.allowedRoles": "",
+    "auto_responder.rule_11.deleteUserMessage": false,
+    "auto_responder.rule_11.autoDeleteBotReply": false,
+    "auto_responder.rule_11.deleteOnAuthorDelete": false,
+    "auto_responder.rule_12.enabled": false,
+    "auto_responder.rule_12.triggerType": "contains",
+    "auto_responder.rule_12.triggers": "",
+    "auto_responder.rule_12.sendType": "reply",
+    "auto_responder.rule_12.messages": "",
+    "auto_responder.rule_12.giveRole": "",
+    "auto_responder.rule_12.enabledChannels": "",
+    "auto_responder.rule_12.allowedRoles": "",
+    "auto_responder.rule_12.deleteUserMessage": false,
+    "auto_responder.rule_12.autoDeleteBotReply": false,
+    "auto_responder.rule_12.deleteOnAuthorDelete": false,
+    "auto_responder.rule_13.enabled": false,
+    "auto_responder.rule_13.triggerType": "contains",
+    "auto_responder.rule_13.triggers": "",
+    "auto_responder.rule_13.sendType": "reply",
+    "auto_responder.rule_13.messages": "",
+    "auto_responder.rule_13.giveRole": "",
+    "auto_responder.rule_13.enabledChannels": "",
+    "auto_responder.rule_13.allowedRoles": "",
+    "auto_responder.rule_13.deleteUserMessage": false,
+    "auto_responder.rule_13.autoDeleteBotReply": false,
+    "auto_responder.rule_13.deleteOnAuthorDelete": false,
+    "auto_responder.rule_14.enabled": false,
+    "auto_responder.rule_14.triggerType": "contains",
+    "auto_responder.rule_14.triggers": "",
+    "auto_responder.rule_14.sendType": "reply",
+    "auto_responder.rule_14.messages": "",
+    "auto_responder.rule_14.giveRole": "",
+    "auto_responder.rule_14.enabledChannels": "",
+    "auto_responder.rule_14.allowedRoles": "",
+    "auto_responder.rule_14.deleteUserMessage": false,
+    "auto_responder.rule_14.autoDeleteBotReply": false,
+    "auto_responder.rule_14.deleteOnAuthorDelete": false,
+    "auto_responder.rule_15.enabled": false,
+    "auto_responder.rule_15.triggerType": "contains",
+    "auto_responder.rule_15.triggers": "",
+    "auto_responder.rule_15.sendType": "reply",
+    "auto_responder.rule_15.messages": "",
+    "auto_responder.rule_15.giveRole": "",
+    "auto_responder.rule_15.enabledChannels": "",
+    "auto_responder.rule_15.allowedRoles": "",
+    "auto_responder.rule_15.deleteUserMessage": false,
+    "auto_responder.rule_15.autoDeleteBotReply": false,
+    "auto_responder.rule_15.deleteOnAuthorDelete": false,
+    "auto_responder.rule_16.enabled": false,
+    "auto_responder.rule_16.triggerType": "contains",
+    "auto_responder.rule_16.triggers": "",
+    "auto_responder.rule_16.sendType": "reply",
+    "auto_responder.rule_16.messages": "",
+    "auto_responder.rule_16.giveRole": "",
+    "auto_responder.rule_16.enabledChannels": "",
+    "auto_responder.rule_16.allowedRoles": "",
+    "auto_responder.rule_16.deleteUserMessage": false,
+    "auto_responder.rule_16.autoDeleteBotReply": false,
+    "auto_responder.rule_16.deleteOnAuthorDelete": false,
+    "auto_responder.rule_17.enabled": false,
+    "auto_responder.rule_17.triggerType": "contains",
+    "auto_responder.rule_17.triggers": "",
+    "auto_responder.rule_17.sendType": "reply",
+    "auto_responder.rule_17.messages": "",
+    "auto_responder.rule_17.giveRole": "",
+    "auto_responder.rule_17.enabledChannels": "",
+    "auto_responder.rule_17.allowedRoles": "",
+    "auto_responder.rule_17.deleteUserMessage": false,
+    "auto_responder.rule_17.autoDeleteBotReply": false,
+    "auto_responder.rule_17.deleteOnAuthorDelete": false,
+    "auto_responder.rule_18.enabled": false,
+    "auto_responder.rule_18.triggerType": "contains",
+    "auto_responder.rule_18.triggers": "",
+    "auto_responder.rule_18.sendType": "reply",
+    "auto_responder.rule_18.messages": "",
+    "auto_responder.rule_18.giveRole": "",
+    "auto_responder.rule_18.enabledChannels": "",
+    "auto_responder.rule_18.allowedRoles": "",
+    "auto_responder.rule_18.deleteUserMessage": false,
+    "auto_responder.rule_18.autoDeleteBotReply": false,
+    "auto_responder.rule_18.deleteOnAuthorDelete": false,
+    "auto_responder.rule_19.enabled": false,
+    "auto_responder.rule_19.triggerType": "contains",
+    "auto_responder.rule_19.triggers": "",
+    "auto_responder.rule_19.sendType": "reply",
+    "auto_responder.rule_19.messages": "",
+    "auto_responder.rule_19.giveRole": "",
+    "auto_responder.rule_19.enabledChannels": "",
+    "auto_responder.rule_19.allowedRoles": "",
+    "auto_responder.rule_19.deleteUserMessage": false,
+    "auto_responder.rule_19.autoDeleteBotReply": false,
+    "auto_responder.rule_19.deleteOnAuthorDelete": false,
+    "auto_responder.rule_20.enabled": false,
+    "auto_responder.rule_20.triggerType": "contains",
+    "auto_responder.rule_20.triggers": "",
+    "auto_responder.rule_20.sendType": "reply",
+    "auto_responder.rule_20.messages": "",
+    "auto_responder.rule_20.giveRole": "",
+    "auto_responder.rule_20.enabledChannels": "",
+    "auto_responder.rule_20.allowedRoles": "",
+    "auto_responder.rule_20.deleteUserMessage": false,
+    "auto_responder.rule_20.autoDeleteBotReply": false,
+    "auto_responder.rule_20.deleteOnAuthorDelete": false
+  },
+  "previewVariables": {},
+  "defaultMessages": {}
+}

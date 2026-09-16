@@ -1,0 +1,26 @@
+{
+  "id": "admin",
+  "name": "إدارة",
+  "version": "1.0.0",
+  "description": "إدارة الأوامر الإدارية والحماية للسيرفر",
+  "author": "h05",
+  "minCoreVersion": "0.3.0",
+  "entry": "index.ts",
+  "permissions": [],
+  "capabilities": {
+    "commands": true,
+    "events": true,
+    "dashboard": true,
+    "database": false,
+    "templates": false,
+    "visualEditor": false,
+    "logs": true
+  },
+  "dashboard": {
+    "enabled": true,
+    "route": "/plugins/admin",
+    "label": "إدارة",
+    "icon": "ShieldCheck",
+    "tabs": ["settings", "commands"]
+  }
+}

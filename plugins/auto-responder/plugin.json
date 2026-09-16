@@ -1,0 +1,26 @@
+{
+  "id": "auto-responder",
+  "name": "الرد التلقائي",
+  "version": "1.0.0",
+  "description": "نظام ردود تلقائية على الرسائل والكلمات المفتاحية، مع دعم المتغيرات والردود الخاصة ومنح الرتب وحذف الردود عند الحذف.",
+  "author": "h05",
+  "minCoreVersion": "0.3.0",
+  "entry": "index.ts",
+  "permissions": [],
+  "capabilities": {
+    "commands": false,
+    "events": true,
+    "dashboard": true,
+    "database": false,
+    "templates": false,
+    "visualEditor": false,
+    "logs": true
+  },
+  "dashboard": {
+    "enabled": true,
+    "route": "/plugins/auto-responder",
+    "label": "الرد التلقائي",
+    "icon": "Bot",
+    "tabs": ["general", "rules"]
+  }
+}

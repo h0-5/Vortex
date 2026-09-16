@@ -1,0 +1,50 @@
+{
+  "name": "vortex",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Open-source multi-guild Discord bot platform",
+  "license": "MIT",
+  "author": "h05",
+  "packageManager": "pnpm@10.34.3",
+  "engines": {
+    "node": ">=20.19.0 <26"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "start": "node index.js",
+    "start:check": "node index.js --check",
+    "test": "pnpm test:updater && turbo run test",
+    "test:updater": "vitest run --config vitest.updater.config.js src/system/updater",
+    "typecheck": "turbo run typecheck",
+    "update:vortex": "node update.js",
+    "db:generate": "pnpm --filter @vortex/database db:generate",
+    "db:migrate": "pnpm --filter @vortex/database db:migrate",
+    "db:studio": "pnpm --filter @vortex/database db:studio",
+    "plugin:inspect": "node scripts/inspect-plugin.js",
+    "plugin:pack": "node scripts/pack-plugin.js"
+  },
+  "dependencies": {
+    "adm-zip": "0.5.16",
+    "axios": "1.9.0",
+    "chalk": "4.1.2",
+    "fs-extra": "11.3.0",
+    "ora": "5.4.1",
+    "semver": "7.7.2",
+    "winston": "3.19.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "25.9.3",
+    "eslint": "10.4.1",
+    "globals": "17.6.0",
+    "prettier": "3.8.4",
+    "turbo": "2.9.18",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.61.0",
+    "vitest": "4.1.8"
+  }
+}

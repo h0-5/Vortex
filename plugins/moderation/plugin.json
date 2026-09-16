@@ -1,0 +1,26 @@
+{
+  "id": "moderation",
+  "name": "Moderation",
+  "version": "1.0.0",
+  "description": "ميزات شبيهة بـ Sapphire: سجلات مراقبة شاملة، حماية من السبام والكلمات المحظورة، وأوامر إدارية (clear, say, embed, announce, lock, unlock, warn, warnings, invite).",
+  "author": "h05",
+  "minCoreVersion": "0.3.0",
+  "entry": "index.ts",
+  "permissions": [],
+  "capabilities": {
+    "commands": true,
+    "events": true,
+    "dashboard": true,
+    "database": false,
+    "templates": false,
+    "visualEditor": false,
+    "logs": true
+  },
+  "dashboard": {
+    "enabled": true,
+    "route": "/plugins/moderation",
+    "label": "Moderation",
+    "icon": "ShieldCheck",
+    "tabs": ["logs", "protection", "commands"]
+  }
+}

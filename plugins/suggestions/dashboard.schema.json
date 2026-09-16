@@ -1,0 +1,392 @@
+{
+  "version": 1,
+  "contentMode": "schema",
+  "previewVariables": {},
+  "defaults": {
+    "settings.enabled": false,
+    "settings.channel": null,
+    "settings.allowThreads": false,
+    "settings.voting.enabled": true,
+    "settings.voting.type": "upvote_downvote",
+    "settings.voting.upvoteEmoji": "👍",
+    "settings.voting.downvoteEmoji": "👎",
+    "settings.voting.multipleReactions": ["👍", "👎"],
+    "settings.autoThreshold.enabled": false,
+    "settings.autoThreshold.minUpvotes": 10,
+    "settings.autoThreshold.minDownvotes": 5,
+    "settings.permissions.allowAll": true,
+    "settings.permissions.allowedRoles": [],
+    "settings.permissions.minAccountAge": 0,
+    "settings.permissions.minServerLevel": 0,
+    "settings.spam.cooldown": 10,
+    "settings.spam.maxPerDay": 3,
+    "settings.moderation.requireApproval": false,
+    "settings.moderation.pendingChannel": null,
+    "settings.moderation.requireRejectReason": true,
+    "settings.statusTags.accepted.label": "تم القبول",
+    "settings.statusTags.accepted.color": "#22c55e",
+    "settings.statusTags.rejected.label": "تم الرفض",
+    "settings.statusTags.rejected.color": "#ef4444",
+    "settings.statusTags.considered.label": "قيد الدراسة",
+    "settings.statusTags.considered.color": "#f59e0b"
+  },
+  "defaultMessages": {},
+  "tabs": [
+    {
+      "id": "general",
+      "label": "الإعدادات العامة",
+      "description": "الإعدادات العامة لنظام الاقتراحات.",
+      "sections": [
+        {
+          "id": "general.main",
+          "title": "إعدادات النظام",
+          "description": "تشغيل أو إيقاف نظام الاقتراحات وتحديد القناة المستخدمة.",
+          "fields": [
+            {
+              "id": "general.enabled",
+              "type": "switch",
+              "label": "تفعيل نظام الاقتراحات",
+              "storageKey": "settings",
+              "path": "enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "general.channel",
+              "type": "channel_select",
+              "label": "قناة الاقتراحات",
+              "description": "القناة التي تُنشر فيها الاقتراحات بعد الكتابة فيها.",
+              "storageKey": "settings",
+              "path": "channel",
+              "defaultValue": null
+            },
+            {
+              "id": "general.allow-threads",
+              "type": "switch",
+              "label": "إنشاء خيوط نقاش",
+              "description": "إنشاء خيط نقاش تلقائي مع كل اقتراح جديد.",
+              "storageKey": "settings",
+              "path": "allowThreads",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "general.save",
+              "type": "save_storage",
+              "label": "حفظ الإعدادات",
+              "storageKeys": ["settings"]
+            }
+          ]
+        },
+        {
+          "id": "general.permissions",
+          "title": "صلاحيات الإرسال",
+          "description": "تحديد من يمكنه إرسال اقتراحات في السيرفر.",
+          "fields": [
+            {
+              "id": "general.allowall",
+              "type": "switch",
+              "label": "السماح للجميع",
+              "storageKey": "settings",
+              "path": "permissions.allowAll",
+              "defaultValue": true
+            },
+            {
+              "id": "general.allowedroles",
+              "type": "text",
+              "multiline": true,
+              "label": "أدوار الإرسال المسموح بها",
+              "description": "معرفات الأدوار، سطر لكل معرف. يُستخدم فقط عند تعطيل السماح للجميع.",
+              "storageKey": "settings",
+              "path": "permissions.allowedRoles",
+              "defaultValue": []
+            },
+            {
+              "id": "general.minaccountage",
+              "type": "number",
+              "label": "الحد الأدنى لعمر الحساب (أيام)",
+              "storageKey": "settings",
+              "path": "permissions.minAccountAge",
+              "defaultValue": 0
+            },
+            {
+              "id": "general.minserverlevel",
+              "type": "number",
+              "label": "الحد الأدنى لمستوى السيرفر",
+              "storageKey": "settings",
+              "path": "permissions.minServerLevel",
+              "defaultValue": 0
+            }
+          ],
+          "actions": [
+            {
+              "id": "general.save-perms",
+              "type": "save_storage",
+              "label": "حفظ الإعدادات",
+              "storageKeys": ["settings"]
+            }
+          ]
+        },
+        {
+          "id": "general.spam",
+          "title": "حماية من الإرسال المتكرر",
+          "description": "تحديد الحدود اليومية والوقت بين الاقتراحات.",
+          "fields": [
+            {
+              "id": "general.spamcooldown",
+              "type": "number",
+              "label": "الحد الأدنى للوقت بين الاقتراحات (دقائق)",
+              "storageKey": "settings",
+              "path": "spam.cooldown",
+              "defaultValue": 10
+            },
+            {
+              "id": "general.spammaxperday",
+              "type": "number",
+              "label": "الحد الأقصى للاقتراحات يومياً",
+              "storageKey": "settings",
+              "path": "spam.maxPerDay",
+              "defaultValue": 3
+            }
+          ],
+          "actions": [
+            {
+              "id": "general.save-spam",
+              "type": "save_storage",
+              "label": "حفظ الإعدادات",
+              "storageKeys": ["settings"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "voting",
+      "label": "التصويت",
+      "description": "إعدادات التصويت على الاقتراحات والقبول/الرفض التلقائي.",
+      "sections": [
+        {
+          "id": "voting.config",
+          "title": "إعدادات التصويت",
+          "description": "طريقة التصويت المستخدمة والإيموجي المخصص.",
+          "fields": [
+            {
+              "id": "voting.enabled",
+              "type": "switch",
+              "label": "تفعيل التصويت",
+              "storageKey": "settings",
+              "path": "voting.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "voting.type",
+              "type": "select",
+              "label": "نوع التصويت",
+              "storageKey": "settings",
+              "path": "voting.type",
+              "defaultValue": "upvote_downvote",
+              "options": [
+                { "label": "تصويت upward / downward", "value": "upvote_downvote" },
+                { "label": "تفاعل emojis متعدد", "value": "multiple_reactions" },
+                { "label": "أزرار التصويت", "value": "buttons" }
+              ]
+            },
+            {
+              "id": "voting.upvoteemoji",
+              "type": "text",
+              "label": "إيموجي التأييد",
+              "description": "يُستخدم فقط في وضع upward / downward.",
+              "storageKey": "settings",
+              "path": "voting.upvoteEmoji",
+              "defaultValue": "👍"
+            },
+            {
+              "id": "voting.downvoteemoji",
+              "type": "text",
+              "label": "إيموجي الرفض",
+              "description": "يُستخدم فقط في وضع upward / downward.",
+              "storageKey": "settings",
+              "path": "voting.downvoteEmoji",
+              "defaultValue": "👎"
+            },
+            {
+              "id": "voting.multiplereactions",
+              "type": "text",
+              "multiline": true,
+              "label": "إيموجي التصويت المتعدد",
+              "description": "إيموجي واحد لكل سطر. يُستخدم فقط في وضع التفاعل المتعدد.",
+              "storageKey": "settings",
+              "path": "voting.multipleReactions",
+              "defaultValue": ["👍", "👎"]
+            }
+          ],
+          "actions": [
+            {
+              "id": "voting.save",
+              "type": "save_storage",
+              "label": "حفظ إعدادات التصويت",
+              "storageKeys": ["settings"]
+            }
+          ]
+        },
+        {
+          "id": "voting.threshold",
+          "title": "القبول / الرفض التلقائي",
+          "description": "قبول أو رفض الاقتراحات تلقائياً عند تحقيق حد معين من الأصوات.",
+          "fields": [
+            {
+              "id": "voting.thresholdenabled",
+              "type": "switch",
+              "label": "تفعيل القبول/الرفض التلقائي",
+              "storageKey": "settings",
+              "path": "autoThreshold.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "voting.minupvotes",
+              "type": "number",
+              "label": "الحد الأدنى للتأييد للقبول التلقائي",
+              "storageKey": "settings",
+              "path": "autoThreshold.minUpvotes",
+              "defaultValue": 10
+            },
+            {
+              "id": "voting.mindownvotes",
+              "type": "number",
+              "label": "الحد الأدنى للرفض للرفض التلقائي",
+              "storageKey": "settings",
+              "path": "autoThreshold.minDownvotes",
+              "defaultValue": 5
+            }
+          ],
+          "actions": [
+            {
+              "id": "voting.save-threshold",
+              "type": "save_storage",
+              "label": "حفظ إعدادات العتبة",
+              "storageKeys": ["settings"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "moderation",
+      "label": "المراجعة",
+      "description": "إعدادات مراجعة الاقتراحات قبل النشر.",
+      "sections": [
+        {
+          "id": "moderation.config",
+          "title": "إعدادات المراجعة",
+          "description": "تفعيل مراجعة الاقتراحات قبل النشر في القناة العامة.",
+          "fields": [
+            {
+              "id": "moderation.requireapproval",
+              "type": "switch",
+              "label": "تفعيل المراجعة المسبقة",
+              "description": "عند التفعيل، تذهب الاقتراحات إلى قناة المراجعة قبل النشر.",
+              "storageKey": "settings",
+              "path": "moderation.requireApproval",
+              "defaultValue": false
+            },
+            {
+              "id": "moderation.pendingchannel",
+              "type": "channel_select",
+              "label": "قناة المراجعة",
+              "storageKey": "settings",
+              "path": "moderation.pendingChannel",
+              "defaultValue": null
+            },
+            {
+              "id": "moderation.reject-reason",
+              "type": "switch",
+              "label": "إجبار كتابة سبب الرفض",
+              "description": "عند التفعيل، يُطلب من المراجع كتابة سبب عند رفض الاقتراح.",
+              "storageKey": "settings",
+              "path": "moderation.requireRejectReason",
+              "defaultValue": true
+            }
+          ],
+          "actions": [
+            {
+              "id": "moderation.save",
+              "type": "save_storage",
+              "label": "حفظ إعدادات المراجعة",
+              "storageKeys": ["settings"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "status",
+      "label": "الحالات",
+      "description": "تسمية وألوان حالات الاقتراحات.",
+      "sections": [
+        {
+          "id": "status.labels",
+          "title": "تسميات الحالات",
+          "description": "تحديد النص واللون لكل حالة من حالات الاقتراح.",
+          "fields": [
+            {
+              "id": "status.acceptedlabel",
+              "type": "text",
+              "label": "تسمية حالة القبول",
+              "storageKey": "settings",
+              "path": "statusTags.accepted.label",
+              "defaultValue": "تم القبول"
+            },
+            {
+              "id": "status.acceptedcolor",
+              "type": "text",
+              "label": "لون حالة القبول",
+              "storageKey": "settings",
+              "path": "statusTags.accepted.color",
+              "defaultValue": "#22c55e"
+            },
+            {
+              "id": "status.rejectedlabel",
+              "type": "text",
+              "label": "تسمية حالة الرفض",
+              "storageKey": "settings",
+              "path": "statusTags.rejected.label",
+              "defaultValue": "تم الرفض"
+            },
+            {
+              "id": "status.rejectedcolor",
+              "type": "text",
+              "label": "لون حالة الرفض",
+              "storageKey": "settings",
+              "path": "statusTags.rejected.color",
+              "defaultValue": "#ef4444"
+            },
+            {
+              "id": "status.consideredlabel",
+              "type": "text",
+              "label": "تسمية حالة قيد الدراسة",
+              "storageKey": "settings",
+              "path": "statusTags.considered.label",
+              "defaultValue": "قيد الدراسة"
+            },
+            {
+              "id": "status.consideredcolor",
+              "type": "text",
+              "label": "لون حالة قيد الدراسة",
+              "storageKey": "settings",
+              "path": "statusTags.considered.color",
+              "defaultValue": "#f59e0b"
+            }
+          ],
+          "actions": [
+            {
+              "id": "status.save",
+              "type": "save_storage",
+              "label": "حفظ تسميات الحالات",
+              "storageKeys": ["settings"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

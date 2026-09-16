@@ -1,0 +1,26 @@
+{
+  "id": "tickets",
+  "name": "التذاكر",
+  "version": "1.0.0",
+  "description": "نظام تذاكر احترافي: أزرار وباقات لفتح التذاكر، قنوات خاصة، استلام وإغلاق مع نسخ المحادثة، تقييم الخدمة، والإحصائيات.",
+  "author": "h05",
+  "minCoreVersion": "0.3.0",
+  "entry": "index.ts",
+  "permissions": [],
+  "capabilities": {
+    "commands": false,
+    "events": true,
+    "dashboard": true,
+    "database": false,
+    "templates": false,
+    "visualEditor": false,
+    "logs": true
+  },
+  "dashboard": {
+    "enabled": true,
+    "route": "/plugins/tickets",
+    "label": "التذاكر",
+    "icon": "Ticket",
+    "tabs": ["general", "panels", "feedback", "stats", "transcripts"]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "suggestions-plugin",
+  "version": "1.0.0",
+  "author": "h05",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@vortex/core": "workspace:*",
+    "@vortex/types": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3"
+  }
+}

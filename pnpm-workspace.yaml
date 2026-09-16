@@ -1,0 +1,10 @@
+packages:
+  - apps/*
+  - packages/*
+  - plugins/*
+
+allowBuilds:
+  '@scarf/scarf': false
+  canvas: true
+  esbuild: true
+  msw: set this to true or false

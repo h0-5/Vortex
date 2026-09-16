@@ -1,0 +1,27 @@
+{
+  "id": "suggestions",
+  "name": "الاقتراحات",
+  "version": "1.0.0",
+  "description": "نظام اقتراحات احترافي: اقتراحات وتصويت ومراجعة وقبول أو رفض مع إشعارات.",
+
+  "author": "h05",
+  "minCoreVersion": "0.3.0",
+  "entry": "index.ts",
+  "permissions": [],
+  "capabilities": {
+    "commands": false,
+    "events": true,
+    "dashboard": true,
+    "database": false,
+    "templates": false,
+    "visualEditor": false,
+    "logs": true
+  },
+  "dashboard": {
+    "enabled": true,
+    "route": "/plugins/suggestions",
+    "label": "الاقتراحات",
+    "icon": "Lightbulb",
+    "tabs": ["general", "voting", "moderation", "status"]
+  }
+}

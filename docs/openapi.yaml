@@ -1,0 +1,204 @@
+openapi: 3.1.0
+info:
+  title: Vortex API
+  version: 1.0.0
+  description: Vortex Phase 1 core foundation API.
+  license:
+    name: MIT
+    identifier: MIT
+servers:
+  - url: /api/v1
+security:
+  - SessionCookie: []
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Check API health
+      security: []
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status, service, timestamp]
+                properties:
+                  status: { const: ok }
+                  service: { const: vortex-api }
+                  timestamp: { type: string, format: date-time }
+  /auth/discord:
+    get:
+      operationId: beginDiscordLogin
+      summary: Begin Discord OAuth login
+      security: []
+      responses:
+        '302':
+          description: Redirect to Discord OAuth
+  /auth/discord/callback:
+    get:
+      operationId: completeDiscordLogin
+      summary: Complete Discord OAuth login
+      security: []
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: state
+          in: query
+          required: true
+          schema: { type: string, minLength: 1 }
+      responses:
+        '302':
+          description: Redirect to the dashboard
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /auth/logout:
+    post:
+      operationId: logout
+      summary: End the current session
+      responses:
+        '204':
+          description: Session ended
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /me:
+    get:
+      operationId: getCurrentUser
+      summary: Get the authenticated user
+      responses:
+        '200':
+          description: Authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /guilds:
+    get:
+      operationId: listGuilds
+      summary: List Discord guilds visible to the authenticated user
+      responses:
+        '200':
+          description: Guild list
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Guild'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '502':
+          $ref: '#/components/responses/BadGateway'
+  /guilds/{guildId}:
+    get:
+      operationId: getGuild
+      summary: Get a manageable guild
+      parameters:
+        - name: guildId
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: '^\d{17,20}$'
+      responses:
+        '200':
+          description: Guild details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Guild'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  securitySchemes:
+    SessionCookie:
+      type: apiKey
+      in: cookie
+      name: vortex.sid
+  schemas:
+    User:
+      type: object
+      required: [id, discordId, username, avatar, globalName, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        discordId: { type: string, pattern: '^\d{17,20}$' }
+        username: { type: string }
+        avatar: { type: [string, 'null'] }
+        globalName: { type: [string, 'null'] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    Guild:
+      type: object
+      required: [id, name, icon, botPresent, canManage, permissionRole]
+      properties:
+        id: { type: string, pattern: '^\d{17,20}$' }
+        name: { type: string }
+        icon: { type: [string, 'null'] }
+        botPresent: { type: boolean }
+        canManage: { type: boolean }
+        permissionRole:
+          type: [string, 'null']
+          enum: [OWNER, ADMINISTRATOR, MANAGER, null]
+    Problem:
+      type: object
+      required: [type, title, status, detail, instance, requestId]
+      properties:
+        type: { type: string, format: uri-reference }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string }
+        requestId: { type: string }
+        errors:
+          type: array
+          items:
+            type: object
+            required: [field, message]
+            properties:
+              field: { type: string }
+              message: { type: string }
+  responses:
+    BadRequest:
+      description: Request validation failed
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unauthorized:
+      description: Authentication is required or invalid
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Forbidden:
+      description: The authenticated user cannot access the resource
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: Resource not found
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    BadGateway:
+      description: Discord API is unavailable
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }

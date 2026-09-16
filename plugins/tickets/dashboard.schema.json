@@ -1,0 +1,513 @@
+{
+  "version": 1,
+  "contentMode": "schema",
+  "previewVariables": {},
+  "defaults": {
+    "settings.enabled": false,
+    "settings.general.LANGUAGE": "server_default",
+    "settings.general.TICKET_LIMIT_PER_USER": 1,
+    "settings.general.ALLOW_USER_CLOSE": true,
+    "settings.general.CLOSE_CONFIRMATION": true,
+    "settings.general.ENABLE_FEEDBACK": false,
+    "settings.general.ANONYMISE_RESPONSES": false,
+    "settings.general.THREAD_MODE": false,
+    "settings.general.DISABLE_OPEN_COMMAND": false,
+    "settings.general.NOTIFICATION_CHANNEL": null,
+    "settings.general.TRANSCRIPTS_CHANNEL": null,
+    "settings.general.CHANNEL_CATEGORY": null,
+    "settings.general.OVERFLOW_CATEGORY": null,
+    "settings.general.NAMING_SCHEME": "ticket-{number}",
+    "settings.general.WELCOME_MESSAGE": "شكرًا لتواصلك مع الدعم.\nيرجى وصف مشكلتك.",
+    "settings.general.CLAIM_SUPPORT_VIEW": true,
+    "settings.general.CLAIM_SUPPORT_TYPE": true,
+    "settings.general.AUTO_CLOSE_ON_LEAVE": false,
+    "settings.general.AC_NO_RESPONSE_ENABLED": false,
+    "settings.general.AC_NO_RESPONSE_DAYS": 0,
+    "settings.general.AC_NO_RESPONSE_HOURS": 0,
+    "settings.general.AC_NO_RESPONSE_MINS": 0,
+    "settings.general.AC_LAST_MSG_ENABLED": false,
+    "settings.general.AC_LAST_MSG_DAYS": 0,
+    "settings.general.AC_LAST_MSG_HOURS": 0,
+    "settings.general.AC_LAST_MSG_MINS": 0,
+    "settings.general.OPEN_PERMISSION": "everyone",
+    "settings.general.OPEN_PERMISSION_ROLE": null,
+    "settings.general.ADD_MSG_SENDER": false,
+    "settings.general.PERM_ATTACH_FILES": true,
+    "settings.general.PERM_EMBED_LINKS": true,
+    "settings.general.PERM_ADD_REACTIONS": true,
+    "settings.general.COLOR_SUCCESS": "#22c55e",
+    "settings.general.COLOR_FAILURE": "#ef4444",
+    "settings.general.HIDE_CLOSE_BTN": false,
+    "settings.general.HIDE_CLOSE_REASON_BTN": false,
+    "settings.general.HIDE_CLAIM_BTN": false,
+    "settings.general.RULES_BTN_ENABLED": false,
+    "settings.general.RULES_BTN_TEXT": "",
+    "settings.general.RULES_BTN_EMOJI": "",
+    "settings.general.RULES_BTN_LABEL": "",
+    "settings.general.RULES_BTN_STYLE": "2",
+    "settings.general.ESCALATE_ENABLED": false,
+    "settings.general.ESCALATE_CATEGORIES": ""
+  },
+  "defaultMessages": {},
+  "tabs": [
+    {
+      "id": "general",
+      "label": "الإعدادات العامة",
+      "description": "الإعدادات العامة لنظام التذاكر.",
+      "sections": [
+        {
+          "id": "general.core",
+          "title": "الإعدادات العامة",
+          "description": "تتحكم هذه الإعدادات في سلوك نظام التذاكر كاملًا.",
+          "fields": [
+            {
+              "id": "general.language",
+              "type": "select",
+              "label": "لغة النظام",
+              "storageKey": "settings",
+              "path": "general.LANGUAGE",
+              "defaultValue": "server_default",
+              "options": [
+                { "label": "لغة السيرفر الافتراضية", "value": "server_default" },
+                { "label": "العربية", "value": "ar" },
+                { "label": "English", "value": "en" }
+              ]
+            },
+            {
+              "id": "general.ticket-limit",
+              "type": "number",
+              "label": "الحد الأقصى للتذاكر للمستخدم",
+              "storageKey": "settings",
+              "path": "general.TICKET_LIMIT_PER_USER",
+              "defaultValue": 1
+            },
+            {
+              "id": "general.allow-user-close",
+              "type": "switch",
+              "label": "السماح للمستخدم بإغلاق تذكرته",
+              "storageKey": "settings",
+              "path": "general.ALLOW_USER_CLOSE",
+              "defaultValue": true
+            },
+            {
+              "id": "general.close-confirmation",
+              "type": "switch",
+              "label": "تأكيد الإغلاق",
+              "description": "اطلب من المستخدم سبب الإغلاق عند الإغلاق.",
+              "storageKey": "settings",
+              "path": "general.CLOSE_CONFIRMATION",
+              "defaultValue": true
+            },
+            {
+              "id": "general.enable-feedback",
+              "type": "switch",
+              "label": "تفعيل التقييم",
+              "storageKey": "settings",
+              "path": "general.ENABLE_FEEDBACK",
+              "defaultValue": false
+            },
+            {
+              "id": "general.anonymise-responses",
+              "type": "switch",
+              "label": "إخفاء هوية المستجيبين",
+              "storageKey": "settings",
+              "path": "general.ANONYMISE_RESPONSES",
+              "defaultValue": false
+            },
+            {
+              "id": "general.thread-mode",
+              "type": "switch",
+              "label": "وضع الخيوط",
+              "storageKey": "settings",
+              "path": "general.THREAD_MODE",
+              "defaultValue": false
+            },
+            {
+              "id": "general.disable-open-command",
+              "type": "switch",
+              "label": "تعطيل أمر الفتح",
+              "storageKey": "settings",
+              "path": "general.DISABLE_OPEN_COMMAND",
+              "defaultValue": false
+            },
+            {
+              "id": "general.notification-channel",
+              "type": "channel_select",
+              "label": "قناة الإشعارات",
+              "storageKey": "settings",
+              "path": "general.NOTIFICATION_CHANNEL",
+              "defaultValue": null
+            },
+            {
+              "id": "general.transcripts-channel",
+              "type": "channel_select",
+              "label": "قناة النسخ",
+              "storageKey": "settings",
+              "path": "general.TRANSCRIPTS_CHANNEL",
+              "defaultValue": null
+            },
+            {
+              "id": "general.channel-category",
+              "type": "category_select",
+              "label": "تصنيف قنوات التذاكر",
+              "storageKey": "settings",
+              "path": "general.CHANNEL_CATEGORY",
+              "defaultValue": null
+            },
+            {
+              "id": "general.overflow-category",
+              "type": "category_select",
+              "label": "تصنيف التجاوز",
+              "storageKey": "settings",
+              "path": "general.OVERFLOW_CATEGORY",
+              "defaultValue": null
+            },
+            {
+              "id": "general.naming-scheme",
+              "type": "text",
+              "label": "صيغة تسمية القناة",
+              "description": "متغيرات: {number} {username} {userid}",
+              "storageKey": "settings",
+              "path": "general.NAMING_SCHEME",
+              "defaultValue": "ticket-{number}"
+            },
+            {
+              "id": "general.welcome-message",
+              "type": "text",
+              "multiline": true,
+              "label": "رسالة الترحيب",
+              "description": "رسالة الترحيب الافتراضية داخل التذكرة.",
+              "storageKey": "settings",
+              "path": "general.WELCOME_MESSAGE",
+              "defaultValue": "شكرًا لتواصلك مع الدعم.\nيرجى وصف مشكلتك."
+            },
+            {
+              "id": "general.claim-support-view",
+              "type": "switch",
+              "label": "عرض الاستلام لفريق الدعم",
+              "storageKey": "settings",
+              "path": "general.CLAIM_SUPPORT_VIEW",
+              "defaultValue": true
+            },
+            {
+              "id": "general.claim-support-type",
+              "type": "switch",
+              "label": "نوع الاستلام",
+              "storageKey": "settings",
+              "path": "general.CLAIM_SUPPORT_TYPE",
+              "defaultValue": true
+            },
+            {
+              "id": "general.auto-close-on-leave",
+              "type": "switch",
+              "label": "إغلاق تلقائي عند مغادرة العضو",
+              "storageKey": "settings",
+              "path": "general.AUTO_CLOSE_ON_LEAVE",
+              "defaultValue": false
+            },
+            {
+              "id": "general.ac-no-response-enabled",
+              "type": "switch",
+              "label": "إغلاق تلقائي عند عدم الرد",
+              "storageKey": "settings",
+              "path": "general.AC_NO_RESPONSE_ENABLED",
+              "defaultValue": false
+            },
+            {
+              "id": "general.ac-no-response-days",
+              "type": "number",
+              "label": "أيام عدم الرد",
+              "storageKey": "settings",
+              "path": "general.AC_NO_RESPONSE_DAYS",
+              "defaultValue": 0
+            },
+            {
+              "id": "general.ac-no-response-hours",
+              "type": "number",
+              "label": "ساعات عدم الرد",
+              "storageKey": "settings",
+              "path": "general.AC_NO_RESPONSE_HOURS",
+              "defaultValue": 0
+            },
+            {
+              "id": "general.ac-no-response-mins",
+              "type": "number",
+              "label": "دقائق عدم الرد",
+              "storageKey": "settings",
+              "path": "general.AC_NO_RESPONSE_MINS",
+              "defaultValue": 0
+            },
+            {
+              "id": "general.ac-last-msg-enabled",
+              "type": "switch",
+              "label": "إغلاق عند آخر رسالة",
+              "storageKey": "settings",
+              "path": "general.AC_LAST_MSG_ENABLED",
+              "defaultValue": false
+            },
+            {
+              "id": "general.ac-last-msg-days",
+              "type": "number",
+              "label": "أيام آخر رسالة",
+              "storageKey": "settings",
+              "path": "general.AC_LAST_MSG_DAYS",
+              "defaultValue": 0
+            },
+            {
+              "id": "general.ac-last-msg-hours",
+              "type": "number",
+              "label": "ساعات آخر رسالة",
+              "storageKey": "settings",
+              "path": "general.AC_LAST_MSG_HOURS",
+              "defaultValue": 0
+            },
+            {
+              "id": "general.ac-last-msg-mins",
+              "type": "number",
+              "label": "دقائق آخر رسالة",
+              "storageKey": "settings",
+              "path": "general.AC_LAST_MSG_MINS",
+              "defaultValue": 0
+            },
+            {
+              "id": "general.open-permission",
+              "type": "select",
+              "label": "صلاحية فتح التذاكر",
+              "storageKey": "settings",
+              "path": "general.OPEN_PERMISSION",
+              "defaultValue": "everyone",
+              "options": [
+                { "label": "الجميع", "value": "everyone" },
+                { "label": "دور محدد", "value": "role" }
+              ]
+            },
+            {
+              "id": "general.open-permission-role",
+              "type": "role_select",
+              "label": "دور صلاحية الفتح",
+              "storageKey": "settings",
+              "path": "general.OPEN_PERMISSION_ROLE",
+              "defaultValue": null
+            },
+            {
+              "id": "general.add-msg-sender",
+              "type": "switch",
+              "label": "إضافة اسم المرسل",
+              "storageKey": "settings",
+              "path": "general.ADD_MSG_SENDER",
+              "defaultValue": false
+            },
+            {
+              "id": "general.perm-attach-files",
+              "type": "switch",
+              "label": "إرفاق الملفات",
+              "storageKey": "settings",
+              "path": "general.PERM_ATTACH_FILES",
+              "defaultValue": true
+            },
+            {
+              "id": "general.perm-embed-links",
+              "type": "switch",
+              "label": "الروابط المدمجة",
+              "storageKey": "settings",
+              "path": "general.PERM_EMBED_LINKS",
+              "defaultValue": true
+            },
+            {
+              "id": "general.perm-add-reactions",
+              "type": "switch",
+              "label": "إضافة التفاعلات",
+              "storageKey": "settings",
+              "path": "general.PERM_ADD_REACTIONS",
+              "defaultValue": true
+            },
+            {
+              "id": "general.color-success",
+              "type": "text",
+              "label": "لون النجاح",
+              "storageKey": "settings",
+              "path": "general.COLOR_SUCCESS",
+              "defaultValue": "#22c55e"
+            },
+            {
+              "id": "general.color-failure",
+              "type": "text",
+              "label": "لون الفشل",
+              "storageKey": "settings",
+              "path": "general.COLOR_FAILURE",
+              "defaultValue": "#ef4444"
+            },
+            {
+              "id": "general.hide-close-btn",
+              "type": "switch",
+              "label": "إخفاء زر الإغلاق",
+              "storageKey": "settings",
+              "path": "general.HIDE_CLOSE_BTN",
+              "defaultValue": false
+            },
+            {
+              "id": "general.hide-close-reason-btn",
+              "type": "switch",
+              "label": "إخفاء زر سبب الإغلاق",
+              "storageKey": "settings",
+              "path": "general.HIDE_CLOSE_REASON_BTN",
+              "defaultValue": false
+            },
+            {
+              "id": "general.hide-claim-btn",
+              "type": "switch",
+              "label": "إخفاء زر الاستلام",
+              "storageKey": "settings",
+              "path": "general.HIDE_CLAIM_BTN",
+              "defaultValue": false
+            },
+            {
+              "id": "general.rules-btn-enabled",
+              "type": "switch",
+              "label": "تفعيل زر القواعد",
+              "storageKey": "settings",
+              "path": "general.RULES_BTN_ENABLED",
+              "defaultValue": false
+            },
+            {
+              "id": "general.rules-btn-text",
+              "type": "text",
+              "multiline": true,
+              "label": "نص القواعد",
+              "storageKey": "settings",
+              "path": "general.RULES_BTN_TEXT",
+              "defaultValue": ""
+            },
+            {
+              "id": "general.rules-btn-emoji",
+              "type": "text",
+              "label": "إيموجي زر القواعد",
+              "storageKey": "settings",
+              "path": "general.RULES_BTN_EMOJI",
+              "defaultValue": ""
+            },
+            {
+              "id": "general.rules-btn-label",
+              "type": "text",
+              "label": "نص زر القواعد",
+              "storageKey": "settings",
+              "path": "general.RULES_BTN_LABEL",
+              "defaultValue": ""
+            },
+            {
+              "id": "general.rules-btn-style",
+              "type": "select",
+              "label": "نمط زر القواعد",
+              "storageKey": "settings",
+              "path": "general.RULES_BTN_STYLE",
+              "defaultValue": "2",
+              "options": [
+                { "label": "أساسي (Primary)", "value": "1" },
+                { "label": "ثانوي (Secondary)", "value": "2" },
+                { "label": "نجاح (Success)", "value": "3" },
+                { "label": "خطر (Danger)", "value": "4" }
+              ]
+            },
+            {
+              "id": "general.escalate-enabled",
+              "type": "switch",
+              "label": "تفعيل التصعيد",
+              "storageKey": "settings",
+              "path": "general.ESCALATE_ENABLED",
+              "defaultValue": false
+            },
+            {
+              "id": "general.escalate-categories",
+              "type": "text",
+              "multiline": true,
+              "label": "تصنيفات التصعيد",
+              "description": "معرفات التصنيفات، سطر لكل تصنيف.",
+              "storageKey": "settings",
+              "path": "general.ESCALATE_CATEGORIES",
+              "defaultValue": ""
+            }
+          ],
+          "actions": [
+            {
+              "id": "general.save",
+              "type": "save_storage",
+              "label": "حفظ الإعدادات",
+              "storageKeys": ["settings"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "panels",
+      "label": "الباقات",
+      "description": "إدارة الباقات وقنوات الفتح.",
+      "sections": [
+        {
+          "id": "panels.enable",
+          "title": "تفعيل النظام",
+          "description": "تشغيل أو إيقاف نظام التذاكر بالكامل في السيرفر.",
+          "fields": [
+            {
+              "id": "panel.enabled",
+              "type": "switch",
+              "label": "تفعيل نظام التذاكر",
+              "storageKey": "settings",
+              "path": "enabled",
+              "defaultValue": false
+            }
+          ],
+          "actions": [
+            {
+              "id": "panels.save",
+              "type": "save_storage",
+              "label": "حفظ",
+              "storageKeys": ["settings"]
+            }
+          ]
+        },
+        {
+          "id": "panels.info",
+          "title": "لوحة الباقات",
+          "description": "تُدار الباقات (أزرار/قوائم الفتح) من بيانات السيرفر ويُعاد نشرها تلقائيًا عند التغيير. كل بانل يحتاج قناة عرض ومجموعة إعدادات خاصة مثل: الفئة، مدة الانتظار، حد التذاكر، أدوار الدعم، نص الترحيب، وزر الفتح."
+        }
+      ]
+    },
+    {
+      "id": "feedback",
+      "label": "التقييم",
+      "description": "استبيان تقييم الخدمة بعد إغلاق التذكرة.",
+      "sections": [
+        {
+          "id": "feedback.info",
+          "title": "تقييم الخدمة",
+          "description": "يُرسل للتذكرة بعد الإغلاق عند تفعيل التقييم (عام أو على مستوى البانل) أو عند تفعيل استبيان الخروج في البانل. يقوم العضو بتقييم 1-5 نجوم ويُسجل التقييم في بيانات النظام ويُرسل إلى قناة نتائج البانل إن كانت محددة."
+        }
+      ]
+    },
+    {
+      "id": "stats",
+      "label": "الإحصائيات",
+      "description": "إحصائيات نظام التذاكر.",
+      "sections": [
+        {
+          "id": "stats.info",
+          "title": "الإحصائيات",
+          "description": "تُحفظ الإحصائيات في بيانات النظام: متوسط زمن الاستجابة (avg_response_ms)، إجمالي التذاكر المغلقة (total_closed)، عدد التذاكر المغلقة اليوم (closed_today) مع إعادة تصفير يومية عند منتصف الليل بالتوقيت العالمي."
+        }
+      ]
+    },
+    {
+      "id": "transcripts",
+      "label": "النسخ",
+      "description": "نسخ المحادثات (الترانسكريبت).",
+      "sections": [
+        {
+          "id": "transcripts.info",
+          "title": "نسخ التذاكر",
+          "description": "عند إغلاق تذكرة مع تفعيل النسخ في البانل يتم توليد نسخة HTML كاملة للمحادثة وحفظها في بيانات النظام (transcripts) ثم نشر بطاقة النسخة في قناة النسخ المحددة وإرسالها برسالة خاصة لصاحب التذكرة إن كان مفعلًا."
+        }
+      ]
+    }
+  ]
+}

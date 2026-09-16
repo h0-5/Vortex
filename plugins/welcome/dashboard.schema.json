@@ -1,0 +1,272 @@
+{
+  "version": 1,
+  "contentMode": "schema",
+  "previewVariables": {
+    "user": "@Mira",
+    "userName": "Mira",
+    "userCreatedDate": "2023-05-12",
+    "userCreatedDays": "1230",
+    "serverName": "Vortex Labs",
+    "memberCount": "158"
+  },
+  "defaults": {
+    "settings.welcome.enabled": false,
+    "settings.welcome.channelId": null,
+    "settings.welcome.messageType": "text",
+    "settings.welcome.templateId": "Default Welcome",
+    "settings.leave.enabled": false,
+    "settings.leave.channelId": null,
+    "settings.leave.messageType": "text",
+    "settings.leave.templateId": "Default Leave",
+    "settings.dm.enabled": false,
+    "settings.dm.templateId": "Default Welcome"
+  },
+  "defaultMessages": {
+    "Default Welcome": {
+      "type": "text",
+      "content": "Welcome [user] to [serverName]! We're now at [memberCount] members. Enjoy your stay!"
+    },
+    "Default Leave": {
+      "type": "text",
+      "content": "[user] left the server. We're now at [memberCount] members."
+    }
+  },
+  "tabs": [
+    {
+      "id": "overview",
+      "label": "Overview",
+      "description": "Automate welcome and goodbye messages for your server.",
+      "sections": [
+        {
+          "id": "overview.summary",
+          "title": "Welcome automation",
+          "description": "Send a message each time a member joins or leaves. Pick a channel, then compose the message with live variables like [user] and [serverName].",
+          "fields": [],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "id": "welcome",
+      "label": "Welcome",
+      "sections": [
+        {
+          "id": "welcome.settings",
+          "title": "Welcome messages",
+          "description": "Sent when a new member joins the server.",
+          "fields": [
+            {
+              "id": "welcome.enabled",
+              "type": "switch",
+              "label": "Enable welcome messages",
+              "storageKey": "settings",
+              "path": "welcome.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "welcome.channel",
+              "type": "channel_select",
+              "label": "Welcome channel",
+              "description": "Where the welcome message is posted.",
+              "storageKey": "settings",
+              "path": "welcome.channelId",
+              "defaultValue": null
+            },
+            {
+              "id": "welcome.msgtype",
+              "type": "select",
+              "label": "Message type",
+              "storageKey": "settings",
+              "path": "welcome.messageType",
+              "defaultValue": "text",
+              "options": [
+                { "label": "Text", "value": "text" },
+                { "label": "Embed", "value": "embed" }
+              ]
+            },
+            {
+              "id": "welcome.templateid",
+              "type": "template_select",
+              "label": "Welcome message template",
+              "storageKey": "settings",
+              "path": "welcome.templateId",
+              "defaultValue": "Default Welcome",
+              "templateType": "welcome"
+            },
+            {
+              "id": "welcome.composer",
+              "type": "message_composer",
+              "label": "Message composer",
+              "storageKey": "templates",
+              "path": "Default Welcome",
+              "templateType": "welcome"
+            }
+          ],
+          "actions": [
+            {
+              "id": "welcome.save",
+              "type": "save_storage",
+              "label": "Save welcome settings",
+              "storageKeys": ["settings"]
+            },
+            {
+              "id": "welcome.savetemplate",
+              "type": "save_template",
+              "label": "Save template",
+              "templateNamePath": "welcome.templateId",
+              "templateContentPath": "Default Welcome",
+              "templateType": "welcome",
+              "templateContentModePath": "welcome.messageType"
+            },
+            {
+              "id": "welcome.test",
+              "type": "test_template",
+              "label": "Send test welcome message",
+              "templateNamePath": "welcome.templateId",
+              "channelIdPath": "welcome.channelId"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "leave",
+      "label": "Leave",
+      "sections": [
+        {
+          "id": "leave.settings",
+          "title": "Leave messages",
+          "description": "Sent when a member leaves the server.",
+          "fields": [
+            {
+              "id": "leave.enabled",
+              "type": "switch",
+              "label": "Enable leave messages",
+              "storageKey": "settings",
+              "path": "leave.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "leave.channel",
+              "type": "channel_select",
+              "label": "Leave channel",
+              "storageKey": "settings",
+              "path": "leave.channelId",
+              "defaultValue": null
+            },
+            {
+              "id": "leave.msgtype",
+              "type": "select",
+              "label": "Message type",
+              "storageKey": "settings",
+              "path": "leave.messageType",
+              "defaultValue": "text",
+              "options": [
+                { "label": "Text", "value": "text" },
+                { "label": "Embed", "value": "embed" }
+              ]
+            },
+            {
+              "id": "leave.templateid",
+              "type": "template_select",
+              "label": "Leave message template",
+              "storageKey": "settings",
+              "path": "leave.templateId",
+              "defaultValue": "Default Leave",
+              "templateType": "leave"
+            },
+            {
+              "id": "leave.composer",
+              "type": "message_composer",
+              "label": "Message composer",
+              "storageKey": "templates",
+              "path": "Default Leave",
+              "templateType": "leave"
+            }
+          ],
+          "actions": [
+            {
+              "id": "leave.save",
+              "type": "save_storage",
+              "label": "Save leave settings",
+              "storageKeys": ["settings"]
+            },
+            {
+              "id": "leave.savetemplate",
+              "type": "save_template",
+              "label": "Save template",
+              "templateNamePath": "leave.templateId",
+              "templateContentPath": "Default Leave",
+              "templateType": "leave",
+              "templateContentModePath": "leave.messageType"
+            },
+            {
+              "id": "leave.test",
+              "type": "test_template",
+              "label": "Send test leave message",
+              "templateNamePath": "leave.templateId",
+              "channelIdPath": "leave.channelId"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dm",
+      "label": "DM",
+      "sections": [
+        {
+          "id": "dm.settings",
+          "title": "DM welcome",
+          "description": "Optionally DM the new member a private welcome message.",
+          "fields": [
+            {
+              "id": "dm.enabled",
+              "type": "switch",
+              "label": "Send a DM to new members",
+              "storageKey": "settings",
+              "path": "dm.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "dm.templateid",
+              "type": "template_select",
+              "label": "DM message template",
+              "storageKey": "settings",
+              "path": "dm.templateId",
+              "defaultValue": "Default Welcome",
+              "templateType": "welcome"
+            }
+          ],
+          "actions": [
+            {
+              "id": "dm.save",
+              "type": "save_storage",
+              "label": "Save DM settings",
+              "storageKeys": ["settings"]
+            },
+            {
+              "id": "dm.test",
+              "type": "test_template",
+              "label": "Send test DM",
+              "templateNamePath": "dm.templateId"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "logs",
+      "label": "Logs",
+      "sections": [
+        {
+          "id": "logs.manager",
+          "title": "Welcome plugin logs",
+          "description": "Audit trail of welcome and leave messages sent by this plugin.",
+          "fields": [],
+          "actions": []
+        }
+      ]
+    }
+  ]
+}

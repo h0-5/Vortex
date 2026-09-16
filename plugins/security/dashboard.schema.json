@@ -1,0 +1,376 @@
+{
+  "version": 1,
+  "contentMode": "schema",
+  "tabs": [
+    {
+      "id": "general",
+      "label": "عام",
+      "description": "التحكم الرئيسي بنظام الحماية: التشغيل، قناة الأمان، التبييض، ورتب الإجراءات.",
+      "sections": [
+        {
+          "id": "general.enable",
+          "title": "التشغيل",
+          "description": "مفتاح النظام كاملاً وقناة تقارير الأمان.",
+          "fields": [
+            {
+              "id": "protection-enable",
+              "type": "switch",
+              "label": "تفعيل الحماية",
+              "description": "تشغيل جميع حمايات النظام. عند إيقافه لا تُطبَّق أي حماية.",
+              "storageKey": "settings",
+              "path": "protection.enable",
+              "defaultValue": true
+            },
+            {
+              "id": "security-channel",
+              "type": "channel_select",
+              "label": "قناة تقارير الأمان",
+              "description": "القناة التي تُرسل إليها التقارير عند تدخل الحماية (اختياري).",
+              "storageKey": "settings",
+              "path": "security.channelId",
+              "defaultValue": ""
+            }
+          ]
+        },
+        {
+          "id": "general.whitelist",
+          "title": "التبييض",
+          "description": "الرتب المعفاة من جميع إجراءات الحماية.",
+          "fields": [
+            {
+              "id": "whitelist-roles",
+              "type": "text",
+              "label": "الرتب المعفاة (معرّفات)",
+              "description": "معرّف رتبة واحد في كل سطر.",
+              "storageKey": "settings",
+              "path": "protection.whitelist_roles",
+              "defaultValue": "",
+              "multiline": true,
+              "placeholder": "معرّف رتبة\nمعرّف رتبة أخرى"
+            }
+          ]
+        },
+        {
+          "id": "general.actions",
+          "title": "رتب الإجراءات",
+          "description": "مطلوبة لإجراءي الميوت (4) والسجن (5).",
+          "fields": [
+            {
+              "id": "mute-role",
+              "type": "role_select",
+              "label": "رتبة الميوت",
+              "description": "تُعطى للعضو عند تنفيذ إجراء 'ميوت'.",
+              "storageKey": "settings",
+              "path": "protection.actions.mute_role",
+              "defaultValue": ""
+            },
+            {
+              "id": "jail-role",
+              "type": "role_select",
+              "label": "رتبة السجن",
+              "description": "تُعطى للعضو عند تنفيذ إجراء 'سجن'.",
+              "storageKey": "settings",
+              "path": "protection.actions.jail_role",
+              "defaultValue": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "anti",
+      "label": "الحمايات",
+      "description": "كل حمايات النظام القديم: منع الحظر والكير وإنشاء وحذف القنوات والرتب والبوتات والويب هوكس.",
+      "sections": [
+        {
+          "id": "anti.ban",
+          "title": "منع الحظر (Anti-Ban)",
+          "description": "إذا تجاوز شخص الحد خلال 10 ثوانٍ: يُرفع الحظر تلقائيًا وتُطبَّق العقوبة عليه.",
+          "fields": [
+            {
+              "id": "anti-ban-enabled",
+              "type": "switch",
+              "label": "التفعيل",
+              "storageKey": "settings",
+              "path": "protection.anti_ban.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "anti-ban-action",
+              "type": "select",
+              "label": "العقوبة عند التجاوز",
+              "storageKey": "settings",
+              "path": "protection.anti_ban.action",
+              "defaultValue": "1",
+              "options": [
+                { "label": "كير", "value": "1" },
+                { "label": "إزالة الرتب", "value": "2" },
+                { "label": "حظر", "value": "3" },
+                { "label": "ميوت", "value": "4" },
+                { "label": "سجن", "value": "5" }
+              ]
+            },
+            {
+              "id": "anti-ban-limit",
+              "type": "number",
+              "label": "الحد المسموح ضمن 10 ثوانٍ",
+              "storageKey": "settings",
+              "path": "protection.anti_ban.limit",
+              "defaultValue": 3
+            }
+          ]
+        },
+        {
+          "id": "anti.kick",
+          "title": "منع الكير (Anti-Kick)",
+          "description": "إذا تجاوز شخص الحد خلال 10 ثوانٍ تُطبَّق عليه العقوبة.",
+          "fields": [
+            {
+              "id": "anti-kick-enabled",
+              "type": "switch",
+              "label": "التفعيل",
+              "storageKey": "settings",
+              "path": "protection.anti_kick.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "anti-kick-action",
+              "type": "select",
+              "label": "العقوبة عند التجاوز",
+              "storageKey": "settings",
+              "path": "protection.anti_kick.action",
+              "defaultValue": "1",
+              "options": [
+                { "label": "كير", "value": "1" },
+                { "label": "إزالة الرتب", "value": "2" },
+                { "label": "حظر", "value": "3" },
+                { "label": "ميوت", "value": "4" },
+                { "label": "سجن", "value": "5" }
+              ]
+            },
+            {
+              "id": "anti-kick-limit",
+              "type": "number",
+              "label": "الحد المسموح ضمن 10 ثوانٍ",
+              "storageKey": "settings",
+              "path": "protection.anti_kick.limit",
+              "defaultValue": 3
+            }
+          ]
+        },
+        {
+          "id": "anti.channel-create",
+          "title": "منع إنشاء القنوات (Anti Channel-Create)",
+          "description": "إذا تجاوز الحد تُحذف القنوات الجديدة تلقائيًا وتُطبَّق العقوبة.",
+          "fields": [
+            {
+              "id": "anti-channel-create-enabled",
+              "type": "switch",
+              "label": "التفعيل",
+              "storageKey": "settings",
+              "path": "protection.anti_channel_create.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "anti-channel-create-action",
+              "type": "select",
+              "label": "العقوبة عند التجاوز",
+              "storageKey": "settings",
+              "path": "protection.anti_channel_create.action",
+              "defaultValue": "1",
+              "options": [
+                { "label": "كير", "value": "1" },
+                { "label": "إزالة الرتب", "value": "2" },
+                { "label": "حظر", "value": "3" },
+                { "label": "ميوت", "value": "4" },
+                { "label": "سجن", "value": "5" }
+              ]
+            },
+            {
+              "id": "anti-channel-create-limit",
+              "type": "number",
+              "label": "الحد المسموح ضمن 10 ثوانٍ",
+              "storageKey": "settings",
+              "path": "protection.anti_channel_create.limit",
+              "defaultValue": 5
+            }
+          ]
+        },
+        {
+          "id": "anti.channel-delete",
+          "title": "منع حذف القنوات (Anti Channel-Delete)",
+          "fields": [
+            {
+              "id": "anti-channel-delete-enabled",
+              "type": "switch",
+              "label": "التفعيل",
+              "storageKey": "settings",
+              "path": "protection.anti_channel_delete.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "anti-channel-delete-action",
+              "type": "select",
+              "label": "العقوبة عند التجاوز",
+              "storageKey": "settings",
+              "path": "protection.anti_channel_delete.action",
+              "defaultValue": "1",
+              "options": [
+                { "label": "كير", "value": "1" },
+                { "label": "إزالة الرتب", "value": "2" },
+                { "label": "حظر", "value": "3" },
+                { "label": "ميوت", "value": "4" },
+                { "label": "سجن", "value": "5" }
+              ]
+            },
+            {
+              "id": "anti-channel-delete-limit",
+              "type": "number",
+              "label": "الحد المسموح ضمن 10 ثوانٍ",
+              "storageKey": "settings",
+              "path": "protection.anti_channel_delete.limit",
+              "defaultValue": 3
+            }
+          ]
+        },
+        {
+          "id": "anti.role-create",
+          "title": "منع إنشاء الرتب (Anti Role-Create)",
+          "fields": [
+            {
+              "id": "anti-role-create-enabled",
+              "type": "switch",
+              "label": "التفعيل",
+              "storageKey": "settings",
+              "path": "protection.anti_role_create.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "anti-role-create-action",
+              "type": "select",
+              "label": "العقوبة عند التجاوز",
+              "storageKey": "settings",
+              "path": "protection.anti_role_create.action",
+              "defaultValue": "1",
+              "options": [
+                { "label": "كير", "value": "1" },
+                { "label": "إزالة الرتب", "value": "2" },
+                { "label": "حظر", "value": "3" },
+                { "label": "ميوت", "value": "4" },
+                { "label": "سجن", "value": "5" }
+              ]
+            },
+            {
+              "id": "anti-role-create-limit",
+              "type": "number",
+              "label": "الحد المسموح ضمن 10 ثوانٍ",
+              "storageKey": "settings",
+              "path": "protection.anti_role_create.limit",
+              "defaultValue": 5
+            }
+          ]
+        },
+        {
+          "id": "anti.role-delete",
+          "title": "منع حذف الرتب (Anti Role-Delete)",
+          "fields": [
+            {
+              "id": "anti-role-delete-enabled",
+              "type": "switch",
+              "label": "التفعيل",
+              "storageKey": "settings",
+              "path": "protection.anti_role_delete.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "anti-role-delete-action",
+              "type": "select",
+              "label": "العقوبة عند التجاوز",
+              "storageKey": "settings",
+              "path": "protection.anti_role_delete.action",
+              "defaultValue": "1",
+              "options": [
+                { "label": "كير", "value": "1" },
+                { "label": "إزالة الرتب", "value": "2" },
+                { "label": "حظر", "value": "3" },
+                { "label": "ميوت", "value": "4" },
+                { "label": "سجن", "value": "5" }
+              ]
+            },
+            {
+              "id": "anti-role-delete-limit",
+              "type": "number",
+              "label": "الحد المسموح ضمن 10 ثوانٍ",
+              "storageKey": "settings",
+              "path": "protection.anti_role_delete.limit",
+              "defaultValue": 3
+            }
+          ]
+        },
+        {
+          "id": "anti.bots",
+          "title": "منع إضافة البوتات (Anti-Bots)",
+          "description": "يُطرد البوت غير المصرح به فورًا وتُطبَّق العقوبة على من أضافه.",
+          "fields": [
+            {
+              "id": "anti-bots-enabled",
+              "type": "switch",
+              "label": "التفعيل",
+              "storageKey": "settings",
+              "path": "protection.anti_bots.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "anti-bots-action",
+              "type": "select",
+              "label": "العقوبة على من أضاف البوت",
+              "storageKey": "settings",
+              "path": "protection.anti_bots.action",
+              "defaultValue": "1",
+              "options": [
+                { "label": "كير", "value": "1" },
+                { "label": "إزالة الرتب", "value": "2" },
+                { "label": "حظر", "value": "3" },
+                { "label": "ميوت", "value": "4" },
+                { "label": "سجن", "value": "5" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "anti.webhooks",
+          "title": "منع إنشاء الويب هوكس (Anti-Webhooks)",
+          "description": "يُحذف الويب هوك الجديد غير المصرح به وتُطبَّق العقوبة على منشئه.",
+          "fields": [
+            {
+              "id": "anti-webhooks-enabled",
+              "type": "switch",
+              "label": "التفعيل",
+              "storageKey": "settings",
+              "path": "protection.anti_webhooks.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "anti-webhooks-action",
+              "type": "select",
+              "label": "العقوبة على المنشئ",
+              "storageKey": "settings",
+              "path": "protection.anti_webhooks.action",
+              "defaultValue": "1",
+              "options": [
+                { "label": "كير", "value": "1" },
+                { "label": "إزالة الرتب", "value": "2" },
+                { "label": "حظر", "value": "3" },
+                { "label": "ميوت", "value": "4" },
+                { "label": "سجن", "value": "5" }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "defaults": {},
+  "previewVariables": {},
+  "defaultMessages": {}
+}

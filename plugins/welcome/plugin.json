@@ -1,0 +1,26 @@
+{
+  "id": "welcome",
+  "name": "Welcome",
+  "version": "1.0.0",
+  "description": "Sends customizable welcome messages when a new member joins. Configure channel, message template and variables from the dashboard.",
+  "author": "h05",
+  "minCoreVersion": "0.2.5",
+  "entry": "index.ts",
+  "permissions": [],
+  "capabilities": {
+    "commands": false,
+    "events": true,
+    "dashboard": true,
+    "database": false,
+    "templates": true,
+    "visualEditor": false,
+    "logs": true
+  },
+  "dashboard": {
+    "enabled": true,
+    "route": "/plugins/welcome",
+    "label": "Welcome",
+    "icon": "BellRing",
+    "tabs": ["overview", "welcome", "leave", "dm", "logs"]
+  }
+}

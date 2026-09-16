@@ -1,0 +1,364 @@
+{
+  "version": 1,
+  "contentMode": "schema",
+  "tabs": [
+    {
+      "id": "logs",
+      "label": "السجلات",
+      "description": "تفعيل قناة السجلات واختيار الأحداث التي تُسجَّل فيها.",
+      "sections": [
+        {
+          "id": "logs.general",
+          "title": "الإعداد العام",
+          "description": "فعّل المراقبة وحدد قناة السجلات.",
+          "fields": [
+            {
+              "id": "logs-enabled",
+              "type": "switch",
+              "label": "تفعيل السجلات",
+              "description": "تفعيل نظام السجلات بالكامل. بدون تفعيله لا تُرسل أي سجلات.",
+              "storageKey": "settings",
+              "path": "logs.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "logs-channel",
+              "type": "channel_select",
+              "label": "قناة السجلات",
+              "description": "القناة التي تُرسل إليها جميع أحداث السجلات.",
+              "storageKey": "settings",
+              "path": "logs.channelId",
+              "defaultValue": ""
+            }
+          ]
+        },
+        {
+          "id": "logs.events",
+          "title": "الأحداث",
+          "description": "اختر أي نوع من الأحداث يُسجَّل في القناة.",
+          "fields": [
+            {
+              "id": "log-message-edit",
+              "type": "switch",
+              "label": "تعديل الرسائل",
+              "description": "سجل عند تعديل عضو لرسالته (المحتوى قبل/بعد).",
+              "storageKey": "settings",
+              "path": "logs.messageEdit",
+              "defaultValue": true
+            },
+            {
+              "id": "log-message-delete",
+              "type": "switch",
+              "label": "حذف الرسائل",
+              "description": "سجل عند حذف عضو لرسالته.",
+              "storageKey": "settings",
+              "path": "logs.messageDelete",
+              "defaultValue": true
+            },
+            {
+              "id": "log-member-join",
+              "type": "switch",
+              "label": "انضمام الأعضاء",
+              "description": "سجل عند دخول عضو جديد للسيرفر.",
+              "storageKey": "settings",
+              "path": "logs.memberJoin",
+              "defaultValue": true
+            },
+            {
+              "id": "log-member-leave",
+              "type": "switch",
+              "label": "مغادرة الأعضاء",
+              "description": "سجل عند مغادرة عضو للسيرفر.",
+              "storageKey": "settings",
+              "path": "logs.memberLeave",
+              "defaultValue": true
+            },
+            {
+              "id": "log-ban-add",
+              "type": "switch",
+              "label": "حظر الأعضاء",
+              "description": "سجل عند حظر عضو.",
+              "storageKey": "settings",
+              "path": "logs.banAdd",
+              "defaultValue": true
+            },
+            {
+              "id": "log-ban-remove",
+              "type": "switch",
+              "label": "فك الحظر",
+              "description": "سجل عند فك حظر عضو.",
+              "storageKey": "settings",
+              "path": "logs.banRemove",
+              "defaultValue": true
+            },
+            {
+              "id": "log-channel-create",
+              "type": "switch",
+              "label": "إنشاء القنوات",
+              "description": "سجل عند إنشاء قناة جديدة.",
+              "storageKey": "settings",
+              "path": "logs.channelCreate",
+              "defaultValue": true
+            },
+            {
+              "id": "log-channel-delete",
+              "type": "switch",
+              "label": "حذف القنوات",
+              "description": "سجل عند حذف قناة.",
+              "storageKey": "settings",
+              "path": "logs.channelDelete",
+              "defaultValue": true
+            },
+            {
+              "id": "log-role-create",
+              "type": "switch",
+              "label": "إنشاء الرتب",
+              "description": "سجل عند إنشاء رتبة جديدة.",
+              "storageKey": "settings",
+              "path": "logs.roleCreate",
+              "defaultValue": true
+            },
+            {
+              "id": "log-role-delete",
+              "type": "switch",
+              "label": "حذف الرتب",
+              "description": "سجل عند حذف رتبة.",
+              "storageKey": "settings",
+              "path": "logs.roleDelete",
+              "defaultValue": true
+            },
+            {
+              "id": "log-invite-create",
+              "type": "switch",
+              "label": "إنشاء الدعوات",
+              "description": "سجل عند إنشاء دعوة سيرفر جديدة.",
+              "storageKey": "settings",
+              "path": "logs.inviteCreate",
+              "defaultValue": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "protection",
+      "label": "الحماية",
+      "description": "حماية السيرفر من الكلمات المحظورة والسبام.",
+      "sections": [
+        {
+          "id": "protection.words",
+          "title": "الكلمات المحظورة",
+          "description": "كلمة في كل سطر. أضف * في البداية أو النهاية لمطابقة جزئية (مثال: سيء* يطابق أي كلمة تبدأ بسيء).",
+          "fields": [
+            {
+              "id": "blocked-words-enabled",
+              "type": "switch",
+              "label": "تفعيل فلترة الكلمات",
+              "description": "حذف أي رسالة تحتوي على كلمة محظورة.",
+              "storageKey": "settings",
+              "path": "protection.words.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "blocked-words",
+              "type": "text",
+              "label": "قائمة الكلمات المحظورة",
+              "description": "كلمة أو عبارة في كل سطر.",
+              "storageKey": "settings",
+              "path": "protection.words.list",
+              "defaultValue": "",
+              "multiline": true,
+              "placeholder": "سيء\nسبام\nإعلان*"
+            },
+            {
+              "id": "blocked-words-warn",
+              "type": "switch",
+              "label": "تسجيل إنذار مع الحذف",
+              "description": "إضافة إنذار للعضو وإرسال رسالة خاصة له مع حذف الرسالة المخالفة.",
+              "storageKey": "settings",
+              "path": "protection.words.warnOnMatch",
+              "defaultValue": true
+            }
+          ]
+        },
+        {
+          "id": "protection.rate",
+          "title": "منع السبام",
+          "description": "حماية من إرسال عدد كبير من الرسائل خلال فترة قصيرة.",
+          "fields": [
+            {
+              "id": "spam-rate-enabled",
+              "type": "switch",
+              "label": "تفعيل منع السبام",
+              "description": "مراقبة معدل إرسال الرسائل.",
+              "storageKey": "settings",
+              "path": "protection.rate.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "spam-rate-window",
+              "type": "number",
+              "label": "نافذة القياس (ثوانٍ)",
+              "description": "الفترة الزمنية التي يُقاس فيها معدل الرسائل.",
+              "storageKey": "settings",
+              "path": "protection.rate.windowSeconds",
+              "defaultValue": 5
+            },
+            {
+              "id": "spam-rate-max",
+              "type": "number",
+              "label": "الحد الأقصى للرسائل",
+              "description": "عدد الرسائل المسموح خلال النافذة. تجاوزه يُحذف ويُنذر.",
+              "storageKey": "settings",
+              "path": "protection.rate.maxMessages",
+              "defaultValue": 6
+            }
+          ]
+        },
+        {
+          "id": "protection.ignore",
+          "title": "الاستثناءات",
+          "description": "الرتب والقنوات المستثناة من الفلترة والسبام.",
+          "fields": [
+            {
+              "id": "protection-ignored-roles",
+              "type": "text",
+              "label": "الرتب المستثناة (معرّفات)",
+              "description": "معرّف رتبة واحد في كل سطر.",
+              "storageKey": "settings",
+              "path": "protection.ignoredRoleIds",
+              "defaultValue": "",
+              "multiline": true,
+              "placeholder": "معرّف رتبة\nمعرّف رتبة أخرى"
+            },
+            {
+              "id": "protection-ignored-channels",
+              "type": "text",
+              "label": "القنوات المستثناة (معرّفات)",
+              "description": "معرّف قناة واحد في كل سطر.",
+              "storageKey": "settings",
+              "path": "protection.ignoredChannelIds",
+              "defaultValue": "",
+              "multiline": true,
+              "placeholder": "معرّف قناة\nمعرّف قناة أخرى"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "commands",
+      "label": "الأوامر",
+      "description": "تفعيل الأوامر الإدارية وضبط دور الإدارة المطلوب.",
+      "sections": [
+        {
+          "id": "commands.general",
+          "title": "التحكم العام",
+          "description": "إعدادات مشتركة لكل الأوامر.",
+          "fields": [
+            {
+              "id": "moderator-role",
+              "type": "role_select",
+              "label": "دور الإدارة المطلوب",
+              "description": "إن لم يُحدَّد، يُسمح باستخدام الأوامر لمن يملك صلاحيات من لوحة الأوامر.",
+              "storageKey": "settings",
+              "path": "commands.moderatorRoleId",
+              "defaultValue": ""
+            }
+          ]
+        },
+        {
+          "id": "commands.list",
+          "title": "الأوامر المتاحة",
+          "description": "فعّل أو علّق أي أمر من الأوامر الإدارية.",
+          "fields": [
+            {
+              "id": "cmd-clear",
+              "type": "switch",
+              "label": "/clear",
+              "description": "مسح عدد محدد من الرسائل في قناة.",
+              "storageKey": "settings",
+              "path": "commands.clear.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "cmd-say",
+              "type": "switch",
+              "label": "/say",
+              "description": "إرسال رسالة باسم البوت.",
+              "storageKey": "settings",
+              "path": "commands.say.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "cmd-embed",
+              "type": "switch",
+              "label": "/embed",
+              "description": "إرسال رسالة مضمّنة (Embed) بألوان وعنوان.",
+              "storageKey": "settings",
+              "path": "commands.embed.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "cmd-announce",
+              "type": "switch",
+              "label": "/announce",
+              "description": "إرسال إعلان مضمّن إلى قناة محددة.",
+              "storageKey": "settings",
+              "path": "commands.announce.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "cmd-lock",
+              "type": "switch",
+              "label": "/lock",
+              "description": "إغلاق قناة أمام @everyone (منع إرسال الرسائل).",
+              "storageKey": "settings",
+              "path": "commands.lock.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "cmd-unlock",
+              "type": "switch",
+              "label": "/unlock",
+              "description": "فتح قناة مغلقة أمام @everyone.",
+              "storageKey": "settings",
+              "path": "commands.unlock.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "cmd-warn",
+              "type": "switch",
+              "label": "/warn",
+              "description": "توجيه إنذار لعضو مع سبب وحفظه في السجل.",
+              "storageKey": "settings",
+              "path": "commands.warn.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "cmd-warnings",
+              "type": "switch",
+              "label": "/warnings",
+              "description": "عرض إنذارات عضو مع الأسباب والتواريخ.",
+              "storageKey": "settings",
+              "path": "commands.warnings.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "cmd-invite",
+              "type": "switch",
+              "label": "/invite",
+              "description": "إنشاء دعوة لقناة بعدد استخدامات وفترة صلاحية محددين.",
+              "storageKey": "settings",
+              "path": "commands.invite.enabled",
+              "defaultValue": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "defaults": {},
+  "previewVariables": {},
+  "defaultMessages": {}
+}

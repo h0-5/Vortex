@@ -1,0 +1,691 @@
+{
+  "version": 1,
+  "contentMode": "schema",
+  "previewVariables": {
+    "serverName": "Server Name",
+    "botName": "إدارة"
+  },
+  "defaults": {
+    "settings.prefix": "!",
+    "settings.court.name": "المحكمة العليا",
+    "settings.court.logo": "",
+    "settings.court.color": "#FFD700",
+    "settings.court.logChannel": "",
+    "settings.muteRole": "",
+    "settings.jailRole": "",
+    "settings.jailShowRoom": [],
+    "settings.autoRole": "",
+    "settings.whitelistRoles": [],
+    "settings.userPermissions": [],
+    "commands.say.enabled": true,
+    "commands.ban.enabled": true,
+    "commands.kick.enabled": true,
+    "commands.mute.enabled": true,
+    "commands.unmute.enabled": true,
+    "commands.unban.enabled": true,
+    "commands.unban_all.enabled": true,
+    "commands.jail.enabled": true,
+    "commands.unjail.enabled": true,
+    "commands.warn.enabled": true,
+    "commands.unwarn.enabled": true,
+    "commands.warning.enabled": true,
+    "commands.clear.enabled": true,
+    "commands.lock.enabled": true,
+    "commands.unlock.enabled": true,
+    "commands.rename.enabled": true,
+    "commands.slowmode.enabled": true,
+    "commands.temp_role.enabled": true,
+    "commands.add_role.enabled": true,
+    "commands.remove_role.enabled": true,
+    "commands.multi_role.enabled": true,
+    "commands.come.enabled": true,
+    "commands.set_prefix.enabled": true,
+    "commands.set_perm.enabled": true,
+    "commands.set_perm_reset.enabled": true,
+    "commands.set_perm_all.enabled": true,
+    "commands.set_whitelist.enabled": true,
+    "commands.actions_role_mute.enabled": true,
+    "commands.actions_role_jail.enabled": true,
+    "commands.actions_show_room_jail.enabled": true,
+    "commands.actions_color.enabled": true,
+    "commands.actions_enabled.enabled": true,
+    "commands.actions_label.enabled": true,
+    "commands.actions_log.enabled": true,
+    "commands.court_set_color.enabled": true,
+    "commands.court_set_log.enabled": true,
+    "commands.court_set_logo.enabled": true,
+    "commands.court_set_name.enabled": true,
+    "commands.ping.enabled": true,
+    "commands.help.enabled": true,
+    "commands.user.enabled": true,
+    "commands.server.enabled": true,
+    "commands.roles.enabled": true,
+    "commands.avatar.enabled": true,
+    "commands.banner_server.enabled": true,
+    "commands.banner_user.enabled": true,
+    "commands.logo_server.enabled": true,
+    "commands.afk.enabled": false,
+    "commands.anti_ban.enabled": true,
+    "commands.anti_kick.enabled": true,
+    "commands.anti_bots.enabled": true,
+    "commands.anti_webhooks.enabled": true,
+    "commands.anti_channel_create.enabled": true,
+    "commands.anti_channel_delete.enabled": true,
+    "commands.anti_role_create.enabled": true,
+    "commands.anti_role_delete.enabled": true
+  },
+  "defaultMessages": {},
+  "tabs": [
+    {
+      "id": "settings",
+      "label": "الإعدادات",
+      "description": "الإعدادات العامة للوحة الإدارة",
+      "sections": [
+        {
+          "id": "settings-general",
+          "title": "الإعدادات العامة",
+          "fields": [
+            {
+              "id": "settings.prefix",
+              "type": "text",
+              "label": "بادئة الأوامر النصية",
+              "description": "الرمز الذي تبدأ به الأوامر النصية (مثال: !)",
+              "storageKey": "settings",
+              "path": "prefix",
+              "placeholder": "!"
+            }
+          ],
+          "actions": []
+        },
+        {
+          "id": "settings-court",
+          "title": "إعدادات المحكمة",
+          "description": "اسم المحكمة وشعارها ولونها وقناة السجلات",
+          "fields": [
+            {
+              "id": "settings.court.name",
+              "type": "text",
+              "label": "اسم المحكمة",
+              "storageKey": "settings",
+              "path": "court.name",
+              "placeholder": "المحكمة العليا"
+            },
+            {
+              "id": "settings.court.logo",
+              "type": "text",
+              "label": "رابط شعار المحكمة",
+              "storageKey": "settings",
+              "path": "court.logo",
+              "placeholder": "https://example.com/logo.png"
+            },
+            {
+              "id": "settings.court.color",
+              "type": "text",
+              "label": "لون البطاقات",
+              "storageKey": "settings",
+              "path": "court.color",
+              "placeholder": "#FFD700"
+            },
+            {
+              "id": "settings.court.log_channel",
+              "type": "channel_select",
+              "label": "قناة السجلات",
+              "description": "القناة التي تُرسل إليها سجلات الأوامر",
+              "storageKey": "settings",
+              "path": "court.logChannel"
+            }
+          ],
+          "actions": []
+        },
+        {
+          "id": "settings-roles",
+          "title": "إعدادات الرتب",
+          "fields": [
+            {
+              "id": "settings.mute_role",
+              "type": "role_select",
+              "label": "رتبة الميوت",
+              "description": "الرتبة التي تُعطى للمستخدم عند الميوت",
+              "storageKey": "settings",
+              "path": "muteRole"
+            },
+            {
+              "id": "settings.jail_role",
+              "type": "role_select",
+              "label": "رتبة السجن",
+              "description": "الرتبة التي تُعطى للمستخدم عند السجن",
+              "storageKey": "settings",
+              "path": "jailRole"
+            },
+            {
+              "id": "settings.jail_show_room",
+              "type": "text",
+              "label": "غرف السجن",
+              "description": "معرفات الغرف المسموح بالسجن فيها بصيغة JSON (مثال: [\"id1\",\"id2\"])",
+              "storageKey": "settings",
+              "path": "jailShowRoom",
+              "placeholder": "[]"
+            },
+            {
+              "id": "settings.auto_role",
+              "type": "role_select",
+              "label": "رتبة الترحيب",
+              "description": "الرتبة التي تُعطى للعضو الجديد تلقائياً",
+              "storageKey": "settings",
+              "path": "autoRole"
+            }
+          ],
+          "actions": []
+        },
+        {
+          "id": "settings-whitelist",
+          "title": "الحماية والاستثناء",
+          "fields": [
+            {
+              "id": "settings.whitelist_roles",
+              "type": "text",
+              "label": "رتب الاستثناء",
+              "description": "رتب معفاة من الحماية بصيغة JSON (مثال: [\"id1\"])",
+              "storageKey": "settings",
+              "path": "whitelistRoles",
+              "placeholder": "[]"
+            },
+            {
+              "id": "settings.user_permissions",
+              "type": "text",
+              "label": "صلاحيات المستخدمين المعفاة",
+              "description": "صلاحيات معفاة من الحماية بصيغة JSON (مثال: [\"ADMINISTRATOR\"])",
+              "storageKey": "settings",
+              "path": "userPermissions",
+              "placeholder": "[]"
+            }
+          ],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "id": "commands",
+      "label": "الأوامر",
+      "description": "تفعيل وتعطيل أوامر الإدارة",
+      "sections": [
+        {
+          "id": "commands-moderation",
+          "title": "أوامر الإجراءات",
+          "fields": [
+            {
+              "id": "commands.ban.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر ban",
+              "storageKey": "commands",
+              "path": "ban.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.kick.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر kick",
+              "storageKey": "commands",
+              "path": "kick.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.mute.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر mute",
+              "storageKey": "commands",
+              "path": "mute.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.unmute.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر unmute",
+              "storageKey": "commands",
+              "path": "unmute.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.unban.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر unban",
+              "storageKey": "commands",
+              "path": "unban.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.jail.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر jail",
+              "storageKey": "commands",
+              "path": "jail.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.unjail.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر unjail",
+              "storageKey": "commands",
+              "path": "unjail.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.warn.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر warn",
+              "storageKey": "commands",
+              "path": "warn.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.unwarn.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر unwarn",
+              "storageKey": "commands",
+              "path": "unwarn.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.warning.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر warning",
+              "storageKey": "commands",
+              "path": "warning.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.clear.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر clear",
+              "storageKey": "commands",
+              "path": "clear.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.lock.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر lock",
+              "storageKey": "commands",
+              "path": "lock.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.unlock.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر unlock",
+              "storageKey": "commands",
+              "path": "unlock.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.rename.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر rename",
+              "storageKey": "commands",
+              "path": "rename.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.slowmode.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر slowmode",
+              "storageKey": "commands",
+              "path": "slowmode.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.temp_role.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر temp_role",
+              "storageKey": "commands",
+              "path": "temp_role.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.add_role.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر add_role",
+              "storageKey": "commands",
+              "path": "add_role.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.remove_role.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر remove_role",
+              "storageKey": "commands",
+              "path": "remove_role.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.multi_role.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر multi_role",
+              "storageKey": "commands",
+              "path": "multi_role.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.come.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر come",
+              "storageKey": "commands",
+              "path": "come.enabled",
+              "defaultValue": true
+            }
+          ],
+          "actions": []
+        },
+        {
+          "id": "commands-admin",
+          "title": "أوامر الإدارة",
+          "fields": [
+            {
+              "id": "commands.say.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر say",
+              "storageKey": "commands",
+              "path": "say.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.set_prefix.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر set_prefix",
+              "storageKey": "commands",
+              "path": "set_prefix.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.set_perm.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر set_perm",
+              "storageKey": "commands",
+              "path": "set_perm.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.set_perm_reset.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر set_perm_reset",
+              "storageKey": "commands",
+              "path": "set_perm_reset.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.set_perm_all.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر set_perm_all",
+              "storageKey": "commands",
+              "path": "set_perm_all.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.set_whitelist.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر set_whitelist",
+              "storageKey": "commands",
+              "path": "set_whitelist.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.actions_role_mute.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر actions_role_mute",
+              "storageKey": "commands",
+              "path": "actions_role_mute.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.actions_role_jail.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر actions_role_jail",
+              "storageKey": "commands",
+              "path": "actions_role_jail.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.actions_show_room_jail.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر actions_show_room_jail",
+              "storageKey": "commands",
+              "path": "actions_show_room_jail.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.actions_color.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر actions_color",
+              "storageKey": "commands",
+              "path": "actions_color.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.actions_enabled.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر actions_enabled",
+              "storageKey": "commands",
+              "path": "actions_enabled.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.actions_label.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر actions_label",
+              "storageKey": "commands",
+              "path": "actions_label.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.actions_log.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر actions_log",
+              "storageKey": "commands",
+              "path": "actions_log.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.court_set_color.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر court_set_color",
+              "storageKey": "commands",
+              "path": "court_set_color.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.court_set_log.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر court_set_log",
+              "storageKey": "commands",
+              "path": "court_set_log.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.court_set_logo.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر court_set_logo",
+              "storageKey": "commands",
+              "path": "court_set_logo.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.court_set_name.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر court_set_name",
+              "storageKey": "commands",
+              "path": "court_set_name.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.unban_all.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر unban_all",
+              "storageKey": "commands",
+              "path": "unban_all.enabled",
+              "defaultValue": true
+            }
+          ],
+          "actions": []
+        },
+        {
+          "id": "commands-info",
+          "title": "أوامر المعلومات",
+          "fields": [
+            {
+              "id": "commands.ping.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر ping",
+              "storageKey": "commands",
+              "path": "ping.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.help.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر help",
+              "storageKey": "commands",
+              "path": "help.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.user.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر user",
+              "storageKey": "commands",
+              "path": "user.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.server.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر server",
+              "storageKey": "commands",
+              "path": "server.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.roles.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر roles",
+              "storageKey": "commands",
+              "path": "roles.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.avatar.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر avatar",
+              "storageKey": "commands",
+              "path": "avatar.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.banner_server.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر banner_server",
+              "storageKey": "commands",
+              "path": "banner_server.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.banner_user.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر banner_user",
+              "storageKey": "commands",
+              "path": "banner_user.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.logo_server.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر logo_server",
+              "storageKey": "commands",
+              "path": "logo_server.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.afk.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر afk",
+              "storageKey": "commands",
+              "path": "afk.enabled",
+              "defaultValue": false
+            }
+          ],
+          "actions": []
+        },
+        {
+          "id": "commands-protection",
+          "title": "أوامر الحماية",
+          "fields": [
+            {
+              "id": "commands.anti_ban.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر anti_ban",
+              "storageKey": "commands",
+              "path": "anti_ban.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.anti_kick.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر anti_kick",
+              "storageKey": "commands",
+              "path": "anti_kick.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.anti_bots.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر anti_bots",
+              "storageKey": "commands",
+              "path": "anti_bots.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.anti_webhooks.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر anti_webhooks",
+              "storageKey": "commands",
+              "path": "anti_webhooks.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.anti_channel_create.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر anti_channel_create",
+              "storageKey": "commands",
+              "path": "anti_channel_create.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.anti_channel_delete.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر anti_channel_delete",
+              "storageKey": "commands",
+              "path": "anti_channel_delete.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.anti_role_create.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر anti_role_create",
+              "storageKey": "commands",
+              "path": "anti_role_create.enabled",
+              "defaultValue": true
+            },
+            {
+              "id": "commands.anti_role_delete.enabled",
+              "type": "switch",
+              "label": "تفعيل أمر anti_role_delete",
+              "storageKey": "commands",
+              "path": "anti_role_delete.enabled",
+              "defaultValue": true
+            }
+          ],
+          "actions": []
+        }
+      ]
+    }
+  ]
+}

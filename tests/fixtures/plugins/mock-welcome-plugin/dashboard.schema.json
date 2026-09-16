@@ -1,0 +1,133 @@
+{
+  "version": 1,
+  "contentMode": "schema",
+  "previewVariables": {
+    "user": "@Mira",
+    "serverName": "Vortex Labs"
+  },
+  "defaults": {
+    "settings.welcome.enabled": false,
+    "settings.welcome.channelId": null,
+    "settings.welcome.messageType": "text",
+    "settings.welcome.templateId": "Default Welcome",
+    "settings.leave.enabled": false,
+    "settings.dm.enabled": false
+  },
+  "defaultMessages": {
+    "Default Welcome": {
+      "type": "text",
+      "content": "Welcome [user] to [serverName]!"
+    }
+  },
+  "tabs": [
+    {
+      "id": "overview",
+      "label": "Overview",
+      "sections": [
+        {
+          "id": "overview.summary",
+          "title": "Welcome automation",
+          "description": "Mock plugin fixture for Core schema renderer tests.",
+          "fields": [],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "id": "welcome",
+      "label": "Welcome",
+      "sections": [
+        {
+          "id": "welcome.settings",
+          "title": "Welcome messages",
+          "fields": [
+            {
+              "id": "welcome.enabled",
+              "type": "switch",
+              "label": "Enable welcome messages",
+              "storageKey": "settings",
+              "path": "welcome.enabled",
+              "defaultValue": false
+            },
+            {
+              "id": "welcome.channel",
+              "type": "channel_select",
+              "label": "Welcome channel",
+              "storageKey": "settings",
+              "path": "welcome.channelId",
+              "defaultValue": null
+            },
+            {
+              "id": "welcome.composer",
+              "type": "message_composer",
+              "label": "Message composer",
+              "storageKey": "templates",
+              "path": "Default Welcome",
+              "templateType": "welcome"
+            }
+          ],
+          "actions": [
+            {
+              "id": "welcome.save",
+              "type": "save_storage",
+              "label": "Save welcome settings",
+              "storageKeys": ["settings"]
+            },
+            {
+              "id": "welcome.saveTemplate",
+              "type": "save_template",
+              "label": "Save template",
+              "templateNamePath": "welcome.templateId",
+              "templateContentPath": "Default Welcome",
+              "templateType": "welcome",
+              "templateContentModePath": "welcome.messageType"
+            },
+            {
+              "id": "welcome.test",
+              "type": "test_template",
+              "label": "Send test welcome message",
+              "templateNamePath": "welcome.templateId",
+              "channelIdPath": "welcome.channelId"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "leave",
+      "label": "Leave",
+      "sections": [
+        {
+          "id": "leave.settings",
+          "title": "Leave messages",
+          "fields": [],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "id": "dm",
+      "label": "DM",
+      "sections": [
+        {
+          "id": "dm.settings",
+          "title": "DM Welcome",
+          "fields": [],
+          "actions": []
+        }
+      ]
+    },
+    {
+      "id": "logs",
+      "label": "Logs",
+      "sections": [
+        {
+          "id": "logs.manager",
+          "title": "Welcome plugin logs",
+          "fields": [],
+          "actions": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "security",
+  "name": "Security",
+  "version": "1.0.0",
+  "description": "نظام الحماية الكامل: Anti-Ban، Anti-Kick، منع إنشاء/حذف القنوات والرتب، منع إضافة البوتات، منع إنشاء الويب هوكس، مع إجراءات (كير، إزالة الرتب، حظر، ميوت، سجن) وقائمة تبييض.",
+  "author": "h05",
+  "minCoreVersion": "0.3.0",
+  "entry": "index.ts",
+  "permissions": [],
+  "capabilities": {
+    "commands": false,
+    "events": true,
+    "dashboard": true,
+    "database": false,
+    "templates": false,
+    "visualEditor": false,
+    "logs": true
+  },
+  "dashboard": {
+    "enabled": true,
+    "route": "/plugins/security",
+    "label": "Security",
+    "icon": "Shield",
+    "tabs": ["general", "anti"]
+  }
+}
