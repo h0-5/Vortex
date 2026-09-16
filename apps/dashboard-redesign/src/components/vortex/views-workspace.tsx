@@ -16,6 +16,7 @@ import {
   RadioTowerIcon,
   ShieldAlertIcon,
   ShieldCheckIcon,
+  Settings2Icon,
   TicketIcon,
   TrendingUpIcon,
   UserPlusIcon,
@@ -29,6 +30,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GuildAvatar } from "@/components/vortex/brand";
+import { PluginStudio } from "@/components/vortex/plugin-studio";
 import { cn } from "@/lib/utils";
 import {
   fmt,
@@ -36,6 +38,7 @@ import {
   type ActivityType,
   type Guild,
   type Plugin,
+  type VortexUser,
 } from "@/lib/vortex/data";
 import type { VortexView } from "@/components/vortex/shell";
 
@@ -361,12 +364,17 @@ const CATEGORY_ICON: Record<Plugin["category"], typeof ShieldCheckIcon> = {
 export function PluginsView({
   plugins,
   onToggle,
+  guild,
+  user,
 }: {
   plugins: Plugin[];
   onToggle: (plugin: Plugin) => void;
+  guild: Guild;
+  user: VortexUser;
 }) {
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<"all" | "enabled" | "disabled">("all");
+  const [studioPlugin, setStudioPlugin] = useState<Plugin | null>(null);
 
   const shown = plugins.filter((p) => {
     const matchQuery =
@@ -441,17 +449,29 @@ export function PluginsView({
                   <PuzzleIcon className="size-3" aria-hidden="true" />
                   {plugin.category} · @{plugin.author}
                 </span>
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "font-mono text-[10px] uppercase",
-                    plugin.enabled
-                      ? "border-[#34d399]/30 text-[#34d399]"
-                      : "border-border text-muted-foreground",
-                  )}
-                >
-                  {plugin.enabled ? "enabled" : "disabled"}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  {plugin.dashboard ? (
+                    <button
+                      onClick={() => setStudioPlugin(plugin)}
+                      className="flex items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-2.5 py-1.5 text-[11px] font-semibold text-foreground transition-all hover:bg-primary/20 hover:shadow-[0_0_14px_-4px_rgba(139,92,246,0.9)]"
+                      aria-label={`Configure ${plugin.name}`}
+                    >
+                      <Settings2Icon className="size-3.5" aria-hidden="true" />
+                      <span dir="auto">إعدادات</span>
+                    </button>
+                  ) : null}
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "font-mono text-[10px] uppercase",
+                      plugin.enabled
+                        ? "border-[#34d399]/30 text-[#34d399]"
+                        : "border-border text-muted-foreground",
+                    )}
+                  >
+                    {plugin.enabled ? "enabled" : "disabled"}
+                  </Badge>
+                </div>
               </div>
             </Panel>
           );
@@ -465,6 +485,16 @@ export function PluginsView({
           <p className="text-xs text-muted-foreground">Try a different search or filter.</p>
         </Panel>
       )}
+
+      {studioPlugin ? (
+        <PluginStudio
+          guild={guild}
+          user={user}
+          plugin={studioPlugin}
+          iconNode={CATEGORY_ICON[studioPlugin.category]}
+          onClose={() => setStudioPlugin(null)}
+        />
+      ) : null}
     </div>
   );
 }

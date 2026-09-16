@@ -167,7 +167,9 @@ export default function Home() {
           }
         />
       )}
-      {view === "plugins" && <PluginsView plugins={plugins} onToggle={handleTogglePlugin} />}
+      {view === "plugins" && (
+        <PluginsView plugins={plugins} onToggle={handleTogglePlugin} guild={guild} user={user} />
+      )}
       {view === "activity" && <ActivityView activity={activity} />}
       {view === "logs" && <LogsView guildId={guild.id} />}
       {view === "api" && <ApiView />}

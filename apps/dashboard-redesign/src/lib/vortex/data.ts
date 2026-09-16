@@ -45,6 +45,103 @@ export interface Plugin {
   category: PluginCategory;
   enabled: boolean;
   installs: number;
+  dashboard: { enabled: boolean; label: string } | null;
+}
+
+/* --------------------- plugin dashboard schema types ---------------------- */
+
+export type DashboardFieldType =
+  | "switch"
+  | "channel_select"
+  | "category_select"
+  | "role_select"
+  | "select"
+  | "text"
+  | "number"
+  | "message_composer"
+  | "template_select";
+
+export interface DashboardField {
+  id: string;
+  type: DashboardFieldType;
+  label: string;
+  description?: string;
+  storageKey: string;
+  path: string;
+  defaultValue?: unknown;
+  options?: Array<{ label: string; value: string }>;
+  contentModes?: Array<"text" | "embed" | "components_v2">;
+  templateType?: string;
+  placeholder?: string;
+  multiline?: boolean;
+}
+
+export type DashboardActionType = "save_storage" | "save_template" | "test_template" | "reset";
+
+export interface DashboardAction {
+  id: string;
+  type: DashboardActionType;
+  label: string;
+  storageKeys?: string[];
+  templateNamePath?: string;
+  templateContentPath?: string;
+  templateType?: string;
+  templateContentModePath?: string;
+  channelIdPath?: string;
+}
+
+export interface DashboardSection {
+  id: string;
+  title: string;
+  description?: string;
+  fields: DashboardField[];
+  actions: DashboardAction[];
+}
+
+export interface DashboardTab {
+  id: string;
+  label: string;
+  description?: string;
+  sections: DashboardSection[];
+}
+
+export interface DashboardSchemaDoc {
+  version: 1;
+  tabs: DashboardTab[];
+  defaults: Record<string, unknown>;
+  previewVariables: Record<string, string>;
+  defaultMessages: Record<string, unknown>;
+}
+
+export interface PluginDashboardContent {
+  mode: "schema" | "bundle" | "none";
+  schema: DashboardSchemaDoc | null;
+  bundleUrl: string | null;
+  errors: string[];
+}
+
+export interface GuildChannel {
+  id: string;
+  name: string;
+  type: number;
+}
+
+export interface GuildRoleOption {
+  id: string;
+  name: string;
+  color: number;
+  position: number;
+  managed: boolean;
+}
+
+export interface PluginTemplate {
+  id: string;
+  name: string;
+  type: string;
+  contentMode: string;
+  content: unknown;
+  version: number;
+  updatedAt: string;
 }
 
 export type ActivityType =
@@ -111,7 +208,15 @@ interface ApiPlugin {
   guildStatus: string;
   installedAt: string | null;
   updatedAt: string;
-  dashboard: unknown | null;
+  dashboard: PluginManifestDashboard | null;
+}
+
+interface PluginManifestDashboard {
+  enabled: boolean;
+  route: string;
+  label: string;
+  icon: string;
+  tabs: string[];
 }
 
 interface ApiLog {
@@ -280,6 +385,10 @@ function mapPlugin(plugin: ApiPlugin): Plugin {
     category: categoryForPlugin(plugin),
     enabled: Boolean(plugin.enabled),
     installs: 0,
+    dashboard:
+      plugin.dashboard && plugin.dashboard.enabled
+        ? { enabled: true, label: plugin.dashboard.label }
+        : null,
   };
 }
 
@@ -348,6 +457,114 @@ export async function setPluginEnabled(
   await apiFetch<void>(
     `/api/v1/guilds/${guildId}/plugins/${pluginId}/${enabled ? "enable" : "disable"}`,
     { method: "POST" },
+  );
+}
+
+/* ------------------------- plugin studio API calls ------------------------ */
+
+export async function fetchPluginDashboardContent(
+  guildId: string,
+  pluginId: string,
+): Promise<PluginDashboardContent> {
+  const detail = await apiFetch<{
+    dashboardContent?: {
+      mode: "schema" | "bundle" | "none";
+      schema: DashboardSchemaDoc | null;
+      bundleUrl: string | null;
+      errors?: string[];
+    };
+  }>(`/api/v1/guilds/${guildId}/plugins/${pluginId}`);
+  const content = detail.dashboardContent;
+  if (!content) return { mode: "none", schema: null, bundleUrl: null, errors: [] };
+  return {
+    mode: content.mode,
+    schema: content.schema,
+    bundleUrl: content.bundleUrl,
+    errors: content.errors ?? [],
+  };
+}
+
+export async function fetchGuildChannels(guildId: string): Promise<GuildChannel[]> {
+  const response = await apiFetch<{ data: GuildChannel[] }>(
+    `/api/v1/guilds/${guildId}/channels`,
+  );
+  return response.data ?? [];
+}
+
+export async function fetchGuildCategories(guildId: string): Promise<GuildChannel[]> {
+  const response = await apiFetch<{ data: GuildChannel[] }>(
+    `/api/v1/guilds/${guildId}/categories`,
+  );
+  return response.data ?? [];
+}
+
+export async function fetchGuildRoles(guildId: string): Promise<GuildRoleOption[]> {
+  const response = await apiFetch<{ data: GuildRoleOption[] }>(
+    `/api/v1/guilds/${guildId}/roles`,
+  );
+  return response.data ?? [];
+}
+
+export async function fetchPluginStorage(
+  guildId: string,
+  pluginId: string,
+  key: string,
+): Promise<unknown> {
+  const response = await apiFetch<{ value: unknown }>(
+    `/api/v1/guilds/${guildId}/plugins/${pluginId}/storage/${key}`,
+  );
+  return response.value;
+}
+
+export async function setPluginStorage(
+  guildId: string,
+  pluginId: string,
+  key: string,
+  value: unknown,
+): Promise<void> {
+  await apiFetch<{ value: unknown }>(
+    `/api/v1/guilds/${guildId}/plugins/${pluginId}/storage/${key}`,
+    { method: "PUT", body: JSON.stringify({ value }) },
+  );
+}
+
+export async function fetchPluginTemplates(
+  guildId: string,
+  pluginId: string,
+): Promise<PluginTemplate[]> {
+  const response = await apiFetch<{ data: PluginTemplate[] }>(
+    `/api/v1/guilds/${guildId}/plugins/${pluginId}/templates`,
+  );
+  return response.data ?? [];
+}
+
+export async function savePluginTemplate(
+  guildId: string,
+  pluginId: string,
+  body: {
+    name: string;
+    type: string;
+    contentMode: string;
+    content: unknown;
+    variables: string[];
+    previewData: Record<string, string>;
+  },
+): Promise<PluginTemplate> {
+  return apiFetch<PluginTemplate>(
+    `/api/v1/guilds/${guildId}/plugins/${pluginId}/templates`,
+    { method: "POST", body: JSON.stringify(body) },
+  );
+}
+
+export async function testPluginTemplate(
+  guildId: string,
+  pluginId: string,
+  name: string,
+  body: { channelId?: string; variables: Record<string, string> },
+): Promise<void> {
+  await apiFetch<void>(
+    `/api/v1/guilds/${guildId}/plugins/${pluginId}/templates/${encodeURIComponent(name)}/test`,
+    { method: "POST", body: JSON.stringify(body) },
   );
 }
 
