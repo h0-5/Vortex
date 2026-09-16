@@ -102,6 +102,8 @@ export class PluginRuntime {
       dependencies.channels ??
       {
         createText: () => Promise.reject(new Error('Channel adapter is not configured.')),
+        createPrivateThread: () => Promise.reject(new Error('Thread adapter is not configured.')),
+        addThreadMember: () => Promise.reject(new Error('Thread adapter is not configured.')),
         createCategory: () => Promise.reject(new Error('Channel adapter is not configured.')),
         setPermissions: () => Promise.reject(new Error('Channel adapter is not configured.')),
         setTopic: () => Promise.reject(new Error('Channel adapter is not configured.')),

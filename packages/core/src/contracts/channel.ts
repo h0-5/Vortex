@@ -13,6 +13,13 @@ export interface PluginChannelCreateOptions {
   reason?: string;
 }
 
+export interface PluginThreadCreateOptions {
+  name: string;
+  invitable?: boolean;
+  reason?: string;
+  memberIds?: string[];
+}
+
 export interface PluginChannel {
   id: string;
   guildId: string;
@@ -22,6 +29,8 @@ export interface PluginChannel {
 
 export interface PluginChannels {
   createText(options: PluginChannelCreateOptions): Promise<PluginChannel>;
+  createPrivateThread(parentChannelId: string, options: PluginThreadCreateOptions): Promise<PluginChannel | null>;
+  addThreadMember(threadId: string, userId: string): Promise<boolean>;
   createCategory(name: string): Promise<PluginChannel>;
   setPermissions(
     channelId: string,

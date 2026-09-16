@@ -32,6 +32,7 @@ import {
   type PluginChannel,
   type PluginChannelCreateOptions,
   type PluginContextDependencies,
+  type PluginFileInput,
   type PluginGuild,
   type PluginLogEntry,
   type PluginLogSettingsReader,
@@ -44,6 +45,7 @@ import {
   type PluginStorageRepository,
   type PluginTemplateRepository,
   type PluginThread,
+  type PluginThreadCreateOptions,
   type TemplateInput,
 } from '@vortex/shared';
 import {
@@ -507,6 +509,54 @@ class DiscordPluginChannels implements PluginChannels {
     return toPluginChannel(created);
   }
 
+  async createPrivateThread(
+    parentChannelId: string,
+    options: PluginThreadCreateOptions,
+  ): Promise<PluginChannel | null> {
+    const parent = await this.client.channels.fetch(parentChannelId);
+    if (!parent || !('threads' in parent)) {
+      return null;
+    }
+    const threadCreator = parent as unknown as {
+      threads: {
+        create: (o: Record<string, unknown>) => Promise<{
+          id: string;
+          guildId: string;
+          name: string;
+          type: number;
+          members: { add: (id: string) => Promise<unknown> };
+        }>;
+      };
+    };
+    const thread = await threadCreator.threads
+      .create({
+        name: options.name,
+        type: ChannelType.PrivateThread,
+        ...(options.invitable !== undefined ? { invitable: options.invitable } : {}),
+        ...(options.reason !== undefined ? { reason: options.reason } : {}),
+      })
+      .catch(() => null);
+    if (!thread) {
+      return null;
+    }
+    for (const memberId of options.memberIds ?? []) {
+      await thread.members.add(memberId).catch(() => undefined);
+    }
+    return toPluginChannel(thread);
+  }
+
+  async addThreadMember(threadId: string, userId: string): Promise<boolean> {
+    const channel = await this.client.channels.fetch(threadId);
+    if (!channel || !('members' in channel)) {
+      return false;
+    }
+    const memberManager = channel as unknown as {
+      members: { add: (id: string) => Promise<unknown> };
+    };
+    await memberManager.members.add(userId).catch(() => undefined);
+    return true;
+  }
+
   async createCategory(name: string): Promise<PluginChannel> {
     const guild = await this.guild();
     const created = await guild.channels.create({
@@ -843,6 +893,17 @@ function toPluginChannel(channel: { id: string; guildId: string; name: string; t
     type: String(channel.type),
   };
 }
+
+function toFileBuffer(data: string | Uint8Array | ArrayBuffer): Buffer {
+  if (typeof data === 'string') {
+    return Buffer.from(data, 'utf8');
+  }
+  if (data instanceof Uint8Array) {
+    return Buffer.from(data);
+  }
+  return Buffer.from(data);
+}
+
 class DiscordPluginMessages implements PluginMessages {
   constructor(private readonly client: Client) {}
 
@@ -881,6 +942,50 @@ class DiscordPluginMessages implements PluginMessages {
         },
       ],
     });
+    return { id: sent.id, channelId: sent.channelId };
+  }
+
+  async sendFile(
+    channelId: string,
+    file: PluginFileInput,
+    caption?: string,
+  ): Promise<PluginMessageReceipt | null> {
+    const channel = await this.client.channels.fetch(channelId);
+    if (!channel?.isSendable()) {
+      return null;
+    }
+    const payload: Record<string, unknown> = {
+      files: [{ attachment: toFileBuffer(file.data), name: file.name }],
+    };
+    if (caption) {
+      payload.content = caption;
+    }
+    const sent = await channel.send(payload).catch(() => null);
+    if (!sent) {
+      return null;
+    }
+    return { id: sent.id, channelId: sent.channelId };
+  }
+
+  async sendDirectFile(
+    userId: string,
+    file: PluginFileInput,
+    caption?: string,
+  ): Promise<PluginMessageReceipt | null> {
+    const user = await this.client.users.fetch(userId).catch(() => null);
+    if (!user) {
+      return null;
+    }
+    const payload: Record<string, unknown> = {
+      files: [{ attachment: toFileBuffer(file.data), name: file.name }],
+    };
+    if (caption) {
+      payload.content = caption;
+    }
+    const sent = await user.send(payload).catch(() => null);
+    if (!sent) {
+      return null;
+    }
     return { id: sent.id, channelId: sent.channelId };
   }
 

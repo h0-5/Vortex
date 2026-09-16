@@ -3,6 +3,11 @@ export interface PluginMessageReceipt {
   channelId: string;
 }
 
+export interface PluginFileInput {
+  name: string;
+  data: string | Uint8Array | ArrayBuffer;
+}
+
 export interface PluginThread {
   id: string;
   channelId: string;
@@ -35,6 +40,16 @@ export interface PluginMessages {
     layout: unknown,
     previewData: Record<string, string>,
   ): Promise<PluginMessageReceipt>;
+  sendFile(
+    channelId: string,
+    file: PluginFileInput,
+    caption?: string,
+  ): Promise<PluginMessageReceipt | null>;
+  sendDirectFile(
+    userId: string,
+    file: PluginFileInput,
+    caption?: string,
+  ): Promise<PluginMessageReceipt | null>;
   readChannel(channelId: string, limit?: number): Promise<PluginMessageEntry[]>;
   delete(channelId: string, messageId: string): Promise<void>;
   edit(channelId: string, messageId: string, message: CoreMessage): Promise<PluginMessageReceipt>;

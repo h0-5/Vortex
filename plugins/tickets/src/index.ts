@@ -65,6 +65,7 @@ interface TicketPanel {
   name: string;
   panelTitle: string;
   panelChannel: string | null;
+  threadNotifChannel: string | null;
   category: string | null;
   mentionRole: string | null;
   transcriptChannel: string | null;
@@ -462,7 +463,7 @@ async function handleFormModal(context: PluginContext, interaction: PluginCompon
 
   await interaction.respond({ kind: 'deferUpdate' });
 
-  const check = await runOpenChecks(context, interaction, panel, settings);
+  const check = await runOpenChecks(context, interaction, panel, settings, { skipHours: true });
   if (!check.ok) {
     await notifyDeferred(context, interaction.userId, check.message ?? '❌ حدث خطأ.');
     return;
@@ -506,6 +507,7 @@ function buildFormModal(panel: TicketPanel): PluginModal {
       style: 'short' | 'paragraph';
       required: boolean;
       maxLength: number;
+      placeholder?: string;
     } = {
       id: `q${i}`,
       label: (q.label || `سؤال ${i + 1}`).substring(0, 45),
@@ -513,6 +515,9 @@ function buildFormModal(panel: TicketPanel): PluginModal {
       required: q.required !== false,
       maxLength: q.style === 'paragraph' ? 1000 : 200,
     };
+    if (q.placeholder) {
+      field.placeholder = q.placeholder.substring(0, 100);
+    }
     return field;
   });
   return { id: `${ID_FORM}${panel.id}`, title, fields };
@@ -534,6 +539,7 @@ async function runOpenChecks(
   interaction: PluginComponentInteraction,
   panel: TicketPanel,
   settings: TicketSettings,
+  opts: { skipHours?: boolean } = {},
 ): Promise<OpenCheckResult> {
   if (!settings.enabled) {
     return { ok: false, message: '❌ نظام التذاكر معطل.' };
@@ -544,41 +550,31 @@ async function runOpenChecks(
   if (!passesAcl(interaction, panel.acl)) {
     return { ok: false, message: '❌ لا تملك إذنًا لفتح تذكرة في هذه البانل.' };
   }
-  if (!panel.alwaysOpen && !isPanelOpenNow(panel)) {
+  if (!opts.skipHours && !panel.alwaysOpen && !isPanelOpenNow(panel)) {
     return { ok: false, message: '❌ التذاكر مغلقة حاليًا في هذه البانل.' };
   }
 
-  const staffMember = await isStaff(context, interaction, panel, settings);
-  if (!staffMember) {
-    if (panel.cooldown > 0) {
-      const cooldowns = (await context.storage.get<Record<string, string>>(STORAGE_COOLDOWNS)) ?? {};
-      const last = cooldowns[`${panel.id}_${interaction.userId}`];
-      if (last) {
-        const remaining = panel.cooldown * 1000 - (Date.now() - new Date(last).getTime());
-        if (remaining > 0) {
-          return { ok: false, message: `⏳ يرجى الانتظار ${Math.ceil(remaining / 1000)} ثانية قبل فتح تذكرة جديدة.` };
-        }
+  if (panel.cooldown > 0) {
+    const cooldowns = (await context.storage.get<Record<string, string>>(STORAGE_COOLDOWNS)) ?? {};
+    const last = cooldowns[`${panel.id}_${interaction.userId}`];
+    if (last) {
+      const remaining = panel.cooldown * 1000 - (Date.now() - new Date(last).getTime());
+      if (remaining > 0) {
+        return { ok: false, message: `⏳ يرجى الانتظار ${Math.ceil(remaining / 1000)} ثانية قبل فتح تذكرة جديدة.` };
       }
     }
+  }
 
-    const globalLimit = gNum(settings.general['TICKET_LIMIT_PER_USER'], 1);
-    const panelLimit = panel.maxOpen;
-    const otDb = await readOpenTickets(context);
-    const userOpen = otDb.tickets.filter((t) => t.userId === interaction.userId && t.status === 'open');
-    if (globalLimit > 0 && userOpen.length >= globalLimit) {
+  const panelLimit = panel.maxOpen;
+  const otDb = await readOpenTickets(context);
+  const userOpen = otDb.tickets.filter((t) => t.userId === interaction.userId && t.status === 'open');
+  if (panelLimit > 0) {
+    const inPanel = userOpen.filter((t) => t.panelId === panel.id).length;
+    if (inPanel >= panelLimit) {
       return {
         ok: false,
-        message: `❌ لديك ${userOpen.length} تذكرة مفتوحة بالفعل (الحد الأقصى ${globalLimit}).`,
+        message: `❌ لديك ${inPanel} تذكرة مفتوحة في هذه البانل (الحد الأقصى ${panelLimit}).`,
       };
-    }
-    if (panelLimit > 0) {
-      const inPanel = userOpen.filter((t) => t.panelId === panel.id).length;
-      if (inPanel >= panelLimit) {
-        return {
-          ok: false,
-          message: `❌ لديك ${inPanel} تذكرة مفتوحة في هذه البانل (الحد الأقصى ${panelLimit}).`,
-        };
-      }
     }
   }
 
@@ -693,9 +689,9 @@ async function closeTicket(
   await context.storage.set(STORAGE_OPEN_TICKETS, otDb);
   await updateStatsClose(context, ticket, closedAt);
 
-  await runTranscript(context, updated, panel, settings);
+  const transcript = await runTranscript(context, updated, panel, settings);
 
-  await postCloseLog(context, updated, panel, settings, interaction.userId, reason);
+  await postCloseLog(context, updated, panel, settings, interaction.userId, reason, transcript);
 
   await sendFeedbackPrompt(context, updated, panel, settings);
 
@@ -1563,9 +1559,9 @@ async function runTranscript(
   ticket: TicketRecord,
   panel: TicketPanel | null,
   settings: TicketSettings,
-): Promise<void> {
+): Promise<{ fileName: string; html: string } | null> {
   if (!panel?.transcriptEnabled) {
-    return;
+    return null;
   }
 
   const messages = await context.messages
@@ -1602,6 +1598,9 @@ async function runTranscript(
     ]);
     const receipt = await context.messages.sendChannel(transcriptChannelId, card).catch(() => null);
     transcriptChannelMsgId = receipt?.id ?? null;
+    await context.messages
+      .sendFile(transcriptChannelId, { name: fileName, data: html })
+      .catch(() => undefined);
   }
 
   if (panel.transcriptDm) {
@@ -1619,6 +1618,9 @@ async function runTranscript(
       },
     ]);
     await context.messages.sendDirect(ticket.userId, dmCard).catch(() => undefined);
+    await context.messages
+      .sendDirectFile(ticket.userId, { name: fileName, data: html })
+      .catch(() => undefined);
   }
 
   const otDb = await readOpenTickets(context);
@@ -1632,6 +1634,8 @@ async function runTranscript(
     };
     await context.storage.set(STORAGE_OPEN_TICKETS, otDb);
   }
+
+  return { fileName, html };
 }
 
 function escapeHtml(value: string): string {
@@ -1747,6 +1751,7 @@ async function postCloseLog(
   settings: TicketSettings,
   actorId: string,
   reason: string,
+  transcript: { fileName: string; html: string } | null = null,
 ): Promise<void> {
   const logChannelId =
     panel?.logChannel || settings.logChannel || asNullableStr(settings.general['NOTIFICATION_CHANNEL']);
@@ -1789,6 +1794,12 @@ async function postCloseLog(
       ]),
     )
     .catch(() => undefined);
+
+  if (transcript) {
+    await context.messages
+      .sendFile(logChannelId, { name: transcript.fileName, data: transcript.html })
+      .catch(() => undefined);
+  }
 }
 
 async function sendFeedbackPrompt(
@@ -1819,7 +1830,9 @@ async function sendFeedbackPrompt(
     });
   }
 
-  await context.messages.sendChannel(ticket.channelId, buildContainer(context, items)).catch(() => undefined);
+  await context.messages
+    .sendDirect(ticket.userId, buildContainer(context, items))
+    .catch(() => undefined);
 }
 
 async function updateStatsClose(context: PluginContext, record: TicketRecord, closedAt: string): Promise<void> {
@@ -2016,9 +2029,39 @@ function createTicketChannel(
       createOptions.topic = topic;
     }
 
-    const channel = await context.channels.createText(createOptions).catch(() => null);
+    let channel = null;
+    if (panel.threadMode) {
+      const parentId = panel.panelChannel || asNullableStr(settings.general['PANEL_CHANNEL']);
+      if (!parentId) {
+        return null;
+      }
+      channel = await context.channels
+        .createPrivateThread(parentId, {
+          name: channelName,
+          invitable: false,
+          reason: 'Ticket opened',
+          memberIds: [interaction.userId],
+        })
+        .catch(() => null);
+    } else {
+      channel = await context.channels.createText(createOptions).catch(() => null);
+    }
     if (!channel) {
       return null;
+    }
+
+    if (panel.threadMode && panel.threadNotifChannel) {
+      await context.messages
+        .sendChannel(
+          panel.threadNotifChannel,
+          buildContainer(context, [
+            {
+              type: 'text_display',
+              content: `🎫 فتحت تذكرة جديدة بواسطة <@${interaction.userId}>: <#${channel.id}>`,
+            },
+          ]),
+        )
+        .catch(() => undefined);
     }
 
     const ticketId = `tkt_${Date.now()}${Math.floor(Math.random() * 1000)}`;
@@ -2068,6 +2111,7 @@ function panelOf(panel: Record<string, unknown>): TicketPanel {
     name: asStr(r['name']),
     panelTitle: asStr(r['panelTitle']),
     panelChannel: asNullableStr(r['panelChannel']),
+    threadNotifChannel: asNullableStr(r['threadNotifChannel']),
     category: asNullableStr(r['category']),
     mentionRole: asNullableStr(r['mentionRole']),
     transcriptChannel: asNullableStr(r['transcriptChannel']),

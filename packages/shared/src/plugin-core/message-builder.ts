@@ -8,6 +8,8 @@ export const pluginMessages: PluginMessages = {
   sendDirect: () => Promise.reject(new Error('Message delivery adapter is not configured.')),
   sendVisualCard: () =>
     Promise.reject(new Error('Visual card delivery adapter is not configured.')),
+  sendFile: () => Promise.reject(new Error('File delivery adapter is not configured.')),
+  sendDirectFile: () => Promise.reject(new Error('File delivery adapter is not configured.')),
   readChannel: () => Promise.reject(new Error('Message read adapter is not configured.')),
   delete: () => Promise.reject(new Error('Message delivery adapter is not configured.')),
   edit: () => Promise.reject(new Error('Message edit adapter is not configured.')),
