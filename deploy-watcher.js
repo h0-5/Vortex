@@ -150,13 +150,20 @@ async function killLauncher() {
 }
 
 function startLauncher() {
-  spawn('cmd.exe', [`/c node index.js > "${LAUNCH_LOG}" 2>&1`], {
+  let logFd;
+  try {
+    logFd = fs.openSync(LAUNCH_LOG, 'a');
+  } catch (error) {
+    logLine(`[deploy] WARN cannot open launcher log: ${error.message}`);
+  }
+  const child = spawn(process.execPath, ['index.js'], {
     cwd: ROOT,
     detached: true,
     windowsHide: true,
-    stdio: 'ignore',
-  }).unref();
-  logLine('[deploy] launcher started');
+    stdio: logFd ? ['ignore', logFd, logFd] : 'ignore',
+  });
+  child.unref();
+  logLine(`[deploy] launcher started (pid ${child.pid})`);
 }
 
 function readState() {
