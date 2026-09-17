@@ -13,8 +13,12 @@ export function VortexMark({ className, size = 32 }: { className?: string; size?
   );
 }
 
+/**
+ * Brand lockup: the gradient mark lives on an ink tile so it keeps its
+ * contrast on the paper canvas, next to a Space Grotesk wordmark.
+ */
 export function VortexBrand({
-  size = 32,
+  size = 26,
   compact = false,
   className,
 }: {
@@ -24,10 +28,23 @@ export function VortexBrand({
 }) {
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
-      <VortexMark size={size} className="nx-glow-soft rounded-md" />
+      <span
+        className="inline-flex shrink-0 items-center justify-center rounded-[7px] bg-ink"
+        style={{ width: size + 10, height: size + 10 }}
+      >
+        <VortexMark size={size} />
+      </span>
       {!compact && (
-        <span className="text-[17px] font-extrabold tracking-tight">
-          Vor<span className="nx-gradient-text">tex</span>
+        <span className="flex flex-col leading-none">
+          <span
+            className="text-[15px] font-bold uppercase tracking-[0.08em]"
+            style={{ fontFamily: "var(--font-grotesk)" }}
+          >
+            Vortex
+          </span>
+          <span className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.22em] text-muted-foreground">
+            console
+          </span>
         </span>
       )}
     </span>
@@ -50,15 +67,17 @@ export function GuildAvatar({
   return (
     <span
       className={cn(
-        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-lg font-bold text-white/90",
+        "relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-md font-semibold",
         className,
       )}
       style={{
         width: size,
         height: size,
         fontSize: size * 0.34,
-        background: `linear-gradient(135deg, hsl(${hue} 72% 46% / 0.9), hsl(${(hue + 40) % 360} 80% 38% / 0.9))`,
-        boxShadow: `inset 0 0 0 1px rgba(255,255,255,0.14), 0 0 18px -8px hsl(${hue} 80% 55% / 0.7)`,
+        fontFamily: "var(--font-grotesk)",
+        background: `hsl(${hue} 30% 90%)`,
+        color: `hsl(${hue} 42% 30%)`,
+        boxShadow: "inset 0 0 0 1px rgba(27,26,22,0.12)",
       }}
     >
       {iconUrl ? (
@@ -100,13 +119,15 @@ export function UserAvatar({
     .join("");
   return (
     <span
-      className="relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full font-bold text-white"
+      className="relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full font-semibold"
       style={{
         width: size,
         height: size,
         fontSize: size * 0.36,
-        background: "linear-gradient(135deg, #8b5cf6, #06b6d4)",
-        boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.2)",
+        fontFamily: "var(--font-grotesk)",
+        background: "#E7E4DA",
+        color: "#4A483F",
+        boxShadow: "inset 0 0 0 1px rgba(27,26,22,0.14)",
       }}
     >
       {avatarUrl ? (

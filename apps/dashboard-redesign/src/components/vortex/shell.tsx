@@ -2,17 +2,11 @@
 
 import { useEffect, useState } from "react";
 import {
-  ActivityIcon,
-  ChevronsUpDownIcon,
-  LayoutDashboardIcon,
+  ChevronDownIcon,
   LogOutIcon,
   MenuIcon,
-  PuzzleIcon,
-  ScrollTextIcon,
   SearchIcon,
   ServerIcon,
-  SettingsIcon,
-  ShieldCheckIcon,
 } from "lucide-react";
 import {
   CommandDialog,
@@ -39,33 +33,20 @@ export type VortexView = "overview" | "plugins" | "activity" | "logs" | "api" | 
 
 export const VIEW_META: Record<VortexView, { title: string; subtitle: string }> = {
   overview: { title: "Overview", subtitle: "Live workspace status and quick actions" },
-  plugins: { title: "Plugins", subtitle: "Enable, disable, and audit installed modules" },
+  plugins: { title: "Plugins", subtitle: "Enable, disable, and configure installed modules" },
   activity: { title: "Activity", subtitle: "Everything happening across this server" },
   logs: { title: "Logs", subtitle: "Live gateway, API, and plugin telemetry" },
   api: { title: "Core API", subtitle: "Versioned REST contract health" },
   settings: { title: "Settings", subtitle: "Branding, appearance, and session security" },
 };
 
-const NAV_SECTIONS: Array<{
-  label: string;
-  items: Array<{ view: VortexView; label: string; icon: typeof LayoutDashboardIcon }>;
-}> = [
-  {
-    label: "Workspace",
-    items: [
-      { view: "overview", label: "Overview", icon: LayoutDashboardIcon },
-      { view: "plugins", label: "Plugins", icon: PuzzleIcon },
-      { view: "activity", label: "Activity", icon: ActivityIcon },
-    ],
-  },
-  {
-    label: "Platform",
-    items: [
-      { view: "logs", label: "Logs", icon: ScrollTextIcon },
-      { view: "api", label: "Core API", icon: ServerIcon },
-      { view: "settings", label: "Settings", icon: SettingsIcon },
-    ],
-  },
+const NAV_ITEMS: Array<{ view: VortexView; label: string }> = [
+  { view: "overview", label: "Overview" },
+  { view: "plugins", label: "Plugins" },
+  { view: "activity", label: "Activity" },
+  { view: "logs", label: "Logs" },
+  { view: "api", label: "Core API" },
+  { view: "settings", label: "Settings" },
 ];
 
 interface ShellProps {
@@ -80,140 +61,69 @@ interface ShellProps {
   children: React.ReactNode;
 }
 
-function GatewayPill() {
+function GatewayChip() {
   const [ping, setPing] = useState(24);
   useEffect(() => {
     const t = setInterval(() => setPing(18 + Math.floor(Math.random() * 26)), 2200);
     return () => clearInterval(t);
   }, []);
   return (
-    <span className="nx-panel hidden items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium sm:inline-flex">
-      <span className="nx-live-dot inline-block size-1.5 rounded-full bg-[#34d399] text-[#34d399]" />
-      <span className="font-mono">{ping}ms</span>
-      <span className="text-muted-foreground">gateway</span>
+    <span className="hidden items-center gap-2 rounded-md border border-border bg-card px-2.5 py-1.5 font-mono text-[11px] text-muted-foreground md:inline-flex">
+      <span className="vl-dot vl-dot--live bg-[#12805c] text-[#12805c]" />
+      gateway {ping}ms
     </span>
   );
 }
 
-function SidebarContent({
-  user,
+function GuildSwitcher({
   guild,
   guilds,
-  view,
-  onViewChange,
   onSwitchGuild,
   onBrowseServers,
-  onLogout,
-}: Omit<ShellProps, "children">) {
+}: Pick<ShellProps, "guild" | "guilds" | "onSwitchGuild" | "onBrowseServers">) {
   return (
-    <div className="flex h-full flex-col">
-      <div className="px-4 pb-2 pt-5">
-        <VortexBrand size={30} />
-      </div>
-
-      {/* Server switcher */}
-      <div className="px-3 pt-3">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button className="nx-panel flex w-full items-center gap-2.5 rounded-lg p-2.5 text-left transition-colors duration-150 hover:border-primary/40 focus-visible:outline-ring">
-              <GuildAvatar initials={guild.initials} hue={guild.hue} iconUrl={guild.iconUrl} size={32} />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-[13px] font-bold">{guild.name}</span>
-                <span className="block font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                  {guild.role.toLowerCase()}
-                </span>
-              </span>
-              <ChevronsUpDownIcon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-60 border-border bg-popover">
-            <DropdownMenuLabel className="text-xs text-muted-foreground">
-              Bot-present servers
-            </DropdownMenuLabel>
-            {guilds
-              .filter((g) => g.botPresent && g.id !== guild.id)
-              .map((g) => (
-                <DropdownMenuItem key={g.id} onClick={() => onSwitchGuild(g)} className="gap-2.5">
-                  <GuildAvatar initials={g.initials} hue={g.hue} iconUrl={g.iconUrl} size={22} />
-                  <span className="truncate text-[13px]">{g.name}</span>
-                </DropdownMenuItem>
-              ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onBrowseServers} className="gap-2 text-primary">
-              <ServerIcon className="size-4" aria-hidden="true" />
-              Browse all servers
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Dashboard">
-        {NAV_SECTIONS.map((section) => (
-          <div key={section.label} className="mb-5">
-            <p className="mb-1.5 px-2 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/60">
-              {section.label}
-            </p>
-            <ul className="flex flex-col gap-0.5">
-              {section.items.map((item) => {
-                const active = view === item.view;
-                return (
-                  <li key={item.view}>
-                    <button
-                      onClick={() => onViewChange(item.view)}
-                      aria-current={active ? "page" : undefined}
-                      className={cn(
-                        "group relative flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-[13.5px] font-medium transition-all duration-150 focus-visible:outline-ring",
-                        active
-                          ? "bg-white/[0.05] text-foreground"
-                          : "text-muted-foreground hover:bg-white/[0.03] hover:text-foreground",
-                      )}
-                    >
-                      {active && (
-                        <span className="nx-gradient absolute left-0 top-1/2 h-4.5 w-[3px] -translate-y-1/2 rounded-full" />
-                      )}
-                      <item.icon
-                        className={cn("size-4.5 shrink-0", active && "text-primary")}
-                        aria-hidden="true"
-                      />
-                      {item.label}
-                      {active && (
-                        <span className="nx-glow ml-auto size-1 rounded-full bg-primary" />
-                      )}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-      </nav>
-
-      {/* User card */}
-      <div className="border-t border-border/60 p-3">
-        <div className="nx-panel flex items-center gap-2.5 rounded-lg p-2.5">
-          <UserAvatar name={user.globalName} avatarUrl={user.avatarUrl} size={32} />
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          className="flex max-w-[220px] items-center gap-2 rounded-md border border-border bg-card py-1.5 pl-1.5 pr-2.5 text-left transition-colors duration-150 hover:border-input focus-visible:outline-ring"
+          aria-label="Switch server"
+        >
+          <GuildAvatar initials={guild.initials} hue={guild.hue} iconUrl={guild.iconUrl} size={26} />
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-[13px] font-bold">{user.globalName}</span>
-            <span className="block truncate font-mono text-[10px] text-muted-foreground">
-              @{user.username}
+            <span className="block truncate text-[12.5px] font-semibold leading-tight">
+              {guild.name}
+            </span>
+            <span className="block font-mono text-[9.5px] uppercase tracking-[0.14em] text-muted-foreground">
+              {guild.role.toLowerCase()} · {fmt.format(guild.memberCount)}
             </span>
           </span>
-          <button
-            onClick={onLogout}
-            aria-label="Log out"
-            className="rounded-md p-1.5 text-muted-foreground transition-colors duration-150 hover:bg-white/5 hover:text-destructive"
-          >
-            <LogOutIcon className="size-4" aria-hidden="true" />
-          </button>
-        </div>
-      </div>
-    </div>
+          <ChevronDownIcon className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-64">
+        <DropdownMenuLabel className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted-foreground">
+          Bot-present servers
+        </DropdownMenuLabel>
+        {guilds
+          .filter((g) => g.botPresent && g.id !== guild.id)
+          .map((g) => (
+            <DropdownMenuItem key={g.id} onClick={() => onSwitchGuild(g)} className="gap-2.5">
+              <GuildAvatar initials={g.initials} hue={g.hue} iconUrl={g.iconUrl} size={22} />
+              <span className="truncate text-[13px]">{g.name}</span>
+            </DropdownMenuItem>
+          ))}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={onBrowseServers} className="gap-2 text-primary">
+          <ServerIcon className="size-4" aria-hidden="true" />
+          Browse all servers
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
 export function DashboardShell(props: ShellProps) {
-  const { user, view, onViewChange, onLogout, children } = props;
+  const { user, guild, guilds, view, onViewChange, onSwitchGuild, onBrowseServers, onLogout, children } = props;
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
 
@@ -235,64 +145,156 @@ export function DashboardShell(props: ShellProps) {
   };
 
   return (
-    <div className="relative flex min-h-screen overflow-clip bg-black">
-      <div aria-hidden="true" className="nx-aurora nx-aurora-soft z-0" />
-      {/* Desktop sidebar */}
-      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 border-r border-border/60 bg-sidebar lg:block">
-        <SidebarContent {...props} />
-      </aside>
-
-      {/* Mobile drawer */}
-      <Sheet open={mobileNav} onOpenChange={setMobileNav}>
-        <SheetTrigger asChild>
-          <button
-            className="nx-panel absolute left-4 top-3.5 z-40 inline-flex rounded-lg p-2.5 text-muted-foreground lg:hidden"
-            aria-label="Open navigation"
-          >
-            <MenuIcon className="size-5" aria-hidden="true" />
-          </button>
-        </SheetTrigger>
-        <SheetContent side="left" className="w-72 border-border bg-sidebar p-0">
-          <SheetTitle className="sr-only">Navigation</SheetTitle>
-          <SidebarContent {...props} />
-        </SheetContent>
-      </Sheet>
-
-      {/* Main column */}
-      <div className="relative z-10 flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border/60 bg-black/85 px-5 backdrop-blur-md sm:px-7 lg:pl-7">
-          <div className="pl-12 lg:pl-0">
-            <h1 className="text-[15px] font-bold tracking-tight">{VIEW_META[view].title}</h1>
-            <p className="hidden text-xs text-muted-foreground sm:block">
-              {VIEW_META[view].subtitle}
-            </p>
+    <div className="flex min-h-screen flex-col bg-paper">
+      {/* Masthead row 1 — identity + context */}
+      <header className="sticky top-0 z-30 border-b border-border bg-card">
+        <div className="flex h-14 items-center gap-3 px-4 sm:px-6">
+          <div className="lg:hidden">
+            <Sheet open={mobileNav} onOpenChange={setMobileNav}>
+              <SheetTrigger asChild>
+                <button
+                  className="inline-flex rounded-md border border-border p-2 text-muted-foreground transition-colors hover:text-foreground"
+                  aria-label="Open navigation"
+                >
+                  <MenuIcon className="size-4.5" aria-hidden="true" />
+                </button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-72 bg-card p-0" >
+                <SheetTitle className="sr-only">Navigation</SheetTitle>
+                <div className="flex h-full flex-col">
+                  <div className="border-b border-border p-4">
+                    <VortexBrand size={22} />
+                  </div>
+                  <nav className="flex-1 overflow-y-auto p-3" aria-label="Dashboard">
+                    <p className="vl-label mb-2 px-2">Workspace</p>
+                    <ul className="flex flex-col">
+                      {NAV_ITEMS.map((item) => (
+                        <li key={item.view}>
+                          <button
+                            onClick={() => navigate(item.view)}
+                            aria-current={view === item.view ? "page" : undefined}
+                            className={cn(
+                              "w-full rounded-md px-2.5 py-2 text-left text-[13.5px] font-medium transition-colors",
+                              view === item.view
+                                ? "bg-accent font-semibold text-foreground"
+                                : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                            )}
+                          >
+                            {item.label}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </nav>
+                  <div className="border-t border-border p-4">
+                    <GuildSwitcher
+                      guild={guild}
+                      guilds={guilds}
+                      onSwitchGuild={(g) => { onSwitchGuild(g); setMobileNav(false); }}
+                      onBrowseServers={onBrowseServers}
+                    />
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
+
+          <VortexBrand size={22} />
+
+          <div className="mx-1 hidden h-6 w-px bg-border sm:block" />
+
+          <div className="hidden sm:block">
+            <GuildSwitcher
+              guild={guild}
+              guilds={guilds}
+              onSwitchGuild={onSwitchGuild}
+              onBrowseServers={onBrowseServers}
+            />
+          </div>
+
           <div className="ml-auto flex items-center gap-2.5">
             <button
               onClick={() => setPaletteOpen(true)}
-              className="nx-panel hidden items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-muted-foreground transition-colors duration-150 hover:border-primary/40 hover:text-foreground md:inline-flex"
+              className="hidden items-center gap-2 rounded-md border border-border bg-card px-3 py-1.5 text-[12px] text-muted-foreground transition-colors duration-150 hover:border-input hover:text-foreground md:inline-flex"
             >
               <SearchIcon className="size-3.5" aria-hidden="true" />
-              Search…
-              <kbd className="pointer-events-none ml-3 rounded border border-border bg-white/5 px-1.5 py-0.5 font-mono text-[10px]">
+              Search
+              <kbd className="ml-2 rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px]">
                 ⌘K
               </kbd>
             </button>
-            <GatewayPill />
-            <div className="lg:hidden">
-              <UserAvatar name={user.globalName} avatarUrl={user.avatarUrl} size={32} />
-            </div>
+            <GatewayChip />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="flex items-center gap-2 rounded-md border border-transparent p-1 transition-colors hover:border-border focus-visible:outline-ring"
+                  aria-label="Account menu"
+                >
+                  <UserAvatar name={user.globalName} avatarUrl={user.avatarUrl} size={28} />
+                  <span className="hidden max-w-[140px] truncate text-[12.5px] font-semibold lg:block">
+                    {user.globalName}
+                  </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="flex flex-col">
+                  <span className="truncate text-[13px]">{user.globalName}</span>
+                  <span className="truncate font-mono text-[10.5px] text-muted-foreground">
+                    @{user.username}
+                  </span>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={onBrowseServers} className="gap-2">
+                  <ServerIcon className="size-4" aria-hidden="true" />
+                  Browse servers
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onLogout} className="gap-2 text-destructive">
+                  <LogOutIcon className="size-4" aria-hidden="true" />
+                  Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
-        </header>
+        </div>
 
-        <main className="flex-1 px-5 py-6 sm:px-7 sm:py-8">{children}</main>
+        {/* Masthead row 2 — view tabs */}
+        <nav
+          className="hidden h-11 items-stretch gap-6 overflow-x-auto border-t border-border px-4 sm:flex sm:px-6"
+          aria-label="Views"
+        >
+          {NAV_ITEMS.map((item) => (
+            <button
+              key={item.view}
+              onClick={() => onViewChange(item.view)}
+              data-active={view === item.view}
+              aria-current={view === item.view ? "page" : undefined}
+              className="vl-tab"
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+      </header>
 
-        <footer className="mt-auto flex items-center justify-between border-t border-border/60 px-5 py-3.5 text-[11px] text-muted-foreground/60 sm:px-7">
-          <span className="flex items-center gap-1.5">
-            <ShieldCheckIcon className="size-3.5" aria-hidden="true" />
-            AES-256-GCM · HTTP-only session
-          </span>
-          <span className="font-mono">vortex · phase 1</span>
+      {/* View header + content */}
+      <div className="vl-canvas flex flex-1 flex-col">
+        <div className="border-b border-border/70 bg-paper/80">
+          <div className="flex flex-col gap-0.5 px-4 pb-5 pt-7 sm:px-6">
+            <h1
+              className="text-[21px] font-bold tracking-tight"
+              style={{ fontFamily: "var(--font-grotesk)" }}
+            >
+              {VIEW_META[view].title}
+            </h1>
+            <p className="text-[12.5px] text-muted-foreground">{VIEW_META[view].subtitle}</p>
+          </div>
+        </div>
+
+        <main className="flex-1 px-4 py-6 sm:px-6 sm:py-7">{children}</main>
+
+        <footer className="mt-auto flex items-center justify-between border-t border-border px-4 py-3.5 font-mono text-[10.5px] text-muted-foreground/80 sm:px-6">
+          <span>AES-256-GCM · HTTP-only session</span>
+          <span>vortex console · v1.0</span>
         </footer>
       </div>
 
@@ -301,16 +303,15 @@ export function DashboardShell(props: ShellProps) {
         <CommandInput placeholder="Type a command or search views…" />
         <CommandEmpty>No results found.</CommandEmpty>
         <CommandGroup heading="Navigate">
-          {NAV_SECTIONS.flatMap((s) => s.items).map((item) => (
+          {NAV_ITEMS.map((item) => (
             <CommandItem key={item.view} onSelect={() => navigate(item.view)}>
-              <item.icon className="size-4" aria-hidden="true" />
               {item.label}
             </CommandItem>
           ))}
         </CommandGroup>
         <CommandSeparator />
         <CommandGroup heading="Actions">
-          <CommandItem onSelect={() => { props.onBrowseServers(); setPaletteOpen(false); }}>
+          <CommandItem onSelect={() => { onBrowseServers(); setPaletteOpen(false); }}>
             <ServerIcon className="size-4" aria-hidden="true" />
             Browse all servers
           </CommandItem>

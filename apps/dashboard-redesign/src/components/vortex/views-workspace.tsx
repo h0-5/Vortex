@@ -5,7 +5,6 @@ import {
   ArrowRightIcon,
   BarChart3Icon,
   CheckCircle2Icon,
-  ClockIcon,
   EraserIcon,
   Gamepad2Icon,
   GavelIcon,
@@ -24,11 +23,8 @@ import {
   WrenchIcon,
   ZapIcon,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GuildAvatar } from "@/components/vortex/brand";
 import { PluginStudio } from "@/components/vortex/plugin-studio";
 import { cn } from "@/lib/utils";
@@ -45,10 +41,31 @@ import type { VortexView } from "@/components/vortex/shell";
 /* ------------------------------ shared bits ------------------------------ */
 
 function Panel({ className, children }: { className?: string; children: React.ReactNode }) {
-  return <section className={cn("nx-panel rounded-xl", className)}>{children}</section>;
+  return <section className={cn("vl-panel rounded-lg", className)}>{children}</section>;
 }
 
-function Sparkline({ points, stroke }: { points: number[]; stroke: string }) {
+function SectionHead({
+  title,
+  hint,
+  action,
+}: {
+  title: string;
+  hint?: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-3">
+      <div className="flex items-baseline gap-2.5">
+        <h3 className="vl-label !text-foreground">{title}</h3>
+        {hint ? <span className="text-[11.5px] text-muted-foreground">{hint}</span> : null}
+      </div>
+      {action}
+    </div>
+  );
+}
+
+/* Line sparkline — single flat stroke, no glow. */
+function Sparkline({ points }: { points: number[] }) {
   const max = Math.max(...points);
   const min = Math.min(...points);
   const range = Math.max(max - min, 1);
@@ -60,8 +77,8 @@ function Sparkline({ points, stroke }: { points: number[]; stroke: string }) {
       <polyline
         points={coords}
         fill="none"
-        stroke={stroke}
-        strokeWidth="2"
+        stroke="var(--primary)"
+        strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
@@ -103,33 +120,33 @@ export function OverviewView({
       label: "Members",
       value: fmt.format(guild.memberCount),
       delta: "+3.2% this week",
+      up: true,
       icon: TrendingUpIcon,
       spark: [12, 14, 13, 16, 15, 18, 17, 20, 19, 22, 21, 24],
-      color: "#8b5cf6",
     },
     {
       label: "Gateway latency",
       value: `${latency}ms`,
       delta: "shard 0 · stable",
+      up: true,
       icon: HeartPulseIcon,
       spark: latencySeries,
-      color: "#06b6d4",
     },
     {
       label: "Commands / 24h",
       value: fmt.format(commands24h),
       delta: "+11% vs yesterday",
+      up: true,
       icon: ZapIcon,
       spark: [8, 10, 9, 12, 14, 13, 16, 15, 18, 17, 20, 22],
-      color: "#6366f1",
     },
     {
       label: "Uptime · 30d",
       value: "99.98%",
       delta: "3 partial degradations",
+      up: true,
       icon: ShieldCheckIcon,
       spark: [24, 24, 23, 24, 24, 22, 24, 24, 23, 24, 24, 24],
-      color: "#34d399",
     },
   ];
 
@@ -141,53 +158,57 @@ export function OverviewView({
   ];
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       {/* Guild header */}
-      <Panel className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <GuildAvatar initials={guild.initials} hue={guild.hue} iconUrl={guild.iconUrl} size={52} />
+          <GuildAvatar initials={guild.initials} hue={guild.hue} iconUrl={guild.iconUrl} size={48} />
           <div>
             <div className="flex flex-wrap items-center gap-2.5">
-              <h2 className="text-lg font-extrabold tracking-tight">{guild.name}</h2>
-              <Badge className="border-transparent bg-[#34d399]/12 font-mono text-[10px] uppercase tracking-wider text-[#34d399] hover:bg-[#34d399]/20">
-                bot online
-              </Badge>
+              <h2
+                className="text-[19px] font-bold tracking-tight"
+                style={{ fontFamily: "var(--font-grotesk)" }}
+              >
+                {guild.name}
+              </h2>
+              <span className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em] text-[#12805c]">
+                <span className="vl-dot vl-dot--live bg-[#12805c] text-[#12805c]" />
+                online
+              </span>
             </div>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              {fmt.format(guild.memberCount)} members · guild id{" "}
-              <span className="font-mono">{guild.id}</span> · {guild.role.toLowerCase()} access
+            <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">
+              {fmt.format(guild.memberCount)} members · {guild.id} · {guild.role.toLowerCase()}
             </p>
           </div>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
+        <button
           onClick={() => onQuickAction("Guild synchronized")}
-          className="gap-2 border-border bg-transparent hover:border-primary/50 hover:bg-primary/10"
+          className="inline-flex h-9 w-fit items-center gap-2 rounded-md border border-input bg-card px-3.5 text-[12.5px] font-semibold transition-colors duration-150 hover:border-ink focus-visible:outline-ring"
         >
           <RefreshCwIcon className="size-3.5" aria-hidden="true" />
           Sync now
-        </Button>
-      </Panel>
+        </button>
+      </div>
 
-      {/* KPI cards */}
+      {/* KPI ledger */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((s) => (
-          <Panel key={s.label} className="nx-lift group p-5">
+          <Panel key={s.label} className="p-5">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {s.label}
-              </p>
-              <span className="flex size-8 items-center justify-center rounded-lg border border-border/60 bg-white/[0.02] transition-all duration-200 group-hover:border-primary/40 group-hover:bg-primary/10">
-                <s.icon className="size-4 text-muted-foreground/80 transition-colors duration-200 group-hover:text-primary" aria-hidden="true" />
-              </span>
+              <p className="vl-label">{s.label}</p>
+              <s.icon className="size-4 text-muted-foreground/70" aria-hidden="true" />
             </div>
-            <p className="nx-num nx-gradient-text mt-3 font-mono text-[30px] font-bold leading-none tracking-tight">
+            <p className="mt-3 font-mono text-[30px] font-medium leading-none tracking-tight">
               {s.value}
             </p>
-            <p className="mt-1.5 text-[11px] text-muted-foreground">{s.delta}</p>
-            <div className="mt-3 opacity-80">
-              <Sparkline points={s.spark} stroke={s.color} />
+            <p className="mt-2 flex items-center gap-1 text-[11px] text-muted-foreground">
+              <span className={s.up ? "text-[#12805c]" : "text-destructive"} aria-hidden="true">
+                {s.up ? "▲" : "▼"}
+              </span>
+              {s.delta}
+            </p>
+            <div className="mt-3 border-t border-border/70 pt-3">
+              <Sparkline points={s.spark} />
             </div>
           </Panel>
         ))}
@@ -195,46 +216,49 @@ export function OverviewView({
 
       {/* Quick actions + bot status */}
       <div className="grid gap-4 lg:grid-cols-[1.25fr_0.75fr]">
-        <Panel className="p-5">
-          <h3 className="text-sm font-bold tracking-tight">Quick actions</h3>
-          <p className="mt-0.5 text-xs text-muted-foreground">
-            Frequent moderator and admin operations, one click away.
-          </p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <Panel>
+          <SectionHead title="Quick actions" hint="one click away" />
+          <div className="grid gap-px bg-border sm:grid-cols-2">
             {quickActions.map((a) => (
               <button
                 key={a.label}
                 onClick={() => onQuickAction(a.label)}
-                className="nx-lift flex items-center gap-3 rounded-lg border border-border/70 bg-white/[0.015] px-4 py-3.5 text-left text-[13px] font-semibold focus-visible:outline-ring"
+                className="group flex items-center gap-3 bg-card px-5 py-4 text-left text-[13px] font-semibold transition-colors duration-150 hover:bg-accent focus-visible:outline-ring"
               >
-                <span className="nx-chip flex size-8 items-center justify-center rounded-md text-white">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground transition-colors group-hover:border-ink group-hover:text-foreground">
                   <a.icon className="size-4" aria-hidden="true" />
                 </span>
                 {a.label}
-                <ArrowRightIcon className="ml-auto size-3.5 text-muted-foreground" aria-hidden="true" />
+                <ArrowRightIcon
+                  className="ml-auto size-3.5 text-muted-foreground/50 transition-colors group-hover:text-foreground"
+                  aria-hidden="true"
+                />
               </button>
             ))}
           </div>
         </Panel>
 
-        <Panel className="p-5">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold tracking-tight">Bot status</h3>
-            <span className="flex items-center gap-1.5 text-[11px] font-semibold text-[#34d399]">
-              <span className="nx-live-dot inline-block size-1.5 rounded-full bg-[#34d399] text-[#34d399]" />
-              connected
-            </span>
-          </div>
-          <ul className="mt-4 flex flex-col gap-3 text-[13px]">
+        <Panel>
+          <SectionHead
+            title="Bot status"
+            action={
+              <span className="flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em] text-[#12805c]">
+                <span className="vl-dot vl-dot--live bg-[#12805c] text-[#12805c]" />
+                connected
+              </span>
+            }
+          />
+          <ul className="flex flex-col px-5 py-2">
             {[
               ["Runtime", "discord.js · node 22"],
               ["Shards", "1 / 1 healthy"],
               ["REST ping", `${latency}ms`],
               ["Plugins active", `${enabledCount} of ${plugins.length}`],
             ].map(([k, v]) => (
-              <li key={k} className="flex items-center justify-between gap-3 border-b border-border/50 pb-2.5 last:border-0 last:pb-0">
-                <span className="text-muted-foreground">{k}</span>
-                <span className="font-mono text-xs">{v}</span>
+              <li key={k} className="flex items-baseline border-b border-border/60 py-2.5 last:border-0">
+                <span className="text-[12.5px] text-muted-foreground">{k}</span>
+                <span className="vl-leader" />
+                <span className="font-mono text-[12px]">{v}</span>
               </li>
             ))}
           </ul>
@@ -242,17 +266,19 @@ export function OverviewView({
       </div>
 
       {/* Recent activity */}
-      <Panel className="p-5">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold tracking-tight">Recent activity</h3>
-          <button
-            onClick={() => onNavigate("activity")}
-            className="text-xs font-semibold text-primary transition-opacity hover:opacity-80"
-          >
-            View all →
-          </button>
-        </div>
-        <ul className="mt-4 flex flex-col">
+      <Panel>
+        <SectionHead
+          title="Recent activity"
+          action={
+            <button
+              onClick={() => onNavigate("activity")}
+              className="text-[12px] font-semibold text-primary transition-opacity hover:opacity-75"
+            >
+              View all →
+            </button>
+          }
+        />
+        <ul className="flex flex-col divide-y divide-border/70">
           {activity.slice(0, 5).map((event) => (
             <ActivityRow key={event.id} event={event} />
           ))}
@@ -266,14 +292,14 @@ export function OverviewView({
 
 const ACTIVITY_META: Record<
   ActivityType,
-  { icon: typeof UserPlusIcon; color: string; bg: string; label: string }
+  { icon: typeof UserPlusIcon; color: string; label: string }
 > = {
-  join: { icon: UserPlusIcon, color: "#34d399", bg: "rgba(52,211,153,0.12)", label: "Join" },
-  leave: { icon: UserMinusIcon, color: "#94a3b8", bg: "rgba(148,163,184,0.12)", label: "Leave" },
-  command: { icon: ZapIcon, color: "#22d3ee", bg: "rgba(34,211,238,0.1)", label: "Command" },
-  moderation: { icon: GavelIcon, color: "#fbbf24", bg: "rgba(251,191,36,0.1)", label: "Mod action" },
-  alert: { icon: ShieldAlertIcon, color: "#f87171", bg: "rgba(248,113,113,0.12)", label: "Alert" },
-  update: { icon: WrenchIcon, color: "#8b5cf6", bg: "rgba(139,92,246,0.12)", label: "Update" },
+  join: { icon: UserPlusIcon, color: "#12805c", label: "Join" },
+  leave: { icon: UserMinusIcon, color: "#5e5b52", label: "Leave" },
+  command: { icon: ZapIcon, color: "#0f5aa8", label: "Command" },
+  moderation: { icon: GavelIcon, color: "#b45309", label: "Mod action" },
+  alert: { icon: ShieldAlertIcon, color: "#b42318", label: "Alert" },
+  update: { icon: WrenchIcon, color: "#17603f", label: "Update" },
 };
 
 function timeAgo(minutes: number): string {
@@ -286,19 +312,21 @@ function timeAgo(minutes: number): string {
 function ActivityRow({ event }: { event: ActivityEvent }) {
   const meta = ACTIVITY_META[event.type];
   return (
-    <li className="flex items-start gap-3.5 border-b border-border/40 py-3.5 last:border-0 last:pb-0">
-      <span
-        className="flex size-9 shrink-0 items-center justify-center rounded-lg"
-        style={{ background: meta.bg, color: meta.color }}
-      >
-        <meta.icon className="size-4" aria-hidden="true" />
+    <li className="flex items-center gap-4 px-5 py-3.5">
+      <span className="vl-dot shrink-0" style={{ background: meta.color, color: meta.color }} />
+      <span className="w-24 shrink-0">
+        <span className="vl-tag" style={{ color: meta.color, borderColor: `${meta.color}33` }}>
+          {meta.label}
+        </span>
       </span>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[13.5px] font-semibold">{event.actor}</p>
-        <p className="mt-0.5 text-[13px] leading-snug text-muted-foreground">{event.message}</p>
+        <p className="truncate text-[13px]">
+          <span className="font-semibold">{event.actor}</span>
+          <span className="text-muted-foreground"> — {event.message}</span>
+        </p>
       </div>
-      <span className="flex shrink-0 items-center gap-1.5 font-mono text-[11px] text-muted-foreground/70">
-        <ClockIcon className="size-3" aria-hidden="true" />
+      <span className="hidden shrink-0 items-center gap-1.5 font-mono text-[11px] text-muted-foreground sm:flex">
+        {meta.icon && <meta.icon className="size-3.5" aria-hidden="true" />}
         {timeAgo(event.minutesAgo)}
       </span>
     </li>
@@ -309,39 +337,38 @@ export function ActivityView({ activity }: { activity: ActivityEvent[] }) {
   const [filter, setFilter] = useState<ActivityType | "all">("all");
   const types: Array<ActivityType | "all"> = ["all", "alert", "moderation", "command", "join", "leave", "update"];
   const shown = filter === "all" ? activity : activity.filter((e) => e.type === filter);
+  const countFor = (t: ActivityType | "all") =>
+    t === "all" ? activity.length : activity.filter((e) => e.type === t).length;
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap gap-2">
+    <div className="flex flex-col gap-4">
+      <div className="flex h-9 items-stretch gap-5 overflow-x-auto border-b border-border">
         {types.map((t) => {
-          const active = filter === t;
           const meta = t === "all" ? null : ACTIVITY_META[t];
           return (
             <button
               key={t}
               onClick={() => setFilter(t)}
-              className={cn(
-                "rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all duration-150 focus-visible:outline-ring",
-                active
-                  ? "border-primary/60 bg-primary/12 text-foreground"
-                  : "border-border/70 text-muted-foreground hover:border-border hover:text-foreground",
-              )}
+              data-active={filter === t}
+              className="vl-tab"
             >
-              {meta && <meta.icon className="mr-1.5 inline size-3.5" style={{ color: meta.color }} aria-hidden="true" />}
               {t === "all" ? "All events" : meta?.label}
+              <span className="font-mono text-[10.5px] text-muted-foreground/70">
+                {countFor(t)}
+              </span>
             </button>
           );
         })}
       </div>
 
-      <Panel className="p-5">
-        <ul className="flex flex-col">
+      <Panel className="overflow-hidden">
+        <ul className="flex flex-col divide-y divide-border/70">
           {shown.map((event) => (
             <ActivityRow key={event.id} event={event} />
           ))}
           {shown.length === 0 && (
-            <li className="py-10 text-center text-sm text-muted-foreground">
-              No events of this type yet.
+            <li className="py-12 text-center font-mono text-[12px] text-muted-foreground">
+              No events recorded for this filter.
             </li>
           )}
         </ul>
@@ -387,104 +414,100 @@ export function PluginsView({
   });
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
-          <TabsList className="bg-white/[0.04]">
-            <TabsTrigger value="all" className="text-xs">All ({plugins.length})</TabsTrigger>
-            <TabsTrigger value="enabled" className="text-xs">
-              Active ({plugins.filter((p) => p.enabled).length})
-            </TabsTrigger>
-            <TabsTrigger value="disabled" className="text-xs">
-              Disabled ({plugins.filter((p) => !p.enabled).length})
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex h-9 items-stretch gap-5 overflow-x-auto border-b border-border">
+          {(
+            [
+              ["all", `All · ${plugins.length}`],
+              ["enabled", `Active · ${plugins.filter((p) => p.enabled).length}`],
+              ["disabled", `Disabled · ${plugins.filter((p) => !p.enabled).length}`],
+            ] as Array<[typeof tab, string]>
+          ).map(([value, label]) => (
+            <button key={value} onClick={() => setTab(value)} data-active={tab === value} className="vl-tab">
+              {label}
+            </button>
+          ))}
+        </div>
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search plugins…"
-          className="h-9 w-full border-border/70 bg-white/[0.02] text-[13px] sm:w-64"
+          className="h-9 w-full border-input bg-card text-[13px] lg:w-64"
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {shown.map((plugin) => {
-          const Icon = CATEGORY_ICON[plugin.category];
-          return (
-            <Panel
-              key={plugin.id}
-              className={cn(
-                "nx-lift flex flex-col p-5",
-                plugin.enabled && "nx-gradient-border",
-              )}
-            >
-              <div className="flex items-start justify-between gap-3">
+      <Panel className="overflow-hidden">
+        <div className="flex items-center justify-between border-b border-border px-5 py-3">
+          <p className="vl-label">Installed modules</p>
+          <p className="font-mono text-[10.5px] text-muted-foreground/80">
+            {plugins.filter((p) => p.enabled).length}/{plugins.length} active
+          </p>
+        </div>
+        <ul className="flex flex-col divide-y divide-border">
+          {shown.map((plugin) => {
+            const Icon = CATEGORY_ICON[plugin.category];
+            return (
+              <li
+                key={plugin.id}
+                className="flex flex-col gap-3 px-5 py-4 transition-colors duration-150 hover:bg-accent/60 lg:flex-row lg:items-center lg:gap-4"
+              >
                 <span
                   className={cn(
-                    "flex size-10 items-center justify-center rounded-lg",
-                    plugin.enabled ? "nx-gradient text-white nx-glow" : "bg-white/[0.05] text-muted-foreground",
+                    "flex size-10 shrink-0 items-center justify-center rounded-md border",
+                    plugin.enabled
+                      ? "border-primary/25 bg-primary/[0.08] text-primary"
+                      : "border-border bg-muted text-muted-foreground",
                   )}
                 >
                   <Icon className="size-4.5" aria-hidden="true" />
                 </span>
-                <Switch
-                  checked={plugin.enabled}
-                  onCheckedChange={() => onToggle(plugin)}
-                  aria-label={`Toggle ${plugin.name}`}
-                  className="data-[state=checked]:bg-primary"
-                />
-              </div>
-              <div className="mt-4 flex items-center gap-2">
-                <h3 className="text-[15px] font-bold tracking-tight">{plugin.name}</h3>
-                <span className="rounded border border-border/70 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
-                  v{plugin.version}
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-[14px] font-semibold tracking-tight">{plugin.name}</h3>
+                    <span className="vl-tag">v{plugin.version}</span>
+                    <span className="vl-tag">{plugin.category}</span>
+                  </div>
+                  <p className="mt-0.5 truncate text-[12.5px] text-muted-foreground" dir="auto">
+                    {plugin.description}
+                  </p>
+                </div>
+
+                <span className="hidden shrink-0 font-mono text-[10.5px] text-muted-foreground xl:block">
+                  @{plugin.author}
                 </span>
-              </div>
-              <p className="mt-1.5 flex-1 text-[13px] leading-relaxed text-muted-foreground">
-                {plugin.description}
-              </p>
-              <div className="mt-4 flex items-center justify-between border-t border-border/50 pt-3">
-                <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                  <PuzzleIcon className="size-3" aria-hidden="true" />
-                  {plugin.category} · @{plugin.author}
-                </span>
-                <div className="flex items-center gap-2">
+
+                <div className="flex shrink-0 items-center gap-3">
                   {plugin.dashboard ? (
                     <button
                       onClick={() => setStudioPlugin(plugin)}
-                      className="flex items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-2.5 py-1.5 text-[11px] font-semibold text-foreground transition-all hover:bg-primary/20 hover:shadow-[0_0_14px_-4px_rgba(139,92,246,0.9)]"
+                      className="flex h-8 items-center gap-1.5 rounded-md border border-input bg-card px-3 text-[12px] font-semibold transition-colors duration-150 hover:border-ink focus-visible:outline-ring"
                       aria-label={`Configure ${plugin.name}`}
                     >
                       <Settings2Icon className="size-3.5" aria-hidden="true" />
                       <span dir="auto">إعدادات</span>
                     </button>
                   ) : null}
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "font-mono text-[10px] uppercase",
-                      plugin.enabled
-                        ? "border-[#34d399]/30 text-[#34d399]"
-                        : "border-border text-muted-foreground",
-                    )}
-                  >
-                    {plugin.enabled ? "enabled" : "disabled"}
-                  </Badge>
+                  <Switch
+                    checked={plugin.enabled}
+                    onCheckedChange={() => onToggle(plugin)}
+                    aria-label={`Toggle ${plugin.name}`}
+                    className="data-[state=checked]:bg-primary"
+                  />
                 </div>
-              </div>
-            </Panel>
-          );
-        })}
-      </div>
-
-      {shown.length === 0 && (
-        <Panel className="flex flex-col items-center gap-2 p-12 text-center">
-          <CheckCircle2Icon className="size-6 text-muted-foreground/50" aria-hidden="true" />
-          <p className="text-sm font-semibold">No plugins match</p>
-          <p className="text-xs text-muted-foreground">Try a different search or filter.</p>
-        </Panel>
-      )}
+              </li>
+            );
+          })}
+        </ul>
+        {shown.length === 0 && (
+          <div className="flex flex-col items-center gap-1.5 py-12">
+            <CheckCircle2Icon className="size-5 text-muted-foreground/50" aria-hidden="true" />
+            <p className="text-[13px] font-semibold">No plugins match</p>
+            <p className="text-[12px] text-muted-foreground">Try a different search or filter.</p>
+          </div>
+        )}
+      </Panel>
 
       {studioPlugin ? (
         <PluginStudio

@@ -120,9 +120,9 @@ export default function Home() {
 
   if (stage === "boot") {
     return (
-      <div className="nx-grid-bg flex min-h-screen flex-col items-center justify-center gap-4 bg-black">
-        <Loader2Icon className="size-8 animate-spin text-primary" aria-hidden="true" />
-        <p className="text-sm text-muted-foreground">Establishing secure session…</p>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-paper">
+        <Loader2Icon className="size-7 animate-spin text-primary" aria-hidden="true" />
+        <p className="font-mono text-[12px] text-muted-foreground">Establishing secure session…</p>
       </div>
     );
   }

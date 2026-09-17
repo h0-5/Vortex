@@ -126,27 +126,21 @@ function CompletionRing({ ratio }: { ratio: number }) {
   return (
     <span className="relative inline-flex size-10 items-center justify-center" title={`${pct}% configured`}>
       <svg viewBox="0 0 36 36" className="size-10 -rotate-90">
-        <circle cx="18" cy="18" r={radius} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="3" />
+        <circle cx="18" cy="18" r={radius} fill="none" stroke="#e9e7df" strokeWidth="3" />
         <circle
           cx="18"
           cy="18"
           r={radius}
           fill="none"
-          stroke="url(#studio-ring)"
+          stroke="var(--primary)"
           strokeWidth="3"
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={circumference * (1 - ratio)}
           className="transition-all duration-500"
         />
-        <defs>
-          <linearGradient id="studio-ring" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#8b5cf6" />
-            <stop offset="100%" stopColor="#06b6d4" />
-          </linearGradient>
-        </defs>
       </svg>
-      <span className="absolute font-mono text-[9px] font-bold text-foreground/80">{pct}%</span>
+      <span className="absolute font-mono text-[9px] font-semibold text-foreground/80">{pct}%</span>
     </span>
   );
 }
@@ -176,7 +170,7 @@ function FieldFrame({
 }
 
 const selectTriggerClass =
-  "h-10 border-white/10 bg-white/[0.04] text-[13px] shadow-none transition-all focus-visible:ring-1 focus-visible:ring-primary/60 focus-visible:border-primary/50 hover:border-white/20 data-[placeholder]:text-muted-foreground";
+  "h-10 border-input bg-card text-[13px] shadow-none transition-all focus-visible:ring-1 focus-visible:ring-primary/60 focus-visible:border-primary/60 hover:border-ink data-[placeholder]:text-muted-foreground";
 
 /* ------------------------------ field renderer ---------------------------- */
 
@@ -204,7 +198,7 @@ function StudioField({
 
   if (field.type === "switch") {
     return (
-      <div className="flex items-center justify-between gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3.5 transition-colors hover:border-white/[0.12] sm:col-span-2">
+      <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card px-4 py-3.5 transition-colors hover:border-input sm:col-span-2">
         <div className="min-w-0">
           <p dir="auto" className="text-[13px] font-semibold leading-tight">{field.label}</p>
           {field.description ? (
@@ -217,7 +211,7 @@ function StudioField({
           id={field.id}
           checked={Boolean(value)}
           onCheckedChange={(checked) => onChange(field, checked)}
-          className="data-[state=checked]:bg-primary data-[state=checked]:shadow-[0_0_14px_-2px_rgba(139,92,246,0.8)]"
+          className="data-[state=checked]:bg-primary"
           aria-label={field.label}
         />
       </div>
@@ -237,7 +231,7 @@ function StudioField({
           <SelectTrigger className={selectTriggerClass}>
             <SelectValue placeholder="اختر…" />
           </SelectTrigger>
-          <SelectContent className="border-white/10 bg-[#0a0a0c]">
+          <SelectContent>
             <SelectItem value="none" className="text-muted-foreground">— بدون —</SelectItem>
             {list.map((item) => (
               <SelectItem key={item.id} value={item.id} dir="auto" className="text-[13px]">
@@ -278,7 +272,7 @@ function StudioField({
           <SelectTrigger className={selectTriggerClass}>
             <SelectValue placeholder="اختر…" />
           </SelectTrigger>
-          <SelectContent className="border-white/10 bg-[#0a0a0c]">
+          <SelectContent>
             {options.map((option) => (
               <SelectItem key={option.value} value={option.value} dir="auto" className="text-[13px]">
                 {option.label}
@@ -298,7 +292,7 @@ function StudioField({
           type="number"
           value={Number(value ?? 0)}
           onChange={(event) => onChange(field, Number(event.target.value))}
-          className="h-10 border-white/10 bg-white/[0.04] font-mono text-[13px] transition-all focus-visible:ring-1 focus-visible:ring-primary/60"
+          className="h-10 border-input bg-card font-mono text-[13px] transition-all focus-visible:ring-1 focus-visible:ring-primary/60"
         />
       </FieldFrame>
     );
@@ -315,7 +309,7 @@ function StudioField({
             rows={4}
             dir="auto"
             onChange={(event) => onChange(field, event.target.value)}
-            className="border-white/10 bg-white/[0.04] text-[13px] transition-all focus-visible:ring-1 focus-visible:ring-primary/60"
+            className="border-input bg-card text-[13px] transition-all focus-visible:ring-1 focus-visible:ring-primary/60"
           />
         ) : (
           <Input
@@ -324,7 +318,7 @@ function StudioField({
             placeholder={field.placeholder}
             dir="auto"
             onChange={(event) => onChange(field, event.target.value)}
-            className="h-10 border-white/10 bg-white/[0.04] text-[13px] transition-all focus-visible:ring-1 focus-visible:ring-primary/60"
+            className="h-10 border-input bg-card text-[13px] transition-all focus-visible:ring-1 focus-visible:ring-primary/60"
           />
         )}
       </FieldFrame>
@@ -354,10 +348,10 @@ function StudioField({
                   )
                 }
                 className={cn(
-                  "rounded-full border px-3 py-1 font-mono text-[10.5px] uppercase tracking-wide transition-all",
+                  "rounded border px-2.5 py-1 font-mono text-[10.5px] uppercase tracking-wide transition-all",
                   mode === m
-                    ? "border-primary/60 bg-primary/15 text-foreground"
-                    : "border-white/10 text-muted-foreground hover:border-white/25 hover:text-foreground",
+                    ? "border-ink bg-ink text-paper"
+                    : "border-border text-muted-foreground hover:border-input hover:text-foreground",
                 )}
               >
                 {m === "text" ? "نص" : m === "embed" ? "إمبد" : "مكونات"}
@@ -373,7 +367,7 @@ function StudioField({
                   rows={5}
                   dir="auto"
                   onChange={(event) => onChange(field, { ...message, content: event.target.value })}
-                  className="border-white/10 bg-white/[0.04] text-[13px] focus-visible:ring-1 focus-visible:ring-primary/60"
+                  className="border-input bg-card text-[13px] focus-visible:ring-1 focus-visible:ring-primary/60"
                 />
               ) : mode === "embed" ? (
                 <div className="flex flex-col gap-2">
@@ -382,7 +376,7 @@ function StudioField({
                     placeholder="عنوان الإمبد"
                     dir="auto"
                     onChange={(event) => onChange(field, { ...message, title: event.target.value })}
-                    className="h-9 border-white/10 bg-white/[0.04] text-[13px] focus-visible:ring-1 focus-visible:ring-primary/60"
+                    className="h-9 border-input bg-card text-[13px] focus-visible:ring-1 focus-visible:ring-primary/60"
                   />
                   <Textarea
                     value={typeof message.description === "string" ? message.description : ""}
@@ -390,7 +384,7 @@ function StudioField({
                     rows={3}
                     dir="auto"
                     onChange={(event) => onChange(field, { ...message, description: event.target.value })}
-                    className="border-white/10 bg-white/[0.04] text-[13px] focus-visible:ring-1 focus-visible:ring-primary/60"
+                    className="border-input bg-card text-[13px] focus-visible:ring-1 focus-visible:ring-primary/60"
                   />
                 </div>
               ) : (
@@ -404,7 +398,7 @@ function StudioField({
                       /* keep typing — invalid JSON mid-edit */
                     }
                   }}
-                  className="border-white/10 bg-white/[0.04] font-mono text-[11.5px] focus-visible:ring-1 focus-visible:ring-primary/60"
+                  className="border-input bg-card font-mono text-[11.5px] focus-visible:ring-1 focus-visible:ring-primary/60"
                 />
               )}
             </div>
@@ -432,35 +426,37 @@ function MessagePreview({
     ...extraVars,
   };
   return (
-    <div className="overflow-hidden rounded-xl border border-white/[0.06] bg-[#1e1f22]">
-      <div className="flex items-center gap-2 border-b border-white/[0.05] px-3 py-1.5">
-        <span className="text-[10px] font-semibold text-white/40"># preview</span>
-        <SparklesIcon className="size-3 text-primary/70" aria-hidden="true" />
+    <div className="overflow-hidden rounded-lg border border-[#26272b] bg-[#313338]">
+      <div className="flex items-center gap-2 border-b border-[#26272b] px-3 py-1.5">
+        <span className="text-[10px] font-semibold text-[#949ba4]"># preview</span>
+        <SparklesIcon className="size-3 text-[#949ba4]" aria-hidden="true" />
       </div>
       <div className="flex gap-2.5 p-3">
-        <VortexMark size={30} className="mt-0.5 shrink-0 rounded-full" />
+        <span className="mt-0.5 flex size-[30px] shrink-0 items-center justify-center rounded-full bg-ink">
+          <VortexMark size={18} />
+        </span>
         <div className="min-w-0 flex-1">
-          <p className="flex items-center gap-1.5 text-[13px] font-semibold text-white">
+          <p className="flex items-center gap-1.5 text-[13px] font-semibold text-[#f2f3f5]">
             Vortex
-            <span className="rounded bg-primary px-1 py-px text-[9px] font-bold uppercase text-white">app</span>
+            <span className="rounded bg-[#5865f2] px-1 py-px text-[9px] font-bold uppercase text-white">app</span>
           </p>
           {message.type === "embed" ? (
-            <div className="mt-1 border-l-4 border-primary/80 bg-white/[0.03] py-2 pl-3 pr-2">
+            <div className="mt-1 border-l-4 border-[#5865f2] bg-white/[0.03] py-2 pl-3 pr-2">
               {message.title ? (
-                <p dir="auto" className="text-[13px] font-bold text-white">
+                <p dir="auto" className="text-[13px] font-bold text-[#f2f3f5]">
                   {substituteVariables(String(message.title), vars)}
                 </p>
               ) : null}
               {message.description ? (
-                <p dir="auto" className="mt-1 whitespace-pre-wrap break-words text-[12.5px] leading-relaxed text-white/75">
+                <p dir="auto" className="mt-1 whitespace-pre-wrap break-words text-[12.5px] leading-relaxed text-[#dbdee1]">
                   {substituteVariables(String(message.description), vars)}
                 </p>
               ) : null}
             </div>
           ) : (
-            <p dir="auto" className="mt-0.5 whitespace-pre-wrap break-words text-[13px] leading-relaxed text-white/85">
+            <p dir="auto" className="mt-0.5 whitespace-pre-wrap break-words text-[13px] leading-relaxed text-[#dbdee1]">
               {substituteVariables(String(message.content ?? ""), vars) || (
-                <span className="text-white/30">اكتب لترى المعاينة…</span>
+                <span className="text-[#6d6f78]">اكتب لترى المعاينة…</span>
               )}
             </p>
           )}
@@ -742,34 +738,36 @@ export function PluginStudio({
       <button
         aria-label="Close settings"
         onClick={onClose}
-        className="absolute inset-0 cursor-default bg-black/70 backdrop-blur-sm"
+        className="absolute inset-0 cursor-default bg-[#1b1a16]/45 backdrop-blur-[2px]"
       />
 
       {/* drawer */}
-      <div className="absolute inset-y-0 right-0 flex w-full max-w-[780px] translate-x-0 flex-col border-l border-white/10 bg-[#050507]/95 shadow-[0_0_80px_rgba(139,92,246,0.15)]">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
+      <div className="absolute inset-y-0 right-0 flex w-full max-w-[780px] translate-x-0 flex-col border-l border-border bg-card shadow-[-24px_0_60px_-30px_rgba(27,26,22,0.35)]">
 
         {/* header */}
-        <div className="flex items-center gap-3.5 border-b border-white/[0.07] px-6 py-4">
-          <span className="nx-gradient flex size-11 items-center justify-center rounded-xl text-white nx-glow">
+        <div className="flex items-center gap-3.5 border-b border-border px-6 py-4">
+          <span className="flex size-11 items-center justify-center rounded-md border border-primary/25 bg-primary/[0.08] text-primary">
             <Icon className="size-5" aria-hidden="true" />
           </span>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h2 className="truncate text-[16px] font-bold tracking-tight">{plugin.name}</h2>
-              <span className="rounded border border-white/10 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
-                v{plugin.version}
-              </span>
+              <h2
+                className="truncate text-[16px] font-bold tracking-tight"
+                style={{ fontFamily: "var(--font-grotesk)" }}
+              >
+                {plugin.name}
+              </h2>
+              <span className="vl-tag">v{plugin.version}</span>
             </div>
-            <p className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-muted-foreground">
-              <span className={cn("nx-live-dot inline-block size-1.5 rounded-full", plugin.enabled ? "bg-[#34d399] text-[#34d399]" : "bg-white/30")} />
+            <p className="mt-0.5 flex items-center gap-1.5 font-mono text-[10.5px] text-muted-foreground">
+              <span className={cn("inline-block size-1.5 rounded-full", plugin.enabled ? "bg-[#12805c]" : "bg-[#8a877c]")} />
               {plugin.enabled ? "active on shard 0" : "disabled"} · @{plugin.author}
             </p>
           </div>
           {schema ? <CompletionRing ratio={configuredRatio} /> : null}
           <button
             onClick={onClose}
-            className="flex size-9 items-center justify-center rounded-lg border border-white/10 text-muted-foreground transition-all hover:border-white/25 hover:text-foreground"
+            className="flex size-9 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-input hover:text-foreground"
             aria-label="Close"
           >
             <XIcon className="size-4" aria-hidden="true" />
@@ -778,18 +776,14 @@ export function PluginStudio({
 
         {/* tabs */}
         {schema && schema.tabs.length > 1 ? (
-          <div className="flex flex-wrap gap-2 border-b border-white/[0.07] px-6 py-3">
+          <div className="flex gap-5 border-b border-border px-6">
             {schema.tabs.map((t) => (
               <button
                 key={t.id}
                 onClick={() => setActiveTab(t.id)}
+                data-active={activeTab === t.id}
                 dir="auto"
-                className={cn(
-                  "rounded-full border px-4 py-1.5 text-xs font-semibold transition-all duration-150",
-                  activeTab === t.id
-                    ? "border-primary/60 bg-primary/15 text-foreground shadow-[0_0_16px_-6px_rgba(139,92,246,0.9)]"
-                    : "border-white/10 text-muted-foreground hover:border-white/25 hover:text-foreground",
-                )}
+                className="vl-tab h-10"
               >
                 {t.label}
               </button>
@@ -798,17 +792,17 @@ export function PluginStudio({
         ) : null}
 
         {/* body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
+        <div className="flex-1 overflow-y-auto bg-[#faf9f4] px-6 py-5">
           {status === "loading" ? (
             <div className="flex flex-col gap-4 pt-4">
               {[0, 1, 2].map((i) => (
-                <div key={i} className="nx-shimmer h-24 rounded-xl border border-white/[0.05] bg-white/[0.02]" />
+                <div key={i} className="vl-shimmer h-24 rounded-lg border border-border bg-muted" />
               ))}
-              <p className="text-center text-xs text-muted-foreground">Loading plugin configuration…</p>
+              <p className="text-center font-mono text-[11px] text-muted-foreground">Loading plugin configuration…</p>
             </div>
           ) : status === "error" ? (
             <div className="flex flex-col items-center gap-3 pt-16 text-center">
-              <AlertTriangleIcon className="size-8 text-[#f87171]" aria-hidden="true" />
+              <AlertTriangleIcon className="size-8 text-destructive" aria-hidden="true" />
               <p className="text-sm font-semibold">Could not load settings</p>
               <p className="max-w-sm text-xs leading-relaxed text-muted-foreground">{error}</p>
             </div>
@@ -831,7 +825,7 @@ export function PluginStudio({
                 <SectionCard
                   key={section.id}
                   section={section}
-                  accent={sectionIndex % 2 === 0 ? "#8b5cf6" : "#06b6d4"}
+                  accent={sectionIndex % 2 === 0 ? "#17603f" : "#0f5aa8"}
                   draft={draft}
                   channels={channels}
                   roles={roles}
@@ -849,24 +843,24 @@ export function PluginStudio({
 
         {/* footer */}
         {schema && status === "ready" ? (
-          <div className="flex items-center gap-3 border-t border-white/[0.07] bg-black/40 px-6 py-3.5">
+          <div className="flex items-center gap-3 border-t border-border bg-card px-6 py-3.5">
             <span
               className={cn(
-                "flex items-center gap-2 text-[11.5px] font-semibold transition-opacity",
-                dirty ? "text-[#fbbf24]" : "text-muted-foreground/60 opacity-0",
+                "flex items-center gap-2 font-mono text-[11px] font-semibold transition-opacity",
+                dirty ? "text-[#b45309]" : "text-muted-foreground/60 opacity-0",
               )}
             >
               <span className="relative flex size-2">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#fbbf24] opacity-60" />
-                <span className="relative inline-flex size-2 rounded-full bg-[#fbbf24]" />
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#b45309] opacity-50" />
+                <span className="relative inline-flex size-2 rounded-full bg-[#b45309]" />
               </span>
-              Unsaved changes · ⌘S
+              Unsaved changes · Ctrl S
             </span>
             <div className="ml-auto flex items-center gap-2.5">
               <button
                 onClick={runReset}
                 disabled={saving}
-                className="flex items-center gap-1.5 rounded-lg border border-white/10 px-3.5 py-2 text-xs font-semibold text-muted-foreground transition-all hover:border-white/25 hover:text-foreground disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-md border border-input bg-card px-3.5 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:border-ink hover:text-foreground disabled:opacity-50"
               >
                 <RotateCcwIcon className="size-3.5" aria-hidden="true" />
                 Reset tab
@@ -874,7 +868,7 @@ export function PluginStudio({
               <button
                 onClick={runSave}
                 disabled={saving || !dirty}
-                className="nx-gradient flex items-center gap-1.5 rounded-lg px-4.5 py-2 text-xs font-bold text-white shadow-[0_0_20px_-6px_rgba(139,92,246,0.9)] transition-all hover:scale-[1.03] active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100"
+                className="flex items-center gap-1.5 rounded-md bg-ink px-4 py-2 text-xs font-semibold text-paper transition-colors hover:bg-ink/85 disabled:opacity-40"
               >
                 {saving ? (
                   <Loader2Icon className="size-3.5 animate-spin" aria-hidden="true" />
@@ -919,10 +913,10 @@ function SectionCard({
 }) {
   const testActions = section.actions.filter((a) => a.type === "test_template");
   return (
-    <section className="nx-glass overflow-hidden rounded-xl">
-      <div className="flex items-start justify-between gap-3 border-b border-white/[0.06] px-5 py-3.5">
+    <section className="overflow-hidden rounded-lg border border-border bg-card">
+      <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-3.5">
         <div className="flex items-start gap-3">
-          <span className="mt-0.5 h-8 w-1 rounded-full" style={{ background: `linear-gradient(180deg, ${accent}, transparent)` }} />
+          <span className="mt-0.5 h-8 w-1 rounded-full" style={{ background: accent }} />
           <div>
             <h3 dir="auto" className="text-[13.5px] font-bold tracking-tight">{section.title}</h3>
             {section.description ? (
@@ -936,7 +930,7 @@ function SectionCard({
               key={action.id}
               onClick={() => onTest(action)}
               disabled={testingId !== null}
-              className="flex items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-3 py-1.5 text-[11px] font-semibold text-foreground transition-all hover:bg-primary/20 disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-md border border-input bg-card px-3 py-1.5 text-[11px] font-semibold transition-colors hover:border-ink disabled:opacity-50"
             >
               {testingId === action.id ? (
                 <Loader2Icon className="size-3 animate-spin" aria-hidden="true" />

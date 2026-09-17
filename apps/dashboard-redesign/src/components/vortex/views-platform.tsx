@@ -23,7 +23,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -48,11 +47,12 @@ import { toast } from "sonner";
 
 /* --------------------------------- Logs ---------------------------------- */
 
+/* Warm-terminal level palette (on the dark inset block) */
 const LEVEL_COLOR: Record<LogLevel, string> = {
-  INFO: "#22d3ee",
-  WARN: "#fbbf24",
-  ERROR: "#f87171",
-  DEBUG: "#8b8b9e",
+  INFO: "#8ab4a0",
+  WARN: "#d9a03f",
+  ERROR: "#e5654e",
+  DEBUG: "#8a877c",
 };
 
 export function LogsView({ guildId }: { guildId: string }) {
@@ -99,10 +99,10 @@ export function LogsView({ guildId }: { guildId: string }) {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2.5">
         <Select value={level} onValueChange={(v) => setLevel(v as LogLevel | "all")}>
-          <SelectTrigger className="h-9 w-36 border-border/70 bg-white/[0.02] text-xs">
+          <SelectTrigger className="h-9 w-36 border-input bg-card text-xs">
             <SelectValue placeholder="Level" />
           </SelectTrigger>
-          <SelectContent className="border-border bg-popover">
+          <SelectContent>
             <SelectItem value="all">All levels</SelectItem>
             <SelectItem value="INFO">INFO</SelectItem>
             <SelectItem value="WARN">WARN</SelectItem>
@@ -111,10 +111,10 @@ export function LogsView({ guildId }: { guildId: string }) {
           </SelectContent>
         </Select>
         <Select value={source} onValueChange={setSource}>
-          <SelectTrigger className="h-9 w-44 border-border/70 bg-white/[0.02] text-xs">
+          <SelectTrigger className="h-9 w-44 border-input bg-card text-xs">
             <SelectValue placeholder="Source" />
           </SelectTrigger>
-          <SelectContent className="border-border bg-popover">
+          <SelectContent>
             <SelectItem value="all">All sources</SelectItem>
             {sources.map((s) => (
               <SelectItem key={s} value={s}>{s}</SelectItem>
@@ -127,7 +127,7 @@ export function LogsView({ guildId }: { guildId: string }) {
           variant="outline"
           onClick={() => setPaused((p) => !p)}
           className={cn(
-            "ml-auto gap-1.5 border-border bg-transparent text-xs hover:bg-white/5",
+            "ml-auto h-9 gap-1.5 border-input bg-card text-xs hover:bg-accent",
             paused && "border-primary/50 text-primary",
           )}
         >
@@ -138,42 +138,45 @@ export function LogsView({ guildId }: { guildId: string }) {
           size="sm"
           variant="outline"
           onClick={() => setLogs([])}
-          className="gap-1.5 border-border bg-transparent text-xs hover:bg-white/5"
+          className="h-9 gap-1.5 border-input bg-card text-xs hover:bg-accent"
         >
           <Trash2Icon className="size-3.5" aria-hidden="true" />
           Clear
         </Button>
       </div>
 
-      <div className="nx-gradient-border overflow-hidden rounded-xl">
-        <div className="flex items-center justify-between border-b border-border/60 bg-white/[0.02] px-4 py-2.5">
-          <span className="flex items-center gap-2 font-mono text-[11px] text-muted-foreground">
-            <span className={cn("inline-block size-1.5 rounded-full", paused ? "bg-[#fbbf24]" : "nx-live-dot bg-[#34d399] text-[#34d399]")} />
+      <div className="vl-terminal overflow-hidden rounded-lg font-mono">
+        <div className="flex items-center justify-between border-b border-[#33312a] px-4 py-2.5 text-[11px]">
+          <span className="flex items-center gap-2 text-[#8a877c]">
+            <span
+              className={cn(
+                "inline-block size-1.5 rounded-full",
+                paused ? "bg-[#d9a03f]" : "bg-[#8ab4a0] vl-dot--live text-[#8ab4a0]",
+              )}
+            />
             {paused ? "stream paused" : "streaming live"}
           </span>
-          <span className="font-mono text-[11px] text-muted-foreground/70">
-            {fmt.format(shown.length)} lines
-          </span>
+          <span className="text-[#6e6b60]">{fmt.format(shown.length)} lines</span>
         </div>
         <div
           ref={scrollRef}
-          className="h-[480px] overflow-y-auto bg-black/60 p-4 font-mono text-[12px] leading-[1.75]"
+          className="h-[480px] overflow-y-auto p-4 text-[12px] leading-[1.75]"
           role="log"
           aria-live="off"
           aria-label="Platform logs"
         >
           {shown.map((line) => (
             <div key={line.id} className="flex gap-3 whitespace-pre-wrap break-all">
-              <span className="shrink-0 text-muted-foreground/50">{line.ts}</span>
-              <span className="w-11 shrink-0 font-bold" style={{ color: LEVEL_COLOR[line.level] }}>
+              <span className="shrink-0 text-[#6e6b60]">{line.ts}</span>
+              <span className="w-11 shrink-0 font-semibold" style={{ color: LEVEL_COLOR[line.level] }}>
                 {line.level}
               </span>
-              <span className="w-28 shrink-0 truncate text-[#818cf8]">{line.source}</span>
-              <span className="min-w-0 text-foreground/85">{line.message}</span>
+              <span className="w-28 shrink-0 truncate text-[#7fa6d9]">{line.source}</span>
+              <span className="min-w-0 text-[#d9d6cb]">{line.message}</span>
             </div>
           ))}
           {shown.length === 0 && (
-            <p className="py-16 text-center text-muted-foreground/60">Buffer empty.</p>
+            <p className="py-16 text-center text-[#6e6b60]">Buffer empty.</p>
           )}
         </div>
       </div>
@@ -223,53 +226,56 @@ export function ApiView() {
             label: "API status",
             value: health ? (health.status === "operational" ? "Operational" : "Degraded") : "Checking…",
             icon: degraded === 0 ? CheckCircle2Icon : CircleAlertIcon,
-            color: degraded === 0 ? "#34d399" : "#fbbf24",
+            color: degraded === 0 ? "#12805c" : "#b45309",
           },
-          { label: "Health latency", value: health ? `${health.latencyMs}ms` : "–", icon: GaugeIcon, color: "#22d3ee" },
-          { label: "Core endpoints", value: "7 tracked", icon: ActivitySquareIcon, color: "#8b5cf6" },
+          { label: "Health latency", value: health ? `${health.latencyMs}ms` : "–", icon: GaugeIcon, color: "#0f5aa8" },
+          { label: "Core endpoints", value: "7 tracked", icon: ActivitySquareIcon, color: "#17603f" },
         ].map((c) => (
-          <div key={c.label} className="nx-panel flex items-center gap-4 rounded-xl p-5">
+          <div key={c.label} className="vl-panel flex items-center gap-4 rounded-lg p-5">
             <span
-              className="flex size-10 items-center justify-center rounded-lg"
-              style={{ background: `${c.color}1f`, color: c.color }}
+              className="flex size-10 items-center justify-center rounded-md border"
+              style={{ background: `${c.color}14`, borderColor: `${c.color}30`, color: c.color }}
             >
               <c.icon className="size-4.5" aria-hidden="true" />
             </span>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {c.label}
-              </p>
-              <p className="mt-0.5 font-mono text-lg font-bold">{c.value}</p>
+              <p className="vl-label">{c.label}</p>
+              <p className="mt-0.5 font-mono text-[17px] font-medium">{c.value}</p>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="nx-panel overflow-hidden rounded-xl">
+      <div className="vl-panel overflow-hidden rounded-lg">
+        <div className="flex items-center justify-between border-b border-border px-5 py-3">
+          <p className="vl-label">Endpoints</p>
+          <p className="font-mono text-[10.5px] text-muted-foreground/80">/api/v1</p>
+        </div>
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="border-border/60 hover:bg-transparent">
-                <TableHead className="w-20 pl-5 text-xs">Method</TableHead>
-                <TableHead className="text-xs">Endpoint</TableHead>
-                <TableHead className="hidden text-xs md:table-cell">Description</TableHead>
-                <TableHead className="w-40 text-xs">Latency</TableHead>
-                <TableHead className="w-24 pr-5 text-right text-xs">Uptime</TableHead>
+              <TableRow className="border-border hover:bg-transparent">
+                <TableHead className="w-20 pl-5 text-[11px]">Method</TableHead>
+                <TableHead className="text-[11px]">Endpoint</TableHead>
+                <TableHead className="hidden text-[11px] md:table-cell">Description</TableHead>
+                <TableHead className="w-40 text-[11px]">Latency</TableHead>
+                <TableHead className="w-24 pr-5 text-right text-[11px]">Uptime</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {endpoints.map((e) => (
-                <TableRow key={e.path} className="border-border/40 hover:bg-white/[0.02]">
+                <TableRow key={e.path} className="border-border/70 hover:bg-accent/50">
                   <TableCell className="pl-5">
-                    <Badge
-                      variant="outline"
+                    <span
                       className={cn(
-                        "border-transparent font-mono text-[10px] font-bold",
-                        e.method === "GET" ? "bg-[#8b5cf6]/15 text-[#a78bfa]" : "bg-[#06b6d4]/15 text-[#22d3ee]",
+                        "inline-flex rounded border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em]",
+                        e.method === "GET"
+                          ? "border-primary/25 bg-primary/[0.08] text-primary"
+                          : "border-[#0f5aa8]/25 bg-[#0f5aa8]/[0.07] text-[#0f5aa8]",
                       )}
                     >
                       {e.method}
-                    </Badge>
+                    </span>
                   </TableCell>
                   <TableCell className="font-mono text-xs">{e.path}</TableCell>
                   <TableCell className="hidden text-xs text-muted-foreground md:table-cell">
@@ -277,12 +283,12 @@ export function ApiView() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2.5">
-                      <div className="h-1.5 w-20 overflow-hidden rounded-full bg-white/[0.06]">
+                      <div className="h-1 w-20 overflow-hidden rounded-full bg-muted">
                         <div
                           className="h-full rounded-full"
                           style={{
                             width: `${Math.min(100, (e.latencyMs / 150) * 100)}%`,
-                            background: e.latencyMs > 100 ? "#fbbf24" : "linear-gradient(90deg, #8b5cf6, #06b6d4)",
+                            background: e.latencyMs > 100 ? "#b45309" : "var(--primary)",
                           }}
                         />
                       </div>
@@ -294,7 +300,7 @@ export function ApiView() {
                       <span
                         className={cn(
                           "inline-block size-1.5 rounded-full",
-                          e.status === "operational" ? "bg-[#34d399]" : "bg-[#fbbf24]",
+                          e.status === "operational" ? "bg-[#12805c]" : "bg-[#b45309]",
                         )}
                       />
                       {e.uptimePct}%
@@ -313,9 +319,9 @@ export function ApiView() {
 /* ------------------------------- Settings --------------------------------- */
 
 const ACCENTS = [
-  { name: "Vortex Violet", primary: "#8b5cf6", ring: "#8b5cf6" },
-  { name: "Blade Cyan", primary: "#06b6d4", ring: "#06b6d4" },
-  { name: "Singularity Indigo", primary: "#6366f1", ring: "#6366f1" },
+  { name: "Pine", primary: "#17603f", ring: "#17603f" },
+  { name: "Cobalt", primary: "#0f5aa8", ring: "#0f5aa8" },
+  { name: "Rust", primary: "#b45309", ring: "#b45309" },
 ];
 
 export function SettingsView({ onLogout }: { onLogout: () => void }) {
@@ -336,79 +342,85 @@ export function SettingsView({ onLogout }: { onLogout: () => void }) {
   return (
     <div className="grid gap-5 xl:grid-cols-2">
       {/* Branding */}
-      <section className="nx-panel rounded-xl p-5">
-        <h3 className="text-sm font-bold tracking-tight">Branding</h3>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          Name and mark shown across the dashboard and bot identity.
-        </p>
-        <div className="mt-4 flex items-center gap-4">
-          <VortexMark size={56} className="nx-glow-soft rounded-xl" />
-          <div className="flex-1">
-            <label className="mb-1.5 block text-xs font-semibold text-muted-foreground" htmlFor="app-name">
-              Application name
-            </label>
-            <Input
-              id="app-name"
-              value={appName}
-              onChange={(e) => setAppName(e.target.value)}
-              className="h-9 border-border/70 bg-white/[0.02] text-[13px]"
-            />
-          </div>
+      <section className="vl-panel rounded-lg">
+        <div className="border-b border-border px-5 py-3">
+          <h3 className="vl-label !text-foreground">Branding</h3>
         </div>
-        <Button
-          size="sm"
-          onClick={() => {
-            setSavedName(appName.trim() || "Vortex");
-            toast.success("Branding saved");
-          }}
-          className="nx-gradient nx-glow mt-4 rounded-md text-xs font-bold text-white hover:opacity-90"
-        >
-          Save branding
-        </Button>
-        <p className="mt-3 text-[11px] text-muted-foreground/70">
-          Preview: <span className="font-semibold text-foreground">{savedName}</span> dashboard
-        </p>
+        <div className="p-5">
+          <div className="flex items-center gap-4">
+            <span className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-ink">
+              <VortexMark size={34} />
+            </span>
+            <div className="flex-1">
+              <label className="mb-1.5 block text-xs font-semibold text-muted-foreground" htmlFor="app-name">
+                Application name
+              </label>
+              <Input
+                id="app-name"
+                value={appName}
+                onChange={(e) => setAppName(e.target.value)}
+                className="h-9 border-input bg-card text-[13px]"
+              />
+            </div>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => {
+              setSavedName(appName.trim() || "Vortex");
+              toast.success("Branding saved");
+            }}
+            className="mt-4 h-8 rounded-md bg-ink text-xs font-semibold text-paper hover:bg-ink/85"
+          >
+            Save branding
+          </Button>
+          <p className="mt-3 text-[11.5px] text-muted-foreground">
+            Preview: <span className="font-semibold text-foreground">{savedName}</span> console
+          </p>
+        </div>
       </section>
 
       {/* Appearance */}
-      <section className="nx-panel rounded-xl p-5">
-        <h3 className="text-sm font-bold tracking-tight">Appearance</h3>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          OLED black canvas with a selectable brand accent.
-        </p>
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          {ACCENTS.map((a) => (
-            <button
-              key={a.name}
-              onClick={() => applyAccent(a.name)}
-              className={cn(
-                "flex flex-col items-start gap-3 rounded-lg border p-3.5 text-left transition-all duration-150 focus-visible:outline-ring",
-                accent === a.name
-                  ? "border-primary/60 bg-primary/[0.08]"
-                  : "border-border/70 hover:border-border",
-              )}
-              aria-pressed={accent === a.name}
-            >
-              <span
-                className="size-7 rounded-md"
-                style={{ background: a.primary, boxShadow: `0 0 16px -4px ${a.primary}` }}
-              />
-              <span className="text-xs font-semibold">{a.name}</span>
-            </button>
-          ))}
+      <section className="vl-panel rounded-lg">
+        <div className="border-b border-border px-5 py-3">
+          <h3 className="vl-label !text-foreground">Accent</h3>
+        </div>
+        <div className="p-5">
+          <p className="mb-4 text-[12.5px] text-muted-foreground">
+            Applies immediately across active states, toggles, and focus rings.
+          </p>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {ACCENTS.map((a) => (
+              <button
+                key={a.name}
+                onClick={() => applyAccent(a.name)}
+                className={cn(
+                  "flex items-center gap-3 rounded-md border p-3 text-left transition-colors duration-150 focus-visible:outline-ring",
+                  accent === a.name
+                    ? "border-ink"
+                    : "border-border hover:border-input",
+                )}
+                aria-pressed={accent === a.name}
+              >
+                <span className="size-6 rounded-sm" style={{ background: a.primary }} />
+                <span className="text-[12.5px] font-semibold">{a.name}</span>
+                {accent === a.name && (
+                  <span className="ml-auto font-mono text-[10px] text-muted-foreground">on</span>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* Security */}
-      <section className="nx-panel rounded-xl p-5">
-        <h3 className="text-sm font-bold tracking-tight">Session security</h3>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          Enforced by the platform core — not configurable per guild.
-        </p>
-        <ul className="mt-4 flex flex-col gap-3">
+      <section className="vl-panel rounded-lg">
+        <div className="border-b border-border px-5 py-3">
+          <h3 className="vl-label !text-foreground">Session security</h3>
+        </div>
+        <ul className="flex flex-col divide-y divide-border/70">
           {SECURITY_FEATURES.map((f) => (
-            <li key={f.title} className="flex items-start gap-3 border-b border-border/40 pb-3 last:border-0 last:pb-0">
-              <ShieldCheckIcon className="mt-0.5 size-4 shrink-0 text-[#34d399]" aria-hidden="true" />
+            <li key={f.title} className="flex items-start gap-3 px-5 py-3.5">
+              <ShieldCheckIcon className="mt-0.5 size-4 shrink-0 text-[#12805c]" aria-hidden="true" />
               <div>
                 <p className="text-[13px] font-semibold">{f.title}</p>
                 <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{f.detail}</p>
@@ -419,44 +431,46 @@ export function SettingsView({ onLogout }: { onLogout: () => void }) {
       </section>
 
       {/* Danger zone */}
-      <section className="nx-panel rounded-xl border-destructive/25 p-5">
-        <h3 className="flex items-center gap-2 text-sm font-bold tracking-tight">
-          <OctagonAlertIcon className="size-4 text-destructive" aria-hidden="true" />
-          Danger zone
-        </h3>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          Revoking the session rotates the session ID server-side and clears the opaque cookie.
-        </p>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="outline"
-              className="mt-4 border-destructive/40 bg-transparent text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
-            >
-              Revoke session & log out
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent className="border-border bg-popover">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Revoke this session?</AlertDialogTitle>
-              <AlertDialogDescription>
-                You will be returned to the login screen and all dashboard state will be cleared.
-                Discord tokens remain encrypted at rest and are rotated on next login.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel className="border-border bg-transparent hover:bg-white/5">
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction
-                onClick={onLogout}
-                className="bg-destructive text-white hover:bg-destructive/85"
+      <section className="vl-panel rounded-lg border-destructive/30">
+        <div className="border-b border-destructive/20 px-5 py-3">
+          <h3 className="flex items-center gap-2">
+            <OctagonAlertIcon className="size-4 text-destructive" aria-hidden="true" />
+            <span className="vl-label !text-destructive">Danger zone</span>
+          </h3>
+        </div>
+        <div className="p-5">
+          <p className="text-[12.5px] leading-relaxed text-muted-foreground">
+            Revoking the session rotates the session ID server-side and clears the opaque cookie.
+          </p>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="mt-4 border-destructive/40 bg-transparent text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
               >
-                Revoke session
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+                Revoke session & log out
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Revoke this session?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  You will be returned to the login screen and all dashboard state will be cleared.
+                  Discord tokens remain encrypted at rest and are rotated on next login.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={onLogout}
+                  className="bg-destructive text-white hover:bg-destructive/85"
+                >
+                  Revoke session
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </section>
     </div>
   );

@@ -1,27 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { DatabaseIcon, Loader2Icon, ServerIcon, ShieldCheckIcon } from "lucide-react";
+import { Loader2Icon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { VortexBrand, VortexMark } from "@/components/vortex/brand";
+import { VortexBrand } from "@/components/vortex/brand";
 import { SECURITY_FEATURES } from "@/lib/vortex/data";
 
-const PLATFORM_POINTS = [
-  {
-    title: "Secure Discord OAuth",
-    description: "Your Discord credentials remain server-side, always.",
-    icon: ShieldCheckIcon,
-  },
-  {
-    title: "Multi-server foundation",
-    description: "One focused workspace for every server you manage.",
-    icon: ServerIcon,
-  },
-  {
-    title: "Persistent core data",
-    description: "Accounts and server context backed by PostgreSQL.",
-    icon: DatabaseIcon,
-  },
+/* Spec sheet shown on the ink panel — reads like a README, not marketing. */
+const SPEC: Array<[string, string]> = [
+  ["runtime", "discord.js · node 22"],
+  ["storage", "postgresql 16"],
+  ["auth", "oauth2 + pkce"],
+  ["plugins", "schema-driven dashboards"],
+  ["sessions", "aes-256-gcm at rest"],
 ];
 
 export function LoginScreen({ onLogin }: { onLogin: () => void }) {
@@ -33,64 +24,61 @@ export function LoginScreen({ onLogin }: { onLogin: () => void }) {
   };
 
   return (
-    <div className="nx-grid-bg relative flex min-h-screen flex-col overflow-hidden bg-black">
-      <div aria-hidden="true" className="nx-aurora" />
-      <div className="relative grid flex-1 lg:grid-cols-[1.1fr_0.9fr]">
-        {/* Brand hero */}
-        <section className="hidden flex-col border-r border-border/60 p-10 lg:flex">
-          <div className="flex items-center gap-3">
-            <span className="nx-pulse-ring rounded-xl">
-              <VortexMark size={36} className="nx-glow-soft rounded-xl" />
-            </span>
-            <span className="text-[17px] font-extrabold tracking-tight">
-              Vor<span className="nx-gradient-text">tex</span>
-            </span>
-          </div>
-          <div className="my-auto flex max-w-xl flex-col gap-9">
-            <div className="flex flex-col gap-4">
-              <p className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/30 bg-primary/[0.08] px-3.5 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-                <span className="nx-live-dot inline-block size-1.5 rounded-full bg-[#34d399] text-[#34d399]" />
-                Open-source Discord bot platform
-              </p>
-              <h1 className="text-6xl font-extrabold leading-[1.05] tracking-tight">
-                Discord infrastructure,
-                <br />
-                <span className="nx-shimmer nx-gradient-text">organized & sharp.</span>
-              </h1>
-              <p className="max-w-md text-[15px] leading-relaxed text-muted-foreground">
-                Vortex gives your community a secure control room — authenticate with Discord,
-                manage every server you own, and plug in the modules your team needs.
-              </p>
-            </div>
-            <div className="flex flex-col gap-5">
-              {PLATFORM_POINTS.map((point) => (
-                <div key={point.title} className="flex items-start gap-4">
-                  <span className="nx-chip flex size-10 shrink-0 items-center justify-center rounded-lg text-white">
-                    <point.icon className="size-4.5" aria-hidden="true" />
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold">{point.title}</p>
-                    <p className="text-sm text-muted-foreground">{point.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground/60">
-            Phase 1 core foundation · API v1 · discord.js runtime
-          </p>
-        </section>
+    <div className="flex min-h-screen flex-col bg-paper lg:grid lg:grid-cols-[0.9fr_1.1fr]">
+      {/* Ink spec panel */}
+      <aside className="relative hidden flex-col justify-between bg-ink p-10 text-paper lg:flex">
+        <VortexBrand size={26} />
 
-        {/* Auth card */}
-        <section className="flex items-center justify-center p-6 sm:p-10">
-          <div className="nx-gradient-border nx-glass w-full max-w-md rounded-xl p-8 sm:p-10">
-            <div className="mb-8 flex flex-col items-center gap-4 text-center lg:hidden">
-              <VortexBrand size={44} />
-            </div>
-            <div className="flex flex-col items-center gap-2 text-center">
-              <h2 className="text-2xl font-bold tracking-tight">Welcome back</h2>
-              <p className="text-sm text-muted-foreground">
-                Sign in with Discord to access your servers.
+        <div className="flex max-w-md flex-col gap-8">
+          <p className="vl-label !text-[#8f8c80]">Open-source Discord bot platform</p>
+          <h1
+            className="text-[44px] font-bold leading-[1.08] tracking-tight"
+            style={{ fontFamily: "var(--font-grotesk)" }}
+          >
+            The control room for your Discord community.
+          </h1>
+          <p className="max-w-sm text-[14px] leading-relaxed text-[#b5b2a6]">
+            One console for every server you operate — authenticate once, manage
+            plugins, and read the gateway as it happens.
+          </p>
+          <dl className="flex flex-col border-t border-[#33312a]">
+            {SPEC.map(([key, value]) => (
+              <div key={key} className="flex items-baseline border-b border-[#33312a] py-2.5">
+                <dt className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#8f8c80]">
+                  {key}
+                </dt>
+                <span className="vl-leader !border-[#3c3a32]" />
+                <dd className="font-mono text-[12px] text-[#e5e2d7]">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        <p className="font-mono text-[11px] text-[#6e6b60]">
+          vortex console · v1.0 · api v1
+        </p>
+      </aside>
+
+      {/* Auth column */}
+      <main className="vl-canvas flex flex-1 flex-col">
+        <div className="flex items-center justify-between p-6 lg:justify-end">
+          <div className="lg:hidden">
+            <VortexBrand size={24} />
+          </div>
+        </div>
+
+        <div className="flex flex-1 items-center justify-center px-6 pb-16">
+          <div className="vl-panel w-full max-w-[420px] rounded-lg p-8 sm:p-10">
+            <div className="flex flex-col gap-1.5">
+              <h2
+                className="text-[22px] font-bold tracking-tight"
+                style={{ fontFamily: "var(--font-grotesk)" }}
+              >
+                Sign in
+              </h2>
+              <p className="text-[13px] leading-relaxed text-muted-foreground">
+                Authenticate with Discord to open your workspaces. Credentials
+                never leave the server.
               </p>
             </div>
 
@@ -98,13 +86,13 @@ export function LoginScreen({ onLogin }: { onLogin: () => void }) {
               size="lg"
               onClick={handleLogin}
               disabled={loading}
-              className="nx-gradient mt-8 h-12 w-full rounded-lg text-[15px] font-bold text-white transition-all duration-200 hover:scale-[1.015] hover:brightness-110 focus-visible:outline-ring active:scale-[0.99] disabled:opacity-70"
-              style={{ boxShadow: "0 0 34px -8px rgba(139, 92, 246, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.35)" }}
+              className="mt-7 h-11 w-full rounded-md text-[14px] font-semibold text-white transition-colors duration-150 hover:brightness-110 disabled:opacity-70"
+              style={{ background: "#5865F2" }}
             >
               {loading ? (
                 <>
-                  <Loader2Icon className="size-4.5 animate-spin" aria-hidden="true" />
-                  Establishing secure session…
+                  <Loader2Icon className="size-4 animate-spin" aria-hidden="true" />
+                  Redirecting to Discord…
                 </>
               ) : (
                 <>
@@ -116,34 +104,30 @@ export function LoginScreen({ onLogin }: { onLogin: () => void }) {
               )}
             </Button>
 
-            <div className="my-7 flex items-center gap-3">
-              <span className="h-px flex-1 bg-border" />
-              <span className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground/70">
-                Secured by design
-              </span>
-              <span className="h-px flex-1 bg-border" />
-            </div>
+            <div className="my-7 h-px bg-border" />
 
-            <ul className="flex flex-col gap-3">
+            <p className="vl-label mb-3">Platform security</p>
+            <ul className="flex flex-col">
               {SECURITY_FEATURES.map((f) => (
-                <li key={f.title} className="flex items-start gap-2.5">
-                  <ShieldCheckIcon className="mt-0.5 size-4 shrink-0 text-[#22d3ee]" aria-hidden="true" />
-                  <div>
-                    <span className="text-[13px] font-semibold">{f.title}</span>
-                    <span className="block text-xs leading-relaxed text-muted-foreground">
-                      {f.detail}
-                    </span>
-                  </div>
+                <li
+                  key={f.title}
+                  className="flex items-baseline justify-between gap-4 border-b border-border/70 py-2.5 last:border-0 last:pb-0"
+                >
+                  <span className="text-[12.5px] font-semibold">{f.title}</span>
+                  <span className="max-w-[190px] text-right text-[11px] leading-snug text-muted-foreground">
+                    {f.detail}
+                  </span>
                 </li>
               ))}
             </ul>
           </div>
-        </section>
-      </div>
-      <footer className="mt-auto flex items-center justify-between border-t border-border/60 px-8 py-4 text-xs text-muted-foreground/60">
-        <span>Vortex — open-source Discord bot platform</span>
-        <span className="font-mono">v0.1.0 · phase 1 core</span>
-      </footer>
+        </div>
+
+        <footer className="flex items-center justify-between border-t border-border px-6 py-3.5 font-mono text-[10.5px] text-muted-foreground/80">
+          <span>vortex — open-source discord bot platform</span>
+          <span>v1.0 · phase 2</span>
+        </footer>
+      </main>
     </div>
   );
 }
