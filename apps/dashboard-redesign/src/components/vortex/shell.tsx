@@ -163,7 +163,7 @@ export function DashboardShell(props: ShellProps) {
         </div>
 
         <nav className="flex w-full flex-col items-center gap-1.5 xl:items-stretch" aria-label="Dashboard">
-          {NAV_ITEMS.map((item, index) => {
+          {NAV_ITEMS.map((item) => {
             const active = view === item.view;
             return (
               <button
@@ -193,9 +193,6 @@ export function DashboardShell(props: ShellProps) {
                   )}
                 >
                   {item.label}
-                </span>
-                <span className="ml-auto hidden font-mono text-[9px] text-white/60 xl:block">
-                  {String(index + 1).padStart(2, "0")}
                 </span>
               </button>
             );
