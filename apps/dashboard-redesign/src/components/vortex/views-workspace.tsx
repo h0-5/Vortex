@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { GuildAvatar } from "@/components/vortex/brand";
+import { GuildAvatar, TiltCard } from "@/components/vortex/brand";
 import { PluginStudio } from "@/components/vortex/plugin-studio";
 import { cn } from "@/lib/utils";
 import {
@@ -48,7 +48,7 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <section className={cn("vl-panel rounded-lg", className)} style={style}>
+    <section className={cn("vx-panel vx-panel--beam", className)} style={style}>
       {children}
     </section>
   );
@@ -64,9 +64,9 @@ function PanelHead({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-3">
+    <div className="flex items-center justify-between gap-3 border-b border-[color:var(--glass-brd)] px-5 py-3">
       <div className="flex items-baseline gap-2.5">
-        <h3 className="vl-label !text-foreground">{title}</h3>
+        <h3 className="vx-label !text-foreground">{title}</h3>
         {hint ? <span className="text-[11.5px] text-muted-foreground">{hint}</span> : null}
       </div>
       {action}
@@ -91,7 +91,7 @@ function useCountUp(target: number, duration = 950): number {
   return value;
 }
 
-/* Flat pine sparkline that draws itself on mount. */
+/* Gradient sparkline that draws itself on mount. */
 function Sparkline({ points, className }: { points: number[]; className?: string }) {
   const max = Math.max(...points);
   const min = Math.min(...points);
@@ -101,10 +101,16 @@ function Sparkline({ points, className }: { points: number[]; className?: string
     .join(" ");
   return (
     <svg viewBox="0 0 100 28" preserveAspectRatio="none" className={cn("h-6 w-full", className)} aria-hidden="true">
+      <defs>
+        <linearGradient id="vx-spark" x1="0" y1="0" x2="100" y2="0">
+          <stop offset="0%" stopColor="var(--aurora-1)" />
+          <stop offset="100%" stopColor="var(--aurora-2)" />
+        </linearGradient>
+      </defs>
       <polyline
         points={coords}
         fill="none"
-        stroke="var(--primary)"
+        stroke="url(#vx-spark)"
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -149,7 +155,6 @@ export function OverviewView({
   const animatedMembers = useCountUp(guild.memberCount);
   const animatedCommands = useCountUp(commands24h);
 
-  /* KPI strip lives inside the hero band now — one wide ledger row. */
   const kpis = [
     {
       label: "Members",
@@ -185,59 +190,60 @@ export function OverviewView({
   ];
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Hero band: identity + inline KPI ledger */}
-      <Panel className="anim-rise overflow-hidden">
-        <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
-            <GuildAvatar initials={guild.initials} hue={guild.hue} iconUrl={guild.iconUrl} size={48} />
-            <div>
-              <div className="flex flex-wrap items-center gap-2.5">
-                <h2
-                  className="text-[19px] font-bold tracking-tight"
-                  style={{ fontFamily: "var(--font-grotesk)" }}
-                >
-                  {guild.name}
-                </h2>
+    <div className="flex flex-col gap-5">
+      {/* Hero: identity + floating KPI cards */}
+      <TiltCard max={3} className="anim-rise">
+        <Panel className="overflow-hidden p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <span className="relative">
+                <GuildAvatar initials={guild.initials} hue={guild.hue} iconUrl={guild.iconUrl} size={52} />
                 <span
-                  className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em]"
-                  style={{ color: "var(--ok)" }}
-                >
-                  <span className="vl-dot vl-dot--live" style={{ background: "var(--ok)", color: "var(--ok)" }} />
-                  online
-                </span>
+                  className="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full border-2 border-[color:var(--card)]"
+                  style={{ background: "var(--ok)", boxShadow: "0 0 10px color-mix(in srgb, var(--ok) 80%, transparent)" }}
+                />
+              </span>
+              <div>
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <h2
+                    className="text-[18px] font-bold tracking-tight"
+                    style={{ fontFamily: "var(--font-unbounded)" }}
+                  >
+                    {guild.name}
+                  </h2>
+                  <span
+                    className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em]"
+                    style={{ color: "var(--ok)" }}
+                  >
+                    <span className="vx-dot vx-dot--live" style={{ background: "var(--ok)", color: "var(--ok)" }} />
+                    online
+                  </span>
+                </div>
+                <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">
+                  {guild.id} · {guild.role.toLowerCase()} access
+                </p>
               </div>
-              <p className="mt-0.5 font-mono text-[11px] text-muted-foreground">
-                {guild.id} · {guild.role.toLowerCase()} access
-              </p>
             </div>
-          </div>
-          <button
-            onClick={() => onQuickAction("Guild synchronized")}
-            className="inline-flex h-9 w-fit items-center gap-2 rounded-md border border-input bg-card px-3.5 text-[12.5px] font-semibold transition-colors duration-150 hover:border-ink focus-visible:outline-ring"
-          >
-            <RefreshCwIcon className="size-3.5" aria-hidden="true" />
-            Sync now
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 border-t border-border lg:grid-cols-4">
-          {kpis.map((k, i) => (
-            <div
-              key={k.label}
-              className={cn(
-                "anim-rise px-5 py-4",
-                [
-                  "",
-                  "border-l",
-                  "border-t lg:border-t-0 lg:border-l",
-                  "border-t border-l lg:border-t-0",
-                ][i],
-              )}
-              style={{ "--i": i + 2 } as React.CSSProperties}
+            <button
+              onClick={() => onQuickAction("Guild synchronized")}
+              className="inline-flex h-9 w-fit items-center gap-2 rounded-lg border border-[color:var(--glass-brd)] bg-white/[0.04] px-3.5 text-[12.5px] font-semibold transition-all duration-150 hover:border-[color:var(--glass-brd-strong)] hover:bg-white/[0.08] focus-visible:outline-ring"
             >
-              <p className="vl-label">{k.label}</p>
-              <p className="mt-2 font-mono text-[26px] font-medium leading-none tracking-tight">{k.value}</p>
+              <RefreshCwIcon className="size-3.5" aria-hidden="true" />
+              Sync now
+            </button>
+          </div>
+        </Panel>
+      </TiltCard>
+
+      {/* KPI constellation — four floating tilt cards */}
+      <div className="vx-scene grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {kpis.map((k, i) => (
+          <TiltCard key={k.label} max={9} className="anim-rise" style={{ "--i": i + 1 } as React.CSSProperties}>
+            <div className="vx-panel vx-panel--beam h-full p-4">
+              <p className="vx-label">{k.label}</p>
+              <p className="vx-grad-text mt-2 font-mono text-[24px] font-semibold leading-none tracking-tight">
+                {k.value}
+              </p>
               <p className="mt-1.5 text-[11px] text-muted-foreground">
                 <span style={{ color: "var(--ok)" }} aria-hidden="true">▲ </span>
                 {k.delta}
@@ -246,39 +252,40 @@ export function OverviewView({
                 <Sparkline points={k.spark} />
               </div>
             </div>
-          ))}
-        </div>
-      </Panel>
+          </TiltCard>
+        ))}
+      </div>
 
       {/* Asymmetric split: live timeline left, operations rail right */}
-      <div className="grid gap-4 lg:grid-cols-[1.4fr_0.6fr]">
-        <Panel className="anim-rise" style={{ "--i": 1 } as React.CSSProperties}>
+      <div className="grid gap-5 lg:grid-cols-[1.4fr_0.6fr]">
+        <Panel className="anim-rise" style={{ "--i": 2 } as React.CSSProperties}>
           <PanelHead
             title="Live timeline"
             hint="events as they happen"
             action={
               <button
                 onClick={() => onNavigate("activity")}
-                className="text-[12px] font-semibold text-primary transition-opacity hover:opacity-75"
+                className="group inline-flex items-center gap-1 text-[12px] font-semibold text-[color:var(--aurora-2)] transition-opacity hover:opacity-80"
               >
-                Full log →
+                Full log
+                <ArrowRightIcon className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true" />
               </button>
             }
           />
           <Timeline events={activity.slice(0, 7)} compact />
         </Panel>
 
-        <div className="flex flex-col gap-4">
-          <Panel className="anim-rise" style={{ "--i": 2 } as React.CSSProperties}>
+        <div className="flex flex-col gap-5">
+          <Panel className="anim-rise" style={{ "--i": 3 } as React.CSSProperties}>
             <PanelHead title="Quick actions" />
             <div className="flex flex-col p-2">
               {quickActions.map((a) => (
                 <button
                   key={a.label}
                   onClick={() => onQuickAction(a.label)}
-                  className="group flex items-center gap-3 rounded-md px-3 py-2.5 text-left text-[13px] font-semibold transition-colors duration-150 hover:bg-accent focus-visible:outline-ring"
+                  className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[13px] font-semibold transition-colors duration-150 hover:bg-white/[0.05] focus-visible:outline-ring"
                 >
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-muted-foreground transition-colors group-hover:border-ink group-hover:text-foreground">
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-[color:var(--glass-brd)] bg-gradient-to-br from-white/[0.07] to-transparent text-muted-foreground transition-all duration-200 group-hover:-translate-y-0.5 group-hover:border-[color:var(--aurora-1)]/50 group-hover:text-[color:var(--aurora-1)] group-hover:shadow-[0_6px_16px_-6px_color-mix(in_srgb,var(--aurora-1)_70%,transparent)]">
                     <a.icon className="size-4" aria-hidden="true" />
                   </span>
                   {a.label}
@@ -291,7 +298,7 @@ export function OverviewView({
             </div>
           </Panel>
 
-          <Panel className="anim-rise" style={{ "--i": 3 } as React.CSSProperties}>
+          <Panel className="anim-rise" style={{ "--i": 4 } as React.CSSProperties}>
             <PanelHead
               title="Bot status"
               action={
@@ -299,7 +306,7 @@ export function OverviewView({
                   className="flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.12em]"
                   style={{ color: "var(--ok)" }}
                 >
-                  <span className="vl-dot vl-dot--live" style={{ background: "var(--ok)", color: "var(--ok)" }} />
+                  <span className="vx-dot vx-dot--live" style={{ background: "var(--ok)", color: "var(--ok)" }} />
                   connected
                 </span>
               }
@@ -311,9 +318,9 @@ export function OverviewView({
                 ["REST ping", `${latency}ms`],
                 ["Plugins active", `${enabledCount} of ${plugins.length}`],
               ].map(([k, v]) => (
-                <li key={k} className="flex items-baseline border-b border-border/60 py-2.5 last:border-0">
+                <li key={k} className="flex items-baseline border-b border-[color:var(--glass-brd)] py-2.5 last:border-0">
                   <span className="text-[12.5px] text-muted-foreground">{k}</span>
-                  <span className="vl-leader" />
+                  <span className="vx-leader" />
                   <span className="font-mono text-[12px]">{v}</span>
                 </li>
               ))}
@@ -346,15 +353,13 @@ function timeAgo(minutes: number): string {
   return `${Math.floor(h / 24)}d ago`;
 }
 
-/**
- * Vertical timeline with a continuous rail — replaces the old list rows.
- */
+/* Vertical timeline with a glowing gradient rail. */
 function Timeline({ events, compact = false }: { events: ActivityEvent[]; compact?: boolean }) {
   return (
     <ol className={cn("relative", compact ? "px-5 py-3" : "px-6 py-4")}>
       <span
         aria-hidden="true"
-        className="absolute bottom-4 left-[26px] top-4 w-px bg-border"
+        className="absolute bottom-4 left-[26px] top-4 w-px bg-gradient-to-b from-[color:var(--aurora-1)]/60 via-[color:var(--glass-brd)] to-transparent"
       />
       {events.map((event, index) => {
         const meta = ACTIVITY_META[event.type];
@@ -366,11 +371,15 @@ function Timeline({ events, compact = false }: { events: ActivityEvent[]; compac
           >
             <span
               aria-hidden="true"
-              className="absolute left-0 top-[15px] flex size-[15px] items-center justify-center rounded-full border border-border bg-card"
+              className="absolute left-0 top-[15px] flex size-[15px] items-center justify-center rounded-full border border-[color:var(--glass-brd-strong)] bg-[color:var(--card)]"
             >
               <span
                 className="size-[5px] rounded-full"
-                style={{ background: `var(${meta.colorVar})`, color: `var(${meta.colorVar})` }}
+                style={{
+                  background: `var(${meta.colorVar})`,
+                  color: `var(${meta.colorVar})`,
+                  boxShadow: `0 0 8px color-mix(in srgb, var(${meta.colorVar}) 80%, transparent)`,
+                }}
               />
             </span>
             <span className="min-w-0 flex-1 text-[13px] leading-snug">
@@ -378,8 +387,8 @@ function Timeline({ events, compact = false }: { events: ActivityEvent[]; compac
               <span className="text-muted-foreground"> — {event.message}</span>
             </span>
             <span
-              className="vl-tag shrink-0"
-              style={{ color: `var(${meta.colorVar})`, borderColor: `color-mix(in srgb, var(${meta.colorVar}) 30%, transparent)` }}
+              className="vx-chip shrink-0"
+              style={{ color: `var(${meta.colorVar})`, borderColor: `color-mix(in srgb, var(${meta.colorVar}) 35%, transparent)` }}
             >
               {meta.label}
             </span>
@@ -406,9 +415,9 @@ export function ActivityView({ activity }: { activity: ActivityEvent[] }) {
     t === "all" ? activity.length : activity.filter((e) => e.type === t).length;
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Segmented control — different placement/shape from the masthead tabs */}
-      <div className="anim-rise flex w-fit max-w-full flex-wrap items-center gap-1 rounded-lg border border-border bg-card p-1">
+    <div className="flex flex-col gap-5">
+      {/* Segmented control */}
+      <div className="anim-rise flex w-fit max-w-full flex-wrap items-center gap-1 rounded-xl border border-[color:var(--glass-brd)] bg-[color:var(--glass)] p-1 backdrop-blur-md">
         {types.map((t) => {
           const meta = t === "all" ? null : ACTIVITY_META[t];
           const active = filter === t;
@@ -418,9 +427,9 @@ export function ActivityView({ activity }: { activity: ActivityEvent[] }) {
               onClick={() => setFilter(t)}
               aria-pressed={active}
               className={cn(
-                "inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-[12px] font-semibold transition-all duration-150 focus-visible:outline-ring",
+                "inline-flex h-8 items-center gap-1.5 rounded-lg px-3 text-[12px] font-semibold transition-all duration-150 focus-visible:outline-ring",
                 active
-                  ? "bg-ink text-paper"
+                  ? "bg-gradient-to-r from-[color:var(--aurora-1)] to-[color:var(--aurora-2)] text-white shadow-[0_6px_18px_-8px_color-mix(in_srgb,var(--aurora-1)_90%,transparent)]"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
@@ -488,9 +497,9 @@ export function PluginsView({
   const selected = shown.find((p) => p.id === selectedId) ?? shown[0] ?? null;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       <div className="anim-rise flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex h-9 items-stretch gap-5 overflow-x-auto border-b border-border">
+        <div className="flex h-9 items-stretch gap-5 overflow-x-auto border-b border-[color:var(--glass-brd)]">
           {(
             [
               ["all", `All · ${plugins.length}`],
@@ -498,7 +507,7 @@ export function PluginsView({
               ["disabled", `Disabled · ${plugins.filter((p) => !p.enabled).length}`],
             ] as Array<[typeof tab, string]>
           ).map(([value, label]) => (
-            <button key={value} onClick={() => setTab(value)} data-active={tab === value} className="vl-tab">
+            <button key={value} onClick={() => setTab(value)} data-active={tab === value} className="vx-tab">
               {label}
             </button>
           ))}
@@ -507,20 +516,20 @@ export function PluginsView({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search plugins…"
-          className="h-9 w-full border-input bg-card text-[13px] lg:w-64"
+          className="h-9 w-full rounded-lg border-[color:var(--glass-brd)] bg-white/[0.04] text-[13px] backdrop-blur-md lg:w-64"
         />
       </div>
 
-      <div className="grid items-start gap-4 lg:grid-cols-[0.85fr_1.15fr]">
+      <div className="grid items-start gap-5 lg:grid-cols-[0.85fr_1.15fr]">
         {/* Master list */}
         <Panel className="anim-rise overflow-hidden" style={{ "--i": 1 } as React.CSSProperties}>
-          <div className="flex items-center justify-between border-b border-border px-4 py-3">
-            <p className="vl-label">Modules</p>
+          <div className="flex items-center justify-between border-b border-[color:var(--glass-brd)] px-4 py-3">
+            <p className="vx-label">modules</p>
             <p className="font-mono text-[10.5px] text-muted-foreground/80">
               {plugins.filter((p) => p.enabled).length}/{plugins.length} active
             </p>
           </div>
-          <ul className="flex flex-col divide-y divide-border/70">
+          <ul className="flex flex-col divide-y divide-[color:var(--glass-brd)]">
             {shown.map((plugin, index) => {
               const Icon = CATEGORY_ICON[plugin.category];
               const active = selected?.id === plugin.id;
@@ -531,15 +540,15 @@ export function PluginsView({
                     aria-current={active ? "true" : undefined}
                     className={cn(
                       "group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors duration-150 focus-visible:outline-ring",
-                      active ? "bg-accent" : "hover:bg-accent/60",
+                      active ? "bg-white/[0.06]" : "hover:bg-white/[0.035]",
                     )}
                   >
                     <span
                       className={cn(
-                        "flex size-9 shrink-0 items-center justify-center rounded-md border",
+                        "flex size-9 shrink-0 items-center justify-center rounded-lg border transition-all duration-200 group-hover:-translate-y-0.5",
                         plugin.enabled
-                          ? "border-primary/25 bg-primary/[0.08] text-primary"
-                          : "border-border bg-muted text-muted-foreground",
+                          ? "border-[color:var(--aurora-1)]/40 bg-[color:var(--aurora-1)]/10 text-[color:var(--aurora-1)] shadow-[0_6px_16px_-8px_color-mix(in_srgb,var(--aurora-1)_80%,transparent)]"
+                          : "border-[color:var(--glass-brd)] bg-white/[0.03] text-muted-foreground",
                       )}
                     >
                       <Icon className="size-4" aria-hidden="true" />
@@ -553,7 +562,7 @@ export function PluginsView({
                       </span>
                     </span>
                     <span
-                      className="vl-dot"
+                      className="vx-dot"
                       style={
                         plugin.enabled
                           ? { background: "var(--ok)", color: "var(--ok)" }
@@ -578,14 +587,14 @@ export function PluginsView({
         <Panel className="anim-rise overflow-hidden" style={{ "--i": 2 } as React.CSSProperties}>
           {selected ? (
             <div key={selected.id} className="anim-fade">
-              <div className="flex items-start justify-between gap-4 border-b border-border p-5">
+              <div className="flex items-start justify-between gap-4 border-b border-[color:var(--glass-brd)] p-5">
                 <div className="flex items-start gap-4">
                   <span
                     className={cn(
-                      "flex size-14 shrink-0 items-center justify-center rounded-lg border",
+                      "flex size-14 shrink-0 items-center justify-center rounded-xl border transition-transform duration-300 hover:rotate-3 hover:scale-105",
                       selected.enabled
-                        ? "border-primary/25 bg-primary/[0.08] text-primary"
-                        : "border-border bg-muted text-muted-foreground",
+                        ? "border-[color:var(--aurora-1)]/40 bg-gradient-to-br from-[color:var(--aurora-1)]/15 to-[color:var(--aurora-2)]/10 text-[color:var(--aurora-1)] shadow-[0_10px_26px_-10px_color-mix(in_srgb,var(--aurora-1)_80%,transparent)]"
+                        : "border-[color:var(--glass-brd)] bg-white/[0.03] text-muted-foreground",
                     )}
                   >
                     {(() => {
@@ -597,12 +606,12 @@ export function PluginsView({
                     <div className="flex flex-wrap items-center gap-2">
                       <h3
                         className="text-[18px] font-bold tracking-tight"
-                        style={{ fontFamily: "var(--font-grotesk)" }}
+                        style={{ fontFamily: "var(--font-unbounded)" }}
                       >
                         {selected.name}
                       </h3>
-                      <span className="vl-tag">v{selected.version}</span>
-                      <span className="vl-tag">{selected.category}</span>
+                      <span className="vx-chip">v{selected.version}</span>
+                      <span className="vx-chip">{selected.category}</span>
                     </div>
                     <p className="mt-1.5 max-w-md text-[13px] leading-relaxed text-muted-foreground" dir="auto">
                       {selected.description}
@@ -614,7 +623,7 @@ export function PluginsView({
                     checked={selected.enabled}
                     onCheckedChange={() => onToggle(selected)}
                     aria-label={`Toggle ${selected.name}`}
-                    className="data-[state=checked]:bg-primary"
+                    className="data-[state=checked]:bg-[color:var(--aurora-1)]"
                   />
                   <span
                     className="font-mono text-[10px] uppercase tracking-[0.12em]"
@@ -632,19 +641,19 @@ export function PluginsView({
                   ["Dashboard", selected.dashboard ? "schema-driven studio" : "none"],
                   ["Installs", fmt.format(1200 + selected.name.length * 137)],
                 ].map(([k, v]) => (
-                  <div key={k} className="flex items-baseline border-b border-border/60 py-2.5 last:border-0">
+                  <div key={k} className="flex items-baseline border-b border-[color:var(--glass-brd)] py-2.5 last:border-0">
                     <dt className="text-[12.5px] text-muted-foreground">{k}</dt>
-                    <dd className="vl-leader" />
+                    <dd className="vx-leader" />
                     <dd className="font-mono text-[12px]" dir="auto">{v}</dd>
                   </div>
                 ))}
               </dl>
 
-              <div className="flex flex-wrap items-center gap-3 border-t border-border px-5 py-4">
+              <div className="flex flex-wrap items-center gap-3 border-t border-[color:var(--glass-brd)] px-5 py-4">
                 {selected.dashboard ? (
                   <button
                     onClick={() => setStudioPlugin(selected)}
-                    className="inline-flex h-9 items-center gap-2 rounded-md bg-ink px-4 text-[12.5px] font-semibold text-paper transition-colors duration-150 hover:bg-ink/85 focus-visible:outline-ring"
+                    className="inline-flex h-9 items-center gap-2 rounded-lg bg-gradient-to-r from-[color:var(--aurora-1)] to-[color:var(--aurora-2)] px-4 text-[12.5px] font-semibold text-white shadow-[0_8px_22px_-10px_color-mix(in_srgb,var(--aurora-1)_90%,transparent)] transition-all duration-150 hover:brightness-110 focus-visible:outline-ring"
                     aria-label={`Configure ${selected.name}`}
                   >
                     <Settings2Icon className="size-3.5" aria-hidden="true" />

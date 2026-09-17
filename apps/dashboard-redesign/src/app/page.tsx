@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
 import { LoginScreen } from "@/components/vortex/login";
 import { SelectServerScreen } from "@/components/vortex/select-server";
 import { DashboardShell, type VortexView } from "@/components/vortex/shell";
 import { ActivityView, OverviewView, PluginsView } from "@/components/vortex/views-workspace";
 import { ApiView, LogsView, SettingsView } from "@/components/vortex/views-platform";
+import { IntroSplash } from "@/components/vortex/intro";
+import { SpaceBackdrop, VortexMark } from "@/components/vortex/brand";
 import {
   fetchActivity,
   fetchGuilds,
@@ -120,60 +121,84 @@ export default function Home() {
 
   if (stage === "boot") {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-paper">
-        <Loader2Icon className="size-7 animate-spin text-primary" aria-hidden="true" />
-        <p className="font-mono text-[12px] text-muted-foreground">Establishing secure session…</p>
-      </div>
+      <>
+        <IntroSplash />
+        <div className="relative flex min-h-screen flex-col items-center justify-center gap-6">
+        <SpaceBackdrop />
+        <span className="vx-orbit relative grid place-items-center">
+          <span className="vx-shimmer relative grid place-items-center">
+            <VortexMark size={64} />
+          </span>
+        </span>
+        <p className="vx-shimmer font-mono text-[11px] uppercase tracking-[0.32em] text-muted-foreground">
+          Establishing secure session
+        </p>
+        <div className="h-px w-40 overflow-hidden bg-white/10">
+          <div className="vx-intro-bar h-full bg-gradient-to-r from-[color:var(--aurora-1)] to-[color:var(--aurora-2)]" />
+        </div>
+        </div>
+      </>
     );
   }
 
   if (stage === "login") {
-    return <LoginScreen onLogin={handleLogin} />;
+    return (
+      <>
+        <IntroSplash />
+        <LoginScreen onLogin={handleLogin} />
+      </>
+    );
   }
 
   if (stage === "select" || !guild) {
     if (!user) return null;
     return (
-      <SelectServerScreen
-        user={user}
-        guilds={guilds}
-        onSelect={handleSelectGuild}
-        onLogout={handleLogout}
-      />
+      <>
+        <IntroSplash />
+        <SelectServerScreen
+          user={user}
+          guilds={guilds}
+          onSelect={handleSelectGuild}
+          onLogout={handleLogout}
+        />
+      </>
     );
   }
 
   if (!user) return null;
 
   return (
-    <DashboardShell
-      user={user}
-      guild={guild}
-      guilds={guilds}
-      view={view}
-      onViewChange={setView}
-      onSwitchGuild={handleSelectGuild}
-      onBrowseServers={() => setStage("select")}
-      onLogout={handleLogout}
-    >
-      {view === "overview" && (
-        <OverviewView
-          guild={guild}
-          plugins={plugins}
-          activity={activity}
-          onNavigate={setView}
-          onQuickAction={(label) =>
-            toast.info(label, { description: "Command queued to shard 0." })
-          }
-        />
-      )}
-      {view === "plugins" && (
-        <PluginsView plugins={plugins} onToggle={handleTogglePlugin} guild={guild} user={user} />
-      )}
-      {view === "activity" && <ActivityView activity={activity} />}
-      {view === "logs" && <LogsView guildId={guild.id} />}
-      {view === "api" && <ApiView />}
-      {view === "settings" && <SettingsView onLogout={handleLogout} />}
-    </DashboardShell>
+    <>
+      <IntroSplash />
+      <DashboardShell
+        user={user}
+        guild={guild}
+        guilds={guilds}
+        view={view}
+        onViewChange={setView}
+        onSwitchGuild={handleSelectGuild}
+        onBrowseServers={() => setStage("select")}
+        onLogout={handleLogout}
+      >
+        {view === "overview" && (
+          <OverviewView
+            guild={guild}
+            plugins={plugins}
+            activity={activity}
+            onNavigate={setView}
+            onQuickAction={(label) =>
+              toast.info(label, { description: "Command queued to shard 0." })
+            }
+          />
+        )}
+        {view === "plugins" && (
+          <PluginsView plugins={plugins} onToggle={handleTogglePlugin} guild={guild} user={user} />
+        )}
+        {view === "activity" && <ActivityView activity={activity} />}
+        {view === "logs" && <LogsView guildId={guild.id} />}
+        {view === "api" && <ApiView />}
+        {view === "settings" && <SettingsView onLogout={handleLogout} />}
+      </DashboardShell>
+    </>
   );
 }

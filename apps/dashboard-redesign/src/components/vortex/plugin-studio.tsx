@@ -170,7 +170,7 @@ function FieldFrame({
 }
 
 const selectTriggerClass =
-  "h-10 border-input bg-card text-[13px] shadow-none transition-all focus-visible:ring-1 focus-visible:ring-primary/60 focus-visible:border-primary/60 hover:border-ink data-[placeholder]:text-muted-foreground";
+  "h-10 rounded-lg border-[color:var(--glass-brd)] bg-white/[0.04] text-[13px] shadow-none backdrop-blur-md transition-all focus-visible:ring-1 focus-visible:ring-primary/60 focus-visible:border-primary/60 hover:border-[color:var(--glass-brd-strong)] data-[placeholder]:text-muted-foreground";
 
 /* ------------------------------ field renderer ---------------------------- */
 
@@ -198,7 +198,7 @@ function StudioField({
 
   if (field.type === "switch") {
     return (
-      <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card px-4 py-3.5 transition-colors hover:border-input sm:col-span-2">
+      <div className="flex items-center justify-between gap-4 rounded-xl border border-[color:var(--glass-brd)] bg-white/[0.03] px-4 py-3.5 transition-colors hover:border-[color:var(--glass-brd-strong)] sm:col-span-2">
         <div className="min-w-0">
           <p dir="auto" className="text-[13px] font-semibold leading-tight">{field.label}</p>
           {field.description ? (
@@ -292,7 +292,7 @@ function StudioField({
           type="number"
           value={Number(value ?? 0)}
           onChange={(event) => onChange(field, Number(event.target.value))}
-          className="h-10 border-input bg-card font-mono text-[13px] transition-all focus-visible:ring-1 focus-visible:ring-primary/60"
+          className="h-10 rounded-lg border-[color:var(--glass-brd)] bg-white/[0.04] font-mono text-[13px] transition-all focus-visible:ring-1 focus-visible:ring-primary/60"
         />
       </FieldFrame>
     );
@@ -309,7 +309,7 @@ function StudioField({
             rows={4}
             dir="auto"
             onChange={(event) => onChange(field, event.target.value)}
-            className="border-input bg-card text-[13px] transition-all focus-visible:ring-1 focus-visible:ring-primary/60"
+            className="rounded-lg border-[color:var(--glass-brd)] bg-white/[0.04] text-[13px] transition-all focus-visible:ring-1 focus-visible:ring-primary/60"
           />
         ) : (
           <Input
@@ -318,7 +318,7 @@ function StudioField({
             placeholder={field.placeholder}
             dir="auto"
             onChange={(event) => onChange(field, event.target.value)}
-            className="h-10 border-input bg-card text-[13px] transition-all focus-visible:ring-1 focus-visible:ring-primary/60"
+            className="h-10 rounded-lg border-[color:var(--glass-brd)] bg-white/[0.04] text-[13px] transition-all focus-visible:ring-1 focus-visible:ring-primary/60"
           />
         )}
       </FieldFrame>
@@ -348,10 +348,10 @@ function StudioField({
                   )
                 }
                 className={cn(
-                  "rounded border px-2.5 py-1 font-mono text-[10.5px] uppercase tracking-wide transition-all",
+                  "rounded-lg border px-2.5 py-1 font-mono text-[10.5px] uppercase tracking-wide transition-all",
                   mode === m
-                    ? "border-ink bg-ink text-paper"
-                    : "border-border text-muted-foreground hover:border-input hover:text-foreground",
+                    ? "border-transparent bg-gradient-to-r from-[color:var(--aurora-1)] to-[color:var(--aurora-2)] text-white shadow-[0_6px_16px_-8px_color-mix(in_srgb,var(--aurora-1)_90%,transparent)]"
+                    : "border-[color:var(--glass-brd)] text-muted-foreground hover:border-[color:var(--glass-brd-strong)] hover:text-foreground",
                 )}
               >
                 {m === "text" ? "نص" : m === "embed" ? "إمبد" : "مكونات"}
@@ -367,7 +367,7 @@ function StudioField({
                   rows={5}
                   dir="auto"
                   onChange={(event) => onChange(field, { ...message, content: event.target.value })}
-                  className="border-input bg-card text-[13px] focus-visible:ring-1 focus-visible:ring-primary/60"
+                  className="rounded-lg border-[color:var(--glass-brd)] bg-white/[0.04] text-[13px] focus-visible:ring-1 focus-visible:ring-primary/60"
                 />
               ) : mode === "embed" ? (
                 <div className="flex flex-col gap-2">
@@ -376,7 +376,7 @@ function StudioField({
                     placeholder="عنوان الإمبد"
                     dir="auto"
                     onChange={(event) => onChange(field, { ...message, title: event.target.value })}
-                    className="h-9 border-input bg-card text-[13px] focus-visible:ring-1 focus-visible:ring-primary/60"
+                    className="h-9 rounded-lg border-[color:var(--glass-brd)] bg-white/[0.04] text-[13px] focus-visible:ring-1 focus-visible:ring-primary/60"
                   />
                   <Textarea
                     value={typeof message.description === "string" ? message.description : ""}
@@ -384,7 +384,7 @@ function StudioField({
                     rows={3}
                     dir="auto"
                     onChange={(event) => onChange(field, { ...message, description: event.target.value })}
-                    className="border-input bg-card text-[13px] focus-visible:ring-1 focus-visible:ring-primary/60"
+                    className="rounded-lg border-[color:var(--glass-brd)] bg-white/[0.04] text-[13px] focus-visible:ring-1 focus-visible:ring-primary/60"
                   />
                 </div>
               ) : (
@@ -398,7 +398,7 @@ function StudioField({
                       /* keep typing — invalid JSON mid-edit */
                     }
                   }}
-                  className="border-input bg-card font-mono text-[11.5px] focus-visible:ring-1 focus-visible:ring-primary/60"
+                  className="rounded-lg border-[color:var(--glass-brd)] bg-white/[0.04] font-mono text-[11.5px] focus-visible:ring-1 focus-visible:ring-primary/60"
                 />
               )}
             </div>
@@ -432,7 +432,10 @@ function MessagePreview({
         <SparklesIcon className="size-3 text-[#949ba4]" aria-hidden="true" />
       </div>
       <div className="flex gap-2.5 p-3">
-        <span className="mt-0.5 flex size-[30px] shrink-0 items-center justify-center rounded-full bg-ink">
+        <span
+          className="mt-0.5 flex size-[30px] shrink-0 items-center justify-center overflow-hidden rounded-full"
+          style={{ background: "linear-gradient(150deg, rgba(124,108,255,0.4), rgba(34,211,238,0.25))" }}
+        >
           <VortexMark size={18} />
         </span>
         <div className="min-w-0 flex-1">
@@ -742,22 +745,26 @@ export function PluginStudio({
       />
 
       {/* drawer */}
-      <div className="anim-sheet absolute inset-y-0 right-0 flex w-full max-w-[780px] translate-x-0 flex-col border-l border-border bg-card shadow-[-24px_0_60px_-30px_rgba(0,0,0,0.45)]">
+      <div className="anim-sheet absolute inset-y-0 right-0 flex w-full max-w-[780px] translate-x-0 flex-col border-l border-[color:var(--glass-brd)] bg-[color:var(--glass-strong)] shadow-[-30px_0_90px_-30px_rgba(0,0,0,0.85)] backdrop-blur-2xl">
 
         {/* header */}
-        <div className="flex items-center gap-3.5 border-b border-border px-6 py-4">
-          <span className="flex size-11 items-center justify-center rounded-md border border-primary/25 bg-primary/[0.08] text-primary">
+        <div className="relative flex items-center gap-3.5 border-b border-[color:var(--glass-brd)] px-6 py-4">
+          <span
+            aria-hidden="true"
+            className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[color:var(--aurora-1)]/60 to-transparent"
+          />
+          <span className="flex size-11 items-center justify-center rounded-xl border border-[color:var(--aurora-1)]/40 bg-gradient-to-br from-[color:var(--aurora-1)]/15 to-[color:var(--aurora-2)]/10 text-[color:var(--aurora-1)]">
             <Icon className="size-5" aria-hidden="true" />
           </span>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <h2
                 className="truncate text-[16px] font-bold tracking-tight"
-                style={{ fontFamily: "var(--font-grotesk)" }}
+                style={{ fontFamily: "var(--font-unbounded)" }}
               >
                 {plugin.name}
               </h2>
-              <span className="vl-tag">v{plugin.version}</span>
+              <span className="vx-chip">v{plugin.version}</span>
             </div>
             <p className="mt-0.5 flex items-center gap-1.5 font-mono text-[10.5px] text-muted-foreground">
               <span className={cn("inline-block size-1.5 rounded-full", plugin.enabled ? "bg-[color:var(--ok)]" : "bg-[color:var(--muted-foreground)]")} />
@@ -767,7 +774,7 @@ export function PluginStudio({
           {schema ? <CompletionRing ratio={configuredRatio} /> : null}
           <button
             onClick={onClose}
-            className="flex size-9 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:border-input hover:text-foreground"
+            className="flex size-9 items-center justify-center rounded-lg border border-[color:var(--glass-brd)] text-muted-foreground transition-colors hover:border-[color:var(--glass-brd-strong)] hover:text-foreground"
             aria-label="Close"
           >
             <XIcon className="size-4" aria-hidden="true" />
@@ -776,14 +783,14 @@ export function PluginStudio({
 
         {/* tabs */}
         {schema && schema.tabs.length > 1 ? (
-          <div className="flex gap-5 border-b border-border px-6">
+          <div className="flex gap-5 border-b border-[color:var(--glass-brd)] px-6">
             {schema.tabs.map((t) => (
               <button
                 key={t.id}
                 onClick={() => setActiveTab(t.id)}
                 data-active={activeTab === t.id}
                 dir="auto"
-                className="vl-tab h-10"
+                className="vx-tab h-10"
               >
                 {t.label}
               </button>
@@ -792,11 +799,11 @@ export function PluginStudio({
         ) : null}
 
         {/* body */}
-        <div className="flex-1 overflow-y-auto bg-[color:var(--surface-2)] px-6 py-5">
+        <div className="vx-canvas flex-1 overflow-y-auto px-6 py-5">
           {status === "loading" ? (
             <div className="flex flex-col gap-4 pt-4">
               {[0, 1, 2].map((i) => (
-                <div key={i} className="vl-shimmer h-24 rounded-lg border border-border bg-muted" />
+                <div key={i} className="vx-shimmer h-24 rounded-xl border border-[color:var(--glass-brd)] bg-white/[0.04]" />
               ))}
               <p className="text-center font-mono text-[11px] text-muted-foreground">Loading plugin configuration…</p>
             </div>
@@ -825,7 +832,7 @@ export function PluginStudio({
                 <SectionCard
                   key={section.id}
                   section={section}
-                  accent={sectionIndex % 2 === 0 ? "#17603f" : "#0f5aa8"}
+                  accent={sectionIndex % 2 === 0 ? "var(--aurora-1)" : "var(--aurora-2)"}
                   draft={draft}
                   channels={channels}
                   roles={roles}
@@ -843,7 +850,7 @@ export function PluginStudio({
 
         {/* footer */}
         {schema && status === "ready" ? (
-          <div className="flex items-center gap-3 border-t border-border bg-card px-6 py-3.5">
+          <div className="flex items-center gap-3 border-t border-[color:var(--glass-brd)] bg-white/[0.02] px-6 py-3.5">
             <span
               className={cn(
                 "flex items-center gap-2 font-mono text-[11px] font-semibold transition-opacity",
@@ -860,7 +867,7 @@ export function PluginStudio({
               <button
                 onClick={runReset}
                 disabled={saving}
-                className="flex items-center gap-1.5 rounded-md border border-input bg-card px-3.5 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:border-ink hover:text-foreground disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-lg border border-[color:var(--glass-brd)] bg-white/[0.04] px-3.5 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:border-[color:var(--glass-brd-strong)] hover:text-foreground disabled:opacity-50"
               >
                 <RotateCcwIcon className="size-3.5" aria-hidden="true" />
                 Reset tab
@@ -868,7 +875,7 @@ export function PluginStudio({
               <button
                 onClick={runSave}
                 disabled={saving || !dirty}
-                className="flex items-center gap-1.5 rounded-md bg-ink px-4 py-2 text-xs font-semibold text-paper transition-colors hover:bg-ink/85 disabled:opacity-40"
+                className="flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-[color:var(--aurora-1)] to-[color:var(--aurora-2)] px-4 py-2 text-xs font-semibold text-white shadow-[0_8px_20px_-8px_color-mix(in_srgb,var(--aurora-1)_90%,transparent)] transition-all hover:brightness-110 disabled:opacity-40"
               >
                 {saving ? (
                   <Loader2Icon className="size-3.5 animate-spin" aria-hidden="true" />
@@ -913,10 +920,10 @@ function SectionCard({
 }) {
   const testActions = section.actions.filter((a) => a.type === "test_template");
   return (
-    <section className="overflow-hidden rounded-lg border border-border bg-card">
-      <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-3.5">
+    <section className="vx-panel overflow-hidden">
+      <div className="flex items-start justify-between gap-3 border-b border-[color:var(--glass-brd)] px-5 py-3.5">
         <div className="flex items-start gap-3">
-          <span className="mt-0.5 h-8 w-1 rounded-full" style={{ background: accent }} />
+          <span className="mt-0.5 h-8 w-1 rounded-full" style={{ background: accent, boxShadow: "0 0 12px color-mix(in srgb, var(--aurora-1) 70%, transparent)" }} />
           <div>
             <h3 dir="auto" className="text-[13.5px] font-bold tracking-tight">{section.title}</h3>
             {section.description ? (
@@ -930,7 +937,7 @@ function SectionCard({
               key={action.id}
               onClick={() => onTest(action)}
               disabled={testingId !== null}
-              className="flex items-center gap-1.5 rounded-md border border-input bg-card px-3 py-1.5 text-[11px] font-semibold transition-colors hover:border-ink disabled:opacity-50"
+              className="flex items-center gap-1.5 rounded-lg border border-[color:var(--glass-brd)] bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold transition-colors hover:border-[color:var(--glass-brd-strong)] disabled:opacity-50"
             >
               {testingId === action.id ? (
                 <Loader2Icon className="size-3 animate-spin" aria-hidden="true" />

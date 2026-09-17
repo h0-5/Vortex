@@ -1,18 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2Icon } from "lucide-react";
+import { Loader2Icon, ShieldCheckIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { VortexBrand } from "@/components/vortex/brand";
+import { SpaceBackdrop, VortexBrand, VortexMark } from "@/components/vortex/brand";
 import { SECURITY_FEATURES } from "@/lib/vortex/data";
 
-/* Spec sheet shown on the ink panel — reads like a README, not marketing. */
+/* Floating spec chips orbiting the hero prism. */
 const SPEC: Array<[string, string]> = [
   ["runtime", "discord.js · node 22"],
   ["storage", "postgresql 16"],
   ["auth", "oauth2 + pkce"],
-  ["plugins", "schema-driven dashboards"],
-  ["sessions", "aes-256-gcm at rest"],
+  ["plugins", "schema-driven"],
+  ["sessions", "aes-256-gcm"],
 ];
 
 export function LoginScreen({ onLogin }: { onLogin: () => void }) {
@@ -24,53 +24,54 @@ export function LoginScreen({ onLogin }: { onLogin: () => void }) {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-paper lg:grid lg:grid-cols-[0.9fr_1.1fr]">
-      {/* Ink spec panel — stays dark in both themes (terminal hero) */}
-      <aside className="relative hidden flex-col justify-between bg-[#1b1a16] p-10 text-[#ece9dd] lg:flex">
+    <div className="relative flex min-h-screen flex-col overflow-hidden lg:grid lg:grid-cols-[1.05fr_0.95fr]">
+      <SpaceBackdrop />
+
+      {/* 3D showcase column */}
+      <aside className="relative hidden flex-col items-start justify-between p-10 lg:flex">
         <VortexBrand size={26} />
 
-        <div className="flex max-w-md flex-col gap-8">
-          <p className="anim-rise vl-label !text-[#8f8c80]">Open-source Discord bot platform</p>
-          <h1
-            className="anim-rise text-[44px] font-bold leading-[1.08] tracking-tight"
-            style={{ fontFamily: "var(--font-grotesk)", "--i": 1 } as React.CSSProperties }
-          >
-            The control room for your Discord community.
-          </h1>
-          <p
-            className="anim-rise max-w-sm text-[14px] leading-relaxed text-[#b5b2a6]"
-            style={{ "--i": 2 } as React.CSSProperties}
-          >
-            One console for every server you operate — authenticate once, manage
-            plugins, and read the gateway as it happens.
-          </p>
-          <dl
-            className="anim-rise flex flex-col border-t border-[#33312a]"
-            style={{ "--i": 3 } as React.CSSProperties}
-          >
+        <div className="flex flex-col items-center gap-9 self-center">
+          {/* prism + orbit rings */}
+          <div className="anim-pop relative grid place-items-center" style={{ perspective: "900px" }}>
+            <span className="vx-orbit grid place-items-center">
+              <span className="relative grid place-items-center">
+                <span className="vx-halo" />
+                <VortexMark size={110} className="vx-float relative" />
+              </span>
+            </span>
+          </div>
+
+          <div className="vx-scene grid gap-3">
             {SPEC.map(([key, value], index) => (
               <div
                 key={key}
-                className="anim-rise flex items-baseline border-b border-[#33312a] py-2.5"
-                style={{ "--i": 4 + index } as React.CSSProperties}
+                className="anim-rise flex items-center gap-3 rounded-xl border border-[color:var(--glass-brd)] bg-[color:var(--glass)] px-4 py-2.5 backdrop-blur-md"
+                style={
+                  {
+                    "--i": index + 2,
+                    transform: `translateX(${index % 2 === 0 ? -22 : 26}px)`,
+                  } as React.CSSProperties
+                }
               >
-                <dt className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#8f8c80]">
+                <span className="size-1.5 shrink-0 rounded-full bg-gradient-to-r from-[color:var(--aurora-1)] to-[color:var(--aurora-2)]" />
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                   {key}
-                </dt>
-                <span className="vl-leader !border-[#3c3a32]" />
-                <dd className="font-mono text-[12px] text-[#e5e2d7]">{value}</dd>
+                </span>
+                <span className="vx-leader !mx-1 !w-8 flex-none" />
+                <span className="font-mono text-[11.5px] text-foreground/90">{value}</span>
               </div>
             ))}
-          </dl>
+          </div>
         </div>
 
-        <p className="anim-fade font-mono text-[11px] text-[#6e6b60]" style={{ "--i": 9 } as React.CSSProperties}>
-          vortex console · v1.1 · api v1
+        <p className="anim-fade font-mono text-[10.5px] uppercase tracking-[0.24em] text-muted-foreground/70" style={{ "--i": 8 } as React.CSSProperties}>
+          vortex nexus · v2.0 · api v1
         </p>
       </aside>
 
       {/* Auth column */}
-      <main className="vl-canvas flex flex-1 flex-col">
+      <main className="flex flex-1 flex-col">
         <div className="flex items-center justify-between p-6 lg:justify-end">
           <div className="lg:hidden">
             <VortexBrand size={24} />
@@ -78,15 +79,16 @@ export function LoginScreen({ onLogin }: { onLogin: () => void }) {
         </div>
 
         <div className="flex flex-1 items-center justify-center px-6 pb-16">
-          <div className="vl-panel anim-rise w-full max-w-[420px] rounded-lg p-8 sm:p-10">
-            <div className="flex flex-col gap-1.5">
+          <div className="vx-panel vx-panel--beam anim-rise w-full max-w-[430px] p-8 sm:p-10" style={{ "--i": 1 } as React.CSSProperties}>
+            <div className="flex flex-col gap-2">
+              <p className="vx-label">access terminal</p>
               <h2
-                className="text-[22px] font-bold tracking-tight"
-                style={{ fontFamily: "var(--font-grotesk)" }}
+                className="text-[24px] font-bold tracking-tight"
+                style={{ fontFamily: "var(--font-unbounded)" }}
               >
                 Sign in
               </h2>
-              <p className="text-[13px] leading-relaxed text-muted-foreground">
+              <p className="text-[13.5px] leading-relaxed text-muted-foreground">
                 Authenticate with Discord to open your workspaces. Credentials
                 never leave the server.
               </p>
@@ -96,7 +98,7 @@ export function LoginScreen({ onLogin }: { onLogin: () => void }) {
               size="lg"
               onClick={handleLogin}
               disabled={loading}
-              className="mt-7 h-11 w-full rounded-md text-[14px] font-semibold text-white transition-colors duration-150 hover:brightness-110 disabled:opacity-70"
+              className="mt-7 h-12 w-full rounded-xl text-[14px] font-semibold text-white shadow-[0_10px_30px_-10px_rgba(88,101,242,0.7)] transition-all duration-200 hover:brightness-110 hover:shadow-[0_14px_36px_-10px_rgba(88,101,242,0.85)] disabled:opacity-70"
               style={{ background: "#5865F2" }}
             >
               {loading ? (
@@ -114,16 +116,23 @@ export function LoginScreen({ onLogin }: { onLogin: () => void }) {
               )}
             </Button>
 
-            <div className="my-7 h-px bg-border" />
+            <div className="vx-grad-line my-7" />
 
-            <p className="vl-label mb-3">Platform security</p>
+            <p className="vx-label mb-3">platform security</p>
             <ul className="flex flex-col">
-              {SECURITY_FEATURES.map((f) => (
+              {SECURITY_FEATURES.map((f, index) => (
                 <li
                   key={f.title}
-                  className="flex items-baseline justify-between gap-4 border-b border-border/70 py-2.5 last:border-0 last:pb-0"
+                  className="flex items-baseline justify-between gap-4 border-b border-[color:var(--glass-brd)] py-2.5 last:border-0 last:pb-0"
                 >
-                  <span className="text-[12.5px] font-semibold">{f.title}</span>
+                  <span className="flex items-center gap-2 text-[12.5px] font-semibold">
+                    <ShieldCheckIcon
+                      className="size-3.5 text-[color:var(--ok)]"
+                      style={{ opacity: 1 - index * 0.12 }}
+                      aria-hidden="true"
+                    />
+                    {f.title}
+                  </span>
                   <span className="max-w-[190px] text-right text-[11px] leading-snug text-muted-foreground">
                     {f.detail}
                   </span>
@@ -133,9 +142,9 @@ export function LoginScreen({ onLogin }: { onLogin: () => void }) {
           </div>
         </div>
 
-        <footer className="flex items-center justify-between border-t border-border px-6 py-3.5 font-mono text-[10.5px] text-muted-foreground/80">
+        <footer className="flex items-center justify-between border-t border-[color:var(--glass-brd)] px-6 py-3.5 font-mono text-[10.5px] text-muted-foreground/70">
           <span>vortex — open-source discord bot platform</span>
-          <span>v1.0 · phase 2</span>
+          <span>nexus · phase 2</span>
         </footer>
       </main>
     </div>

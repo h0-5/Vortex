@@ -47,12 +47,12 @@ import { toast } from "sonner";
 
 /* --------------------------------- Logs ---------------------------------- */
 
-/* Warm-terminal level palette (on the dark inset block) */
+/* Nebula-terminal level palette (on the deep inset block) */
 const LEVEL_COLOR: Record<LogLevel, string> = {
-  INFO: "#8ab4a0",
-  WARN: "#d9a03f",
-  ERROR: "#e5654e",
-  DEBUG: "#8a877c",
+  INFO: "#22d3ee",
+  WARN: "#fbbf24",
+  ERROR: "#fb7185",
+  DEBUG: "#8b91c9",
 };
 
 export function LogsView({ guildId }: { guildId: string }) {
@@ -99,7 +99,7 @@ export function LogsView({ guildId }: { guildId: string }) {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2.5">
         <Select value={level} onValueChange={(v) => setLevel(v as LogLevel | "all")}>
-          <SelectTrigger className="h-9 w-36 border-input bg-card text-xs">
+          <SelectTrigger className="h-9 w-36 rounded-lg border-[color:var(--glass-brd)] bg-white/[0.04] text-xs backdrop-blur-md">
             <SelectValue placeholder="Level" />
           </SelectTrigger>
           <SelectContent>
@@ -111,7 +111,7 @@ export function LogsView({ guildId }: { guildId: string }) {
           </SelectContent>
         </Select>
         <Select value={source} onValueChange={setSource}>
-          <SelectTrigger className="h-9 w-44 border-input bg-card text-xs">
+          <SelectTrigger className="h-9 w-44 rounded-lg border-[color:var(--glass-brd)] bg-white/[0.04] text-xs backdrop-blur-md">
             <SelectValue placeholder="Source" />
           </SelectTrigger>
           <SelectContent>
@@ -127,8 +127,8 @@ export function LogsView({ guildId }: { guildId: string }) {
           variant="outline"
           onClick={() => setPaused((p) => !p)}
           className={cn(
-            "ml-auto h-9 gap-1.5 border-input bg-card text-xs hover:bg-accent",
-            paused && "border-primary/50 text-primary",
+            "ml-auto h-9 gap-1.5 rounded-lg border-[color:var(--glass-brd)] bg-white/[0.04] text-xs hover:bg-white/[0.08]",
+            paused && "border-[color:var(--warn)]/50 text-[color:var(--warn)]",
           )}
         >
           {paused ? <PlayIcon className="size-3.5" /> : <PauseIcon className="size-3.5" />}
@@ -138,25 +138,25 @@ export function LogsView({ guildId }: { guildId: string }) {
           size="sm"
           variant="outline"
           onClick={() => setLogs([])}
-          className="h-9 gap-1.5 border-input bg-card text-xs hover:bg-accent"
+          className="h-9 gap-1.5 rounded-lg border-[color:var(--glass-brd)] bg-white/[0.04] text-xs hover:bg-white/[0.08]"
         >
           <Trash2Icon className="size-3.5" aria-hidden="true" />
           Clear
         </Button>
       </div>
 
-      <div className="vl-terminal overflow-hidden rounded-lg font-mono">
-        <div className="flex items-center justify-between border-b border-[#33312a] px-4 py-2.5 text-[11px]">
-          <span className="flex items-center gap-2 text-[#8a877c]">
+      <div className="vx-terminal overflow-hidden font-mono">
+        <div className="flex items-center justify-between border-b border-[color:var(--terminal-brd)] bg-white/[0.02] px-4 py-2.5 text-[11px]">
+          <span className="flex items-center gap-2 text-muted-foreground">
             <span
               className={cn(
                 "inline-block size-1.5 rounded-full",
-                paused ? "bg-[#d9a03f]" : "bg-[#8ab4a0] vl-dot--live text-[#8ab4a0]",
+                paused ? "bg-[color:var(--warn)]" : "bg-[color:var(--ok)] text-[color:var(--ok)] vx-dot--live",
               )}
             />
             {paused ? "stream paused" : "streaming live"}
           </span>
-          <span className="text-[#6e6b60]">{fmt.format(shown.length)} lines</span>
+          <span className="text-muted-foreground/60">{fmt.format(shown.length)} lines</span>
         </div>
         <div
           ref={scrollRef}
@@ -167,16 +167,16 @@ export function LogsView({ guildId }: { guildId: string }) {
         >
           {shown.map((line) => (
             <div key={line.id} className="flex gap-3 whitespace-pre-wrap break-all">
-              <span className="shrink-0 text-[#6e6b60]">{line.ts}</span>
+              <span className="shrink-0 text-muted-foreground/60">{line.ts}</span>
               <span className="w-11 shrink-0 font-semibold" style={{ color: LEVEL_COLOR[line.level] }}>
                 {line.level}
               </span>
-              <span className="w-28 shrink-0 truncate text-[#7fa6d9]">{line.source}</span>
-              <span className="min-w-0 text-[#d9d6cb]">{line.message}</span>
+              <span className="w-28 shrink-0 truncate text-[color:var(--aurora-1)]">{line.source}</span>
+              <span className="min-w-0 text-[#c9cef2]">{line.message}</span>
             </div>
           ))}
           {shown.length === 0 && (
-            <p className="py-16 text-center text-[#6e6b60]">Buffer empty.</p>
+            <p className="py-16 text-center text-muted-foreground/60">Buffer empty.</p>
           )}
         </div>
       </div>
@@ -228,37 +228,38 @@ export function ApiView() {
             icon: degraded === 0 ? CheckCircle2Icon : CircleAlertIcon,
             color: degraded === 0 ? "var(--ok)" : "var(--warn)",
           },
-          { label: "Health latency", value: health ? `${health.latencyMs}ms` : "–", icon: GaugeIcon, color: "var(--chart-2)" },
-          { label: "Core endpoints", value: "7 tracked", icon: ActivitySquareIcon, color: "var(--primary)" },
-        ].map((c) => (
-          <div key={c.label} className="vl-panel flex items-center gap-4 rounded-lg p-5">
+          { label: "Health latency", value: health ? `${health.latencyMs}ms` : "–", icon: GaugeIcon, color: "var(--aurora-2)" },
+          { label: "Core endpoints", value: "7 tracked", icon: ActivitySquareIcon, color: "var(--aurora-1)" },
+        ].map((c, index) => (
+          <div key={c.label} className="vx-panel vx-panel--beam anim-rise flex items-center gap-4 p-5" style={{ "--i": index } as React.CSSProperties}>
             <span
-              className="flex size-10 items-center justify-center rounded-md border"
+              className="flex size-10 items-center justify-center rounded-xl border"
               style={{
-                background: `color-mix(in srgb, ${c.color} 9%, transparent)`,
-                borderColor: `color-mix(in srgb, ${c.color} 30%, transparent)`,
+                background: `color-mix(in srgb, ${c.color} 10%, transparent)`,
+                borderColor: `color-mix(in srgb, ${c.color} 35%, transparent)`,
                 color: c.color,
+                boxShadow: `0 8px 20px -10px color-mix(in srgb, ${c.color} 70%, transparent)`,
               }}
             >
               <c.icon className="size-4.5" aria-hidden="true" />
             </span>
             <div>
-              <p className="vl-label">{c.label}</p>
+              <p className="vx-label">{c.label}</p>
               <p className="mt-0.5 font-mono text-[17px] font-medium">{c.value}</p>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="vl-panel overflow-hidden rounded-lg">
-        <div className="flex items-center justify-between border-b border-border px-5 py-3">
-          <p className="vl-label">Endpoints</p>
+      <div className="vx-panel vx-panel--beam overflow-hidden">
+        <div className="flex items-center justify-between border-b border-[color:var(--glass-brd)] px-5 py-3">
+          <p className="vx-label">endpoints</p>
           <p className="font-mono text-[10.5px] text-muted-foreground/80">/api/v1</p>
         </div>
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="border-border hover:bg-transparent">
+              <TableRow className="border-[color:var(--glass-brd)] hover:bg-transparent">
                 <TableHead className="w-20 pl-5 text-[11px]">Method</TableHead>
                 <TableHead className="text-[11px]">Endpoint</TableHead>
                 <TableHead className="hidden text-[11px] md:table-cell">Description</TableHead>
@@ -268,14 +269,14 @@ export function ApiView() {
             </TableHeader>
             <TableBody>
               {endpoints.map((e) => (
-                <TableRow key={e.path} className="border-border/70 hover:bg-accent/50">
+                <TableRow key={e.path} className="border-[color:var(--glass-brd)] hover:bg-white/[0.035]">
                   <TableCell className="pl-5">
                     <span
                       className={cn(
-                        "inline-flex rounded border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em]",
+                        "inline-flex rounded-md border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em]",
                         e.method === "GET"
-                          ? "border-primary/25 bg-primary/[0.08] text-primary"
-                          : "border-[color:var(--chart-2)]/25 bg-[color:var(--chart-2)]/[0.07] text-[color:var(--chart-2)]",
+                          ? "border-[color:var(--aurora-1)]/35 bg-[color:var(--aurora-1)]/10 text-[color:var(--aurora-1)]"
+                          : "border-[color:var(--aurora-3)]/35 bg-[color:var(--aurora-3)]/10 text-[color:var(--aurora-3)]",
                       )}
                     >
                       {e.method}
@@ -287,12 +288,12 @@ export function ApiView() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2.5">
-                      <div className="h-1 w-20 overflow-hidden rounded-full bg-muted">
+                      <div className="h-1 w-20 overflow-hidden rounded-full bg-white/[0.07]">
                         <div
-                          className="h-full rounded-full"
+                          className="h-full rounded-full bg-gradient-to-r from-[color:var(--aurora-1)] to-[color:var(--aurora-2)]"
                           style={{
                             width: `${Math.min(100, (e.latencyMs / 150) * 100)}%`,
-                            background: e.latencyMs > 100 ? "var(--warn)" : "var(--primary)",
+                            background: e.latencyMs > 100 ? "var(--warn)" : undefined,
                           }}
                         />
                       </div>
@@ -323,9 +324,10 @@ export function ApiView() {
 /* ------------------------------- Settings --------------------------------- */
 
 const ACCENTS = [
-  { name: "Pine", primary: "#17603f", ring: "#17603f" },
-  { name: "Cobalt", primary: "#0f5aa8", ring: "#0f5aa8" },
-  { name: "Rust", primary: "#b45309", ring: "#b45309" },
+  { name: "Iris", primary: "#7c6cff", ring: "#7c6cff" },
+  { name: "Aqua", primary: "#22d3ee", ring: "#22d3ee" },
+  { name: "Nova", primary: "#f471b5", ring: "#f471b5" },
+  { name: "Solar", primary: "#fbbf24", ring: "#fbbf24" },
 ];
 
 export function SettingsView({ onLogout }: { onLogout: () => void }) {
@@ -339,6 +341,7 @@ export function SettingsView({ onLogout }: { onLogout: () => void }) {
     if (pick) {
       document.documentElement.style.setProperty("--primary", pick.primary);
       document.documentElement.style.setProperty("--ring", pick.ring);
+      document.documentElement.style.setProperty("--aurora-1", pick.primary);
     }
     toast.success(`Accent set to ${name}`);
   };
@@ -346,13 +349,18 @@ export function SettingsView({ onLogout }: { onLogout: () => void }) {
   return (
     <div className="grid gap-5 xl:grid-cols-2">
       {/* Branding */}
-      <section className="vl-panel rounded-lg">
-        <div className="border-b border-border px-5 py-3">
-          <h3 className="vl-label !text-foreground">Branding</h3>
+      <section className="vx-panel vx-panel--beam anim-rise">
+        <div className="border-b border-[color:var(--glass-brd)] px-5 py-3">
+          <h3 className="vx-label !text-foreground">branding</h3>
         </div>
         <div className="p-5">
           <div className="flex items-center gap-4">
-            <span className="flex size-14 shrink-0 items-center justify-center rounded-lg bg-ink">
+            <span
+              className="flex size-14 shrink-0 items-center justify-center rounded-xl border border-[color:var(--glass-brd)]"
+              style={{
+                background: "linear-gradient(150deg, rgba(124,108,255,0.16), rgba(34,211,238,0.08) 60%, rgba(244,113,181,0.1))",
+              }}
+            >
               <VortexMark size={34} />
             </span>
             <div className="flex-1">
@@ -363,7 +371,7 @@ export function SettingsView({ onLogout }: { onLogout: () => void }) {
                 id="app-name"
                 value={appName}
                 onChange={(e) => setAppName(e.target.value)}
-                className="h-9 border-input bg-card text-[13px]"
+                className="h-9 rounded-lg border-[color:var(--glass-brd)] bg-white/[0.04] text-[13px]"
               />
             </div>
           </div>
@@ -373,39 +381,42 @@ export function SettingsView({ onLogout }: { onLogout: () => void }) {
               setSavedName(appName.trim() || "Vortex");
               toast.success("Branding saved");
             }}
-            className="mt-4 h-8 rounded-md bg-ink text-xs font-semibold text-paper hover:bg-ink/85"
+            className="mt-4 h-8 rounded-lg bg-gradient-to-r from-[color:var(--aurora-1)] to-[color:var(--aurora-2)] text-xs font-semibold text-white hover:brightness-110"
           >
             Save branding
           </Button>
           <p className="mt-3 text-[11.5px] text-muted-foreground">
-            Preview: <span className="font-semibold text-foreground">{savedName}</span> console
+            Preview: <span className="font-semibold text-foreground">{savedName}</span> nexus
           </p>
         </div>
       </section>
 
       {/* Appearance */}
-      <section className="vl-panel rounded-lg">
-        <div className="border-b border-border px-5 py-3">
-          <h3 className="vl-label !text-foreground">Accent</h3>
+      <section className="vx-panel vx-panel--beam anim-rise" style={{ "--i": 1 } as React.CSSProperties}>
+        <div className="border-b border-[color:var(--glass-brd)] px-5 py-3">
+          <h3 className="vx-label !text-foreground">accent</h3>
         </div>
         <div className="p-5">
           <p className="mb-4 text-[12.5px] text-muted-foreground">
             Applies immediately across active states, toggles, and focus rings.
           </p>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {ACCENTS.map((a) => (
               <button
                 key={a.name}
                 onClick={() => applyAccent(a.name)}
                 className={cn(
-                  "flex items-center gap-3 rounded-md border p-3 text-left transition-colors duration-150 focus-visible:outline-ring",
+                  "flex items-center gap-3 rounded-xl border p-3 text-left transition-all duration-150 focus-visible:outline-ring",
                   accent === a.name
-                    ? "border-ink"
-                    : "border-border hover:border-input",
+                    ? "border-[color:var(--glass-brd-strong)] bg-white/[0.06] shadow-[0_8px_20px_-10px_color-mix(in_srgb,var(--primary)_80%,transparent)]"
+                    : "border-[color:var(--glass-brd)] hover:border-[color:var(--glass-brd-strong)]",
                 )}
                 aria-pressed={accent === a.name}
               >
-                <span className="size-6 rounded-sm" style={{ background: a.primary }} />
+                <span
+                  className="size-6 rounded-lg"
+                  style={{ background: a.primary, boxShadow: `0 4px 14px -4px ${a.primary}` }}
+                />
                 <span className="text-[12.5px] font-semibold">{a.name}</span>
                 {accent === a.name && (
                   <span className="ml-auto font-mono text-[10px] text-muted-foreground">on</span>
@@ -417,11 +428,11 @@ export function SettingsView({ onLogout }: { onLogout: () => void }) {
       </section>
 
       {/* Security */}
-      <section className="vl-panel rounded-lg">
-        <div className="border-b border-border px-5 py-3">
-          <h3 className="vl-label !text-foreground">Session security</h3>
+      <section className="vx-panel vx-panel--beam anim-rise" style={{ "--i": 2 } as React.CSSProperties}>
+        <div className="border-b border-[color:var(--glass-brd)] px-5 py-3">
+          <h3 className="vx-label !text-foreground">session security</h3>
         </div>
-        <ul className="flex flex-col divide-y divide-border/70">
+        <ul className="flex flex-col divide-y divide-[color:var(--glass-brd)]">
           {SECURITY_FEATURES.map((f) => (
             <li key={f.title} className="flex items-start gap-3 px-5 py-3.5">
               <ShieldCheckIcon className="mt-0.5 size-4 shrink-0" style={{ color: "var(--ok)" }} aria-hidden="true" />
@@ -435,11 +446,11 @@ export function SettingsView({ onLogout }: { onLogout: () => void }) {
       </section>
 
       {/* Danger zone */}
-      <section className="vl-panel rounded-lg border-destructive/30">
+      <section className="vx-panel anim-rise border-destructive/30" style={{ "--i": 3 } as React.CSSProperties}>
         <div className="border-b border-destructive/20 px-5 py-3">
           <h3 className="flex items-center gap-2">
             <OctagonAlertIcon className="size-4 text-destructive" aria-hidden="true" />
-            <span className="vl-label !text-destructive">Danger zone</span>
+            <span className="vx-label !text-destructive">danger zone</span>
           </h3>
         </div>
         <div className="p-5">
@@ -450,7 +461,7 @@ export function SettingsView({ onLogout }: { onLogout: () => void }) {
             <AlertDialogTrigger asChild>
               <Button
                 variant="outline"
-                className="mt-4 border-destructive/40 bg-transparent text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                className="mt-4 rounded-lg border-destructive/40 bg-transparent text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
               >
                 Revoke session & log out
               </Button>

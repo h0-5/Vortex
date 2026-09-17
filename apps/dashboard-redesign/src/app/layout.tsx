@@ -1,36 +1,42 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk, IBM_Plex_Mono } from "next/font/google";
+import { Unbounded, Outfit, IBM_Plex_Sans_Arabic, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 
-const inter = Inter({
-  variable: "--font-inter",
+const unbounded = Unbounded({
+  variable: "--font-unbounded",
   subsets: ["latin"],
+  weight: ["400", "500", "700"],
+});
+
+const outfit = Outfit({
+  variable: "--font-outfit",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const plexArabic = IBM_Plex_Sans_Arabic({
+  variable: "--font-arabic",
+  subsets: ["arabic"],
   weight: ["400", "500", "600"],
 });
 
-const grotesk = Space_Grotesk({
-  variable: "--font-grotesk",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-});
-
-const plexMono = IBM_Plex_Mono({
-  variable: "--font-plex",
+const jbMono = JetBrains_Mono({
+  variable: "--font-jbmono",
   subsets: ["latin"],
   weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
-  title: "Vortex Console — Discord bot operations",
+  title: "Vortex Nexus — Discord operations, reimagined",
   description:
     "Vortex is an open-source Discord bot platform. Secure OAuth, multi-server management, and a plugin-ready foundation.",
-  keywords: ["Vortex", "Discord", "bot", "console", "plugins", "open-source"],
+  keywords: ["Vortex", "Discord", "bot", "nexus", "plugins", "open-source"],
   icons: {
     icon: "/vortex-mark.png",
   },
   openGraph: {
-    title: "Vortex Console — Discord bot operations",
+    title: "Vortex Nexus — Discord operations, reimagined",
     description: "Open-source Discord bot platform with schema-driven plugin configuration.",
     siteName: "Vortex",
     type: "website",
@@ -43,17 +49,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head>
-        {/* Set the theme before first paint — avoids a flash of the wrong mode. */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              "(function(){try{var t=localStorage.getItem('vx-theme');if(!t){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}})();",
-          }}
-        />
-      </head>
-      <body className={`${inter.variable} ${grotesk.variable} ${plexMono.variable} font-sans antialiased bg-background text-foreground`}>
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <body
+        className={`${unbounded.variable} ${outfit.variable} ${plexArabic.variable} ${jbMono.variable} font-sans antialiased bg-background text-foreground`}
+      >
         {children}
         <Toaster position="bottom-right" richColors />
       </body>
