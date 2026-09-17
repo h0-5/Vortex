@@ -44,6 +44,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Set the theme before first paint — avoids a flash of the wrong mode. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var t=localStorage.getItem('vx-theme');if(!t){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}if(t==='dark')document.documentElement.classList.add('dark');}catch(e){}})();",
+          }}
+        />
+      </head>
       <body className={`${inter.variable} ${grotesk.variable} ${plexMono.variable} font-sans antialiased bg-background text-foreground`}>
         {children}
         <Toaster position="bottom-right" richColors />

@@ -126,7 +126,7 @@ function CompletionRing({ ratio }: { ratio: number }) {
   return (
     <span className="relative inline-flex size-10 items-center justify-center" title={`${pct}% configured`}>
       <svg viewBox="0 0 36 36" className="size-10 -rotate-90">
-        <circle cx="18" cy="18" r={radius} fill="none" stroke="#e9e7df" strokeWidth="3" />
+        <circle cx="18" cy="18" r={radius} fill="none" stroke="var(--ring-track)" strokeWidth="3" />
         <circle
           cx="18"
           cy="18"
@@ -738,11 +738,11 @@ export function PluginStudio({
       <button
         aria-label="Close settings"
         onClick={onClose}
-        className="absolute inset-0 cursor-default bg-[#1b1a16]/45 backdrop-blur-[2px]"
+        className="anim-scrim absolute inset-0 cursor-default bg-[color:var(--scrim)] backdrop-blur-[2px]"
       />
 
       {/* drawer */}
-      <div className="absolute inset-y-0 right-0 flex w-full max-w-[780px] translate-x-0 flex-col border-l border-border bg-card shadow-[-24px_0_60px_-30px_rgba(27,26,22,0.35)]">
+      <div className="anim-sheet absolute inset-y-0 right-0 flex w-full max-w-[780px] translate-x-0 flex-col border-l border-border bg-card shadow-[-24px_0_60px_-30px_rgba(0,0,0,0.45)]">
 
         {/* header */}
         <div className="flex items-center gap-3.5 border-b border-border px-6 py-4">
@@ -760,7 +760,7 @@ export function PluginStudio({
               <span className="vl-tag">v{plugin.version}</span>
             </div>
             <p className="mt-0.5 flex items-center gap-1.5 font-mono text-[10.5px] text-muted-foreground">
-              <span className={cn("inline-block size-1.5 rounded-full", plugin.enabled ? "bg-[#12805c]" : "bg-[#8a877c]")} />
+              <span className={cn("inline-block size-1.5 rounded-full", plugin.enabled ? "bg-[color:var(--ok)]" : "bg-[color:var(--muted-foreground)]")} />
               {plugin.enabled ? "active on shard 0" : "disabled"} · @{plugin.author}
             </p>
           </div>
@@ -792,7 +792,7 @@ export function PluginStudio({
         ) : null}
 
         {/* body */}
-        <div className="flex-1 overflow-y-auto bg-[#faf9f4] px-6 py-5">
+        <div className="flex-1 overflow-y-auto bg-[color:var(--surface-2)] px-6 py-5">
           {status === "loading" ? (
             <div className="flex flex-col gap-4 pt-4">
               {[0, 1, 2].map((i) => (
@@ -847,12 +847,12 @@ export function PluginStudio({
             <span
               className={cn(
                 "flex items-center gap-2 font-mono text-[11px] font-semibold transition-opacity",
-                dirty ? "text-[#b45309]" : "text-muted-foreground/60 opacity-0",
+                dirty ? "text-[color:var(--warn)]" : "text-muted-foreground/60 opacity-0",
               )}
             >
               <span className="relative flex size-2">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#b45309] opacity-50" />
-                <span className="relative inline-flex size-2 rounded-full bg-[#b45309]" />
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-[color:var(--warn)] opacity-50" />
+                <span className="relative inline-flex size-2 rounded-full bg-[color:var(--warn)]" />
               </span>
               Unsaved changes · Ctrl S
             </span>

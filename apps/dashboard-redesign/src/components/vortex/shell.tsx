@@ -5,8 +5,10 @@ import {
   ChevronDownIcon,
   LogOutIcon,
   MenuIcon,
+  MoonIcon,
   SearchIcon,
   ServerIcon,
+  SunIcon,
 } from "lucide-react";
 import {
   CommandDialog,
@@ -69,9 +71,43 @@ function GatewayChip() {
   }, []);
   return (
     <span className="hidden items-center gap-2 rounded-md border border-border bg-card px-2.5 py-1.5 font-mono text-[11px] text-muted-foreground md:inline-flex">
-      <span className="vl-dot vl-dot--live bg-[#12805c] text-[#12805c]" />
+      <span className="vl-dot vl-dot--live" style={{ background: "var(--ok)", color: "var(--ok)" }} />
       gateway {ping}ms
     </span>
+  );
+}
+
+/**
+ * Night mode toggle. Persists to localStorage; the switch itself runs
+ * inside a View Transition so the whole console crossfades.
+ */
+function ThemeToggle() {
+  const toggle = () => {
+    const next = document.documentElement.classList.contains("dark") ? "light" : "dark";
+    const apply = () => {
+      document.documentElement.classList.toggle("dark", next === "dark");
+      try {
+        localStorage.setItem("vx-theme", next);
+      } catch {
+        /* private mode — theme just won't persist */
+      }
+    };
+    if (typeof document.startViewTransition === "function") {
+      document.startViewTransition(apply);
+    } else {
+      apply();
+    }
+  };
+  return (
+    <button
+      onClick={toggle}
+      aria-label="Toggle night mode"
+      title="Night mode"
+      className="inline-flex size-8 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors duration-150 hover:border-input hover:text-foreground focus-visible:outline-ring"
+    >
+      <SunIcon className="size-4 hidden dark:block" aria-hidden="true" />
+      <MoonIcon className="size-4 dark:hidden" aria-hidden="true" />
+    </button>
   );
 }
 
@@ -224,6 +260,7 @@ export function DashboardShell(props: ShellProps) {
               </kbd>
             </button>
             <GatewayChip />
+            <ThemeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
@@ -290,7 +327,11 @@ export function DashboardShell(props: ShellProps) {
           </div>
         </div>
 
-        <main className="flex-1 px-4 py-6 sm:px-6 sm:py-7">{children}</main>
+        <main className="flex-1 px-4 py-6 sm:px-6 sm:py-7">
+          <div key={view} className="anim-rise">
+            {children}
+          </div>
+        </main>
 
         <footer className="mt-auto flex items-center justify-between border-t border-border px-4 py-3.5 font-mono text-[10.5px] text-muted-foreground/80 sm:px-6">
           <span>AES-256-GCM · HTTP-only session</span>

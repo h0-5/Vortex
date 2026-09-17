@@ -47,11 +47,10 @@
 }
 
 /*
- * Vortex Console — "Ledger" design system
- * Direction (ui-ux-pro-max skill): editorial precision + dashboard-data type,
- * warm paper light theme. Flat 1px rules, no gradients / glass / glow.
- * Type: Space Grotesk (display) + Inter (UI) + IBM Plex Mono (data).
- * Accent: pine green. Actions: ink. Status: muted signal palette.
+ * Vortex Console — "Ledger" design system (two themes)
+ * Light: warm paper. Dark ("Night Ledger"): warm charcoal, same skeleton.
+ * Editorial precision, flat hairlines, mono data, pine accent.
+ * In dark mode ink/paper invert — buttons and the brand tile flip with them.
  */
 :root {
   --radius: 0.5rem;
@@ -88,6 +87,54 @@
   --sidebar-accent-foreground: #1b1a16;
   --sidebar-border: #e3e1d7;
   --sidebar-ring: #17603f;
+  --ok: #12805c;
+  --warn: #b45309;
+  --surface-2: #faf9f4;
+  --ring-track: #e9e7df;
+  --grid-dot: rgba(27, 26, 22, 0.05);
+  --scrim: rgba(27, 26, 22, 0.45);
+}
+
+.dark {
+  --paper: #141310;
+  --ink: #ece9dd;
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: #1c1b16;
+  --card-foreground: var(--ink);
+  --popover: #211f19;
+  --popover-foreground: var(--ink);
+  --primary: #43a37c;
+  --primary-foreground: #0d1a13;
+  --secondary: #26241d;
+  --secondary-foreground: #ece9dd;
+  --muted: #232119;
+  --muted-foreground: #9a968a;
+  --accent: #26241d;
+  --accent-foreground: #ece9dd;
+  --destructive: #e5654e;
+  --border: #2f2d25;
+  --input: #3a382d;
+  --ring: #43a37c;
+  --chart-1: #43a37c;
+  --chart-2: #5b9bd5;
+  --chart-3: #d9a03f;
+  --chart-4: #e5654e;
+  --chart-5: #8a877c;
+  --sidebar: #1c1b16;
+  --sidebar-foreground: #ece9dd;
+  --sidebar-primary: #43a37c;
+  --sidebar-primary-foreground: #0d1a13;
+  --sidebar-accent: #26241d;
+  --sidebar-accent-foreground: #ece9dd;
+  --sidebar-border: #2f2d25;
+  --sidebar-ring: #43a37c;
+  --ok: #4bb98a;
+  --warn: #d9a03f;
+  --surface-2: #191813;
+  --ring-track: #2f2d25;
+  --grid-dot: rgba(236, 233, 221, 0.045);
+  --scrim: rgba(8, 8, 6, 0.55);
 }
 
 @layer base {
@@ -97,13 +144,16 @@
   html {
     color-scheme: light;
   }
+  html.dark {
+    color-scheme: dark;
+  }
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv05", "cv11";
   }
   ::selection {
-    background: rgba(23, 96, 63, 0.16);
-    color: var(--ink);
+    background: color-mix(in srgb, var(--primary) 22%, transparent);
+    color: var(--foreground);
   }
   button:not(:disabled),
   [role="button"]:not(:disabled) {
@@ -117,28 +167,34 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #d5d2c7;
-    border: 3px solid var(--paper);
+    background: var(--input);
+    border: 3px solid var(--background);
     border-radius: 6px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #b9b5a8;
+    background: var(--muted-foreground);
+  }
+  /* View Transitions — theme crossfade + per-view entrance */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.32s;
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1);
   }
 }
 
 @layer utilities {
-  /* Content canvas: barely-there dot grid on paper */
+  /* Content canvas: barely-there dot grid */
   .vl-canvas {
-    background-image: radial-gradient(rgba(27, 26, 22, 0.05) 1px, transparent 1px);
+    background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
     background-size: 22px 22px;
   }
-  /* White panel with a single hairline */
+  /* White/charcoal panel with a single hairline */
   .vl-panel {
     background: var(--card);
     border: 1px solid var(--border);
-    box-shadow: 0 1px 2px rgba(27, 26, 22, 0.04);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
-  /* Dark inset terminal block */
+  /* Dark inset terminal block (constant across themes) */
   .vl-terminal {
     background: #191813;
     border: 1px solid #33312a;
@@ -189,7 +245,7 @@
     0% { transform: scale(0.65); opacity: 0.5; }
     75%, 100% { transform: scale(1.5); opacity: 0; }
   }
-  /* Underline tab (masthead + view filters) */
+  /* Underline tab */
   .vl-tab {
     position: relative;
     display: inline-flex;
@@ -222,9 +278,49 @@
   /* Dotted leader between a label and its value */
   .vl-leader {
     flex: 1;
-    border-bottom: 1px dotted #c9c6ba;
+    border-bottom: 1px dotted color-mix(in srgb, var(--muted-foreground) 45%, transparent);
     margin: 0 0.5rem;
     transform: translateY(-3px);
+  }
+
+  /* ---------------- motion layer ---------------- */
+
+  /* Staggered entrance: set --i per child (0,1,2…) */
+  .anim-rise {
+    animation: vl-rise 0.5s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+    animation-delay: calc(var(--i, 0) * 55ms);
+  }
+  @keyframes vl-rise {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+  }
+  .anim-fade {
+    animation: vl-fade 0.4s ease-out both;
+    animation-delay: calc(var(--i, 0) * 55ms);
+  }
+  @keyframes vl-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  /* Sparkline draw-in */
+  .anim-draw {
+    stroke-dasharray: 300;
+    stroke-dashoffset: 300;
+    animation: vl-draw 1.2s 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  @keyframes vl-draw {
+    to { stroke-dashoffset: 0; }
+  }
+  /* Studio drawer slide */
+  .anim-sheet {
+    animation: vl-sheet 0.38s cubic-bezier(0.2, 0.7, 0.3, 1) both;
+  }
+  @keyframes vl-sheet {
+    from { transform: translateX(56px); opacity: 0; }
+    to { transform: none; opacity: 1; }
+  }
+  .anim-scrim {
+    animation: vl-fade 0.3s ease-out both;
   }
   .vl-shimmer {
     animation: vl-pulse 1.6s ease-in-out infinite;
@@ -237,8 +333,16 @@
 
 @media (prefers-reduced-motion: reduce) {
   .vl-dot--live::after,
-  .vl-shimmer {
+  .vl-shimmer,
+  .anim-rise,
+  .anim-fade,
+  .anim-draw,
+  .anim-sheet,
+  .anim-scrim {
     animation: none !important;
+  }
+  .anim-draw {
+    stroke-dashoffset: 0 !important;
   }
   * {
     transition-duration: 0.01ms !important;

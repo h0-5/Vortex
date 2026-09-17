@@ -226,15 +226,19 @@ export function ApiView() {
             label: "API status",
             value: health ? (health.status === "operational" ? "Operational" : "Degraded") : "Checking…",
             icon: degraded === 0 ? CheckCircle2Icon : CircleAlertIcon,
-            color: degraded === 0 ? "#12805c" : "#b45309",
+            color: degraded === 0 ? "var(--ok)" : "var(--warn)",
           },
-          { label: "Health latency", value: health ? `${health.latencyMs}ms` : "–", icon: GaugeIcon, color: "#0f5aa8" },
-          { label: "Core endpoints", value: "7 tracked", icon: ActivitySquareIcon, color: "#17603f" },
+          { label: "Health latency", value: health ? `${health.latencyMs}ms` : "–", icon: GaugeIcon, color: "var(--chart-2)" },
+          { label: "Core endpoints", value: "7 tracked", icon: ActivitySquareIcon, color: "var(--primary)" },
         ].map((c) => (
           <div key={c.label} className="vl-panel flex items-center gap-4 rounded-lg p-5">
             <span
               className="flex size-10 items-center justify-center rounded-md border"
-              style={{ background: `${c.color}14`, borderColor: `${c.color}30`, color: c.color }}
+              style={{
+                background: `color-mix(in srgb, ${c.color} 9%, transparent)`,
+                borderColor: `color-mix(in srgb, ${c.color} 30%, transparent)`,
+                color: c.color,
+              }}
             >
               <c.icon className="size-4.5" aria-hidden="true" />
             </span>
@@ -271,7 +275,7 @@ export function ApiView() {
                         "inline-flex rounded border px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[0.08em]",
                         e.method === "GET"
                           ? "border-primary/25 bg-primary/[0.08] text-primary"
-                          : "border-[#0f5aa8]/25 bg-[#0f5aa8]/[0.07] text-[#0f5aa8]",
+                          : "border-[color:var(--chart-2)]/25 bg-[color:var(--chart-2)]/[0.07] text-[color:var(--chart-2)]",
                       )}
                     >
                       {e.method}
@@ -288,7 +292,7 @@ export function ApiView() {
                           className="h-full rounded-full"
                           style={{
                             width: `${Math.min(100, (e.latencyMs / 150) * 100)}%`,
-                            background: e.latencyMs > 100 ? "#b45309" : "var(--primary)",
+                            background: e.latencyMs > 100 ? "var(--warn)" : "var(--primary)",
                           }}
                         />
                       </div>
@@ -300,7 +304,7 @@ export function ApiView() {
                       <span
                         className={cn(
                           "inline-block size-1.5 rounded-full",
-                          e.status === "operational" ? "bg-[#12805c]" : "bg-[#b45309]",
+                          e.status === "operational" ? "bg-[color:var(--ok)]" : "bg-[color:var(--warn)]",
                         )}
                       />
                       {e.uptimePct}%
@@ -420,7 +424,7 @@ export function SettingsView({ onLogout }: { onLogout: () => void }) {
         <ul className="flex flex-col divide-y divide-border/70">
           {SECURITY_FEATURES.map((f) => (
             <li key={f.title} className="flex items-start gap-3 px-5 py-3.5">
-              <ShieldCheckIcon className="mt-0.5 size-4 shrink-0 text-[#12805c]" aria-hidden="true" />
+              <ShieldCheckIcon className="mt-0.5 size-4 shrink-0" style={{ color: "var(--ok)" }} aria-hidden="true" />
               <div>
                 <p className="text-[13px] font-semibold">{f.title}</p>
                 <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{f.detail}</p>

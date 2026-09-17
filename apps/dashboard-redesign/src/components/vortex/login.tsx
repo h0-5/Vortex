@@ -25,25 +25,35 @@ export function LoginScreen({ onLogin }: { onLogin: () => void }) {
 
   return (
     <div className="flex min-h-screen flex-col bg-paper lg:grid lg:grid-cols-[0.9fr_1.1fr]">
-      {/* Ink spec panel */}
-      <aside className="relative hidden flex-col justify-between bg-ink p-10 text-paper lg:flex">
+      {/* Ink spec panel — stays dark in both themes (terminal hero) */}
+      <aside className="relative hidden flex-col justify-between bg-[#1b1a16] p-10 text-[#ece9dd] lg:flex">
         <VortexBrand size={26} />
 
         <div className="flex max-w-md flex-col gap-8">
-          <p className="vl-label !text-[#8f8c80]">Open-source Discord bot platform</p>
+          <p className="anim-rise vl-label !text-[#8f8c80]">Open-source Discord bot platform</p>
           <h1
-            className="text-[44px] font-bold leading-[1.08] tracking-tight"
-            style={{ fontFamily: "var(--font-grotesk)" }}
+            className="anim-rise text-[44px] font-bold leading-[1.08] tracking-tight"
+            style={{ fontFamily: "var(--font-grotesk)", "--i": 1 } as React.CSSProperties }
           >
             The control room for your Discord community.
           </h1>
-          <p className="max-w-sm text-[14px] leading-relaxed text-[#b5b2a6]">
+          <p
+            className="anim-rise max-w-sm text-[14px] leading-relaxed text-[#b5b2a6]"
+            style={{ "--i": 2 } as React.CSSProperties}
+          >
             One console for every server you operate — authenticate once, manage
             plugins, and read the gateway as it happens.
           </p>
-          <dl className="flex flex-col border-t border-[#33312a]">
-            {SPEC.map(([key, value]) => (
-              <div key={key} className="flex items-baseline border-b border-[#33312a] py-2.5">
+          <dl
+            className="anim-rise flex flex-col border-t border-[#33312a]"
+            style={{ "--i": 3 } as React.CSSProperties}
+          >
+            {SPEC.map(([key, value], index) => (
+              <div
+                key={key}
+                className="anim-rise flex items-baseline border-b border-[#33312a] py-2.5"
+                style={{ "--i": 4 + index } as React.CSSProperties}
+              >
                 <dt className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-[#8f8c80]">
                   {key}
                 </dt>
@@ -54,8 +64,8 @@ export function LoginScreen({ onLogin }: { onLogin: () => void }) {
           </dl>
         </div>
 
-        <p className="font-mono text-[11px] text-[#6e6b60]">
-          vortex console · v1.0 · api v1
+        <p className="anim-fade font-mono text-[11px] text-[#6e6b60]" style={{ "--i": 9 } as React.CSSProperties}>
+          vortex console · v1.1 · api v1
         </p>
       </aside>
 
@@ -68,7 +78,7 @@ export function LoginScreen({ onLogin }: { onLogin: () => void }) {
         </div>
 
         <div className="flex flex-1 items-center justify-center px-6 pb-16">
-          <div className="vl-panel w-full max-w-[420px] rounded-lg p-8 sm:p-10">
+          <div className="vl-panel anim-rise w-full max-w-[420px] rounded-lg p-8 sm:p-10">
             <div className="flex flex-col gap-1.5">
               <h2
                 className="text-[22px] font-bold tracking-tight"
