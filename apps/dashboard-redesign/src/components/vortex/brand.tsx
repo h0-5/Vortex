@@ -1,55 +1,27 @@
 "use client";
 
-import { useId, useRef } from "react";
+import { useRef } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * Inline prism mark — a faceted "V" inside a hex prism outline with the
- * aurora gradient. Replaces the raster logo so the whole identity is vector.
+ * Brand mark — the official Vortex blade logo (trimmed, optimized raster).
+ * Single source of truth: intro splash, boot screen, login hero, masthead,
+ * studio drawer and api view all render through this component.
  */
 export function VortexMark({ className, size = 32 }: { className?: string; size?: number }) {
-  const uid = useId();
-  const gradA = `vxa-${uid.replace(/[^a-zA-Z0-9]/g, "")}`;
-  const gradB = `vxb-${uid.replace(/[^a-zA-Z0-9]/g, "")}`;
   return (
-    <svg
-      viewBox="0 0 48 48"
+    <img
+      src="/vortex-logo.png"
+      alt=""
       width={size}
       height={size}
+      draggable={false}
       className={cn("shrink-0 select-none", className)}
-      aria-hidden="true"
-    >
-      <defs>
-        <linearGradient id={gradA} x1="0" y1="0" x2="48" y2="48">
-          <stop offset="0%" stopColor="var(--aurora-1)" />
-          <stop offset="55%" stopColor="var(--aurora-2)" />
-          <stop offset="100%" stopColor="var(--aurora-3)" />
-        </linearGradient>
-        <linearGradient id={gradB} x1="0" y1="48" x2="48" y2="0">
-          <stop offset="0%" stopColor="var(--aurora-2)" />
-          <stop offset="100%" stopColor="var(--aurora-1)" />
-        </linearGradient>
-      </defs>
-      {/* hex prism */}
-      <path
-        d="M24 3 41 13v22L24 45 7 35V13L24 3Z"
-        fill="color-mix(in srgb, var(--aurora-1) 9%, transparent)"
-        stroke={`url(#${gradA})`}
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-      {/* prism facets */}
-      <path d="M24 3 24 20.5M24 45 24 27.5M7 13 24 20.5 41 13" stroke={`url(#${gradB})`} strokeWidth="1" opacity="0.5" />
-      {/* blade V */}
-      <path
-        d="M15.5 16.5 24 33.5 32.5 16.5"
-        fill="none"
-        stroke={`url(#${gradA})`}
-        strokeWidth="3.4"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
+      style={{
+        filter:
+          "drop-shadow(0 8px 22px color-mix(in srgb, var(--aurora-1) 26%, transparent))",
+      }}
+    />
   );
 }
 
@@ -120,7 +92,8 @@ export function TiltCard({
 }
 
 /**
- * Brand lockup: prism mark on a glass tile + Unbounded wordmark.
+ * Brand lockup: blade mark on a neutral glass tile + Unbounded wordmark.
+ * The tile stays colorless so the logo's own gradient carries the identity.
  */
 export function VortexBrand({
   size = 26,
@@ -134,11 +107,11 @@ export function VortexBrand({
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
       <span
-        className="relative inline-grid shrink-0 place-items-center overflow-hidden rounded-[9px] border border-[color:var(--glass-brd)]"
+        className="relative inline-grid shrink-0 place-items-center overflow-hidden rounded-[10px] border border-[color:var(--glass-brd)]"
         style={{
           width: size + 10,
           height: size + 10,
-          background: "linear-gradient(150deg, rgba(124,108,255,0.16), rgba(34,211,238,0.08) 60%, rgba(244,113,181,0.1))",
+          background: "linear-gradient(150deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02) 65%)",
         }}
       >
         <VortexMark size={size} />

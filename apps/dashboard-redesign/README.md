@@ -16,7 +16,7 @@ bun run dev   # http://localhost:3000
 - src/app/            App Router entry (single-route SPA: login -> server select -> dashboard)
 - src/components/vortex/  login, select-server, shell (sidebar/topbar/command palette), views
 - src/lib/vortex/     data layer (mock of Phase-1 API contracts: /me, /guilds, plugins)
-- public/vortex-mark.png  brand mark (used in UI + favicon)
+- public/vortex-logo.png  brand mark (used in UI + favicon)
 
 ## Notes
 

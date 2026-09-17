@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     "Vortex is an open-source Discord bot platform. Secure OAuth, multi-server management, and a plugin-ready foundation.",
   keywords: ["Vortex", "Discord", "bot", "nexus", "plugins", "open-source"],
   icons: {
-    icon: "/vortex-mark.png",
+    icon: "/vortex-logo-fav.png",
   },
   openGraph: {
     title: "Vortex Nexus — Discord operations, reimagined",

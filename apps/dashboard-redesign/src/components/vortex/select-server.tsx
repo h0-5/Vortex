@@ -4,7 +4,6 @@ import { useState } from "react";
 import {
   ArrowRightIcon,
   LogOutIcon,
-  ShieldCheckIcon,
   UserPlusIcon,
   UsersIcon,
   WifiIcon,
@@ -20,7 +19,11 @@ const ROLE_LABEL: Record<Guild["role"], string> = {
   MANAGER: "Manager",
 };
 
-/* Server picker — a field of floating 3D cards over the aurora backdrop. */
+/**
+ * Server picker — split pane: a vertical workspace rail on the left where
+ * servers stack under each other, and a live preview card on the right that
+ * follows hover/selection. Click a workspace to open it.
+ */
 export function SelectServerScreen({
   user,
   guilds,
@@ -32,7 +35,9 @@ export function SelectServerScreen({
   onSelect: (guild: Guild) => void;
   onLogout: () => void;
 }) {
-  const [hoverId, setHoverId] = useState<string | null>(null);
+  const firstManageable = guilds.find((g) => g.botPresent)?.id ?? guilds[0]?.id ?? null;
+  const [previewId, setPreviewId] = useState<string | null>(firstManageable);
+  const preview = guilds.find((g) => g.id === previewId) ?? guilds[0] ?? null;
 
   return (
     <div className="relative flex min-h-screen flex-col">
@@ -72,99 +77,159 @@ export function SelectServerScreen({
           </h1>
           <p className="max-w-md text-[13.5px] leading-relaxed text-muted-foreground">
             Guilds where you hold Owner, Administrator, or Manager access. Hover to
-            feel them, click to open the workspace.
+            preview, click to open the workspace.
           </p>
         </div>
 
-        <div className="vx-scene grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {guilds.map((guild, index) => (
-            <TiltCard key={guild.id} className="anim-rise" style={{ "--i": index } as React.CSSProperties}>
-              <button
-                onClick={() => guild.botPresent && onSelect(guild)}
-                onMouseEnter={() => setHoverId(guild.id)}
-                onMouseLeave={() => setHoverId(null)}
-                onFocus={() => setHoverId(guild.id)}
-                onBlur={() => setHoverId(null)}
-                disabled={!guild.botPresent}
-                aria-label={`Open ${guild.name} workspace`}
-                className={cn(
-                  "vx-panel vx-panel--beam group flex h-full w-full flex-col items-start gap-5 p-5 text-left transition-colors duration-200 focus-visible:outline-ring",
-                  hoverId === guild.id && "border-[color:var(--glass-brd-strong)]",
-                  !guild.botPresent && "opacity-55",
-                )}
-              >
-                <div className="flex w-full items-start justify-between">
+        <div className="grid items-start gap-5 lg:grid-cols-[0.92fr_1.08fr]">
+          {/* Workspace rail — servers stacked under each other */}
+          <div className="vx-panel anim-rise overflow-hidden rounded-2xl" style={{ "--i": 1 } as React.CSSProperties}>
+            <div className="flex items-center justify-between border-b border-[color:var(--glass-brd)] px-4 py-3.5">
+              <p className="vx-label">workspaces</p>
+              <p className="font-mono text-[10.5px] text-muted-foreground/80">
+                {guilds.filter((g) => g.botPresent).length}/{guilds.length} online
+              </p>
+            </div>
+            <ul className="flex flex-col divide-y divide-white/[0.045]">
+              {guilds.map((guild, index) => (
+                <li key={guild.id} className="anim-rise" style={{ "--i": index + 2 } as React.CSSProperties}>
+                  <button
+                    onClick={() => guild.botPresent && onSelect(guild)}
+                    onMouseEnter={() => setPreviewId(guild.id)}
+                    onFocus={() => setPreviewId(guild.id)}
+                    disabled={!guild.botPresent}
+                    aria-label={`Preview ${guild.name}`}
+                    className={cn(
+                      "group flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors duration-150 focus-visible:outline-ring",
+                      previewId === guild.id
+                        ? "bg-white/[0.055]"
+                        : "hover:bg-white/[0.03]",
+                      !guild.botPresent && "opacity-55",
+                    )}
+                  >
+                    <GuildAvatar
+                      initials={guild.initials}
+                      hue={guild.hue}
+                      iconUrl={guild.iconUrl}
+                      size={38}
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-[13.5px] font-semibold tracking-tight">
+                        {guild.name}
+                      </span>
+                      <span className="mt-0.5 block font-mono text-[10px] text-muted-foreground">
+                        {fmt.format(guild.memberCount)} members · {ROLE_LABEL[guild.role].toLowerCase()}
+                      </span>
+                    </span>
+                    {guild.botPresent ? (
+                      <span
+                        className="vx-dot"
+                        style={{ background: "var(--ok)", color: "var(--ok)" }}
+                      />
+                    ) : (
+                      <UserPlusIcon className="size-3.5 text-muted-foreground" aria-hidden="true" />
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Live preview pane */}
+          {preview ? (
+            <TiltCard key={preview.id} max={5} className="anim-fade" style={{ "--i": 2 } as React.CSSProperties}>
+              <div className="vx-panel vx-panel--beam flex flex-col overflow-hidden rounded-2xl">
+                <div className="flex flex-col items-center gap-4 border-b border-[color:var(--glass-brd)] px-6 py-8 text-center">
                   <GuildAvatar
-                    initials={guild.initials}
-                    hue={guild.hue}
-                    iconUrl={guild.iconUrl}
-                    size={52}
+                    initials={preview.initials}
+                    hue={preview.hue}
+                    iconUrl={preview.iconUrl}
+                    size={76}
                   />
-                  {guild.botPresent ? (
+                  <div>
+                    <h2
+                      className="text-[21px] font-bold tracking-tight"
+                      style={{ fontFamily: "var(--font-unbounded)" }}
+                    >
+                      {preview.name}
+                    </h2>
+                    <p className="mt-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted-foreground">
+                      {ROLE_LABEL[preview.role]} · {preview.id}
+                    </p>
+                  </div>
+                  {preview.botPresent ? (
                     <span
                       className="vx-chip"
-                      style={{ color: "var(--ok)", borderColor: "color-mix(in srgb, var(--ok) 35%, transparent)" }}
+                      style={{
+                        color: "var(--ok)",
+                        borderColor: "color-mix(in srgb, var(--ok) 35%, transparent)",
+                      }}
                     >
                       <WifiIcon className="size-3" aria-hidden="true" />
-                      online
+                      bot online
                     </span>
                   ) : (
                     <span className="vx-chip">
                       <UserPlusIcon className="size-3" aria-hidden="true" />
-                      invite bot
+                      invite the bot to manage this guild
                     </span>
                   )}
                 </div>
 
-                <div className="min-w-0 w-full">
-                  <h2 className="truncate text-[16px] font-bold tracking-tight">{guild.name}</h2>
-                  <p className="mt-1 flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted-foreground">
-                    <ShieldCheckIcon className="size-3" aria-hidden="true" />
-                    {ROLE_LABEL[guild.role]}
-                  </p>
-                </div>
-
-                <dl className="grid w-full grid-cols-2 gap-2">
-                  <div className="rounded-lg border border-[color:var(--glass-brd)] bg-white/[0.03] px-3 py-2">
-                    <dt className="vx-label !text-[9px]">members</dt>
-                    <dd className="mt-0.5 flex items-center gap-1.5 font-mono text-[13px]">
-                      <UsersIcon className="size-3 text-muted-foreground" aria-hidden="true" />
-                      {fmt.format(guild.memberCount)}
-                    </dd>
-                  </div>
-                  <div className="rounded-lg border border-[color:var(--glass-brd)] bg-white/[0.03] px-3 py-2">
-                    <dt className="vx-label !text-[9px]">online</dt>
-                    <dd className="mt-0.5 flex items-center gap-1.5 font-mono text-[13px]">
-                      <span className="vx-dot" style={{ background: "var(--ok)", color: "var(--ok)" }} />
-                      {fmt.format(guild.onlineCount)}
-                    </dd>
-                  </div>
+                <dl className="flex flex-col px-6 py-3">
+                  {[
+                    ["Members", fmt.format(preview.memberCount), "users"],
+                    ["Online now", fmt.format(preview.onlineCount), "dot"],
+                    ["Your access", ROLE_LABEL[preview.role], "shield"],
+                  ].map(([label, value, icon]) => (
+                    <div
+                      key={label}
+                      className="flex items-baseline border-b border-white/[0.045] py-3 last:border-0"
+                    >
+                      <dt className="text-[12.5px] text-muted-foreground">{label}</dt>
+                      <dd className="vx-leader" />
+                      <dd className="flex items-center gap-1.5 font-mono text-[12.5px]">
+                        {icon === "users" && (
+                          <UsersIcon className="size-3.5 text-muted-foreground" aria-hidden="true" />
+                        )}
+                        {icon === "dot" && (
+                          <span className="vx-dot" style={{ background: "var(--ok)", color: "var(--ok)" }} />
+                        )}
+                        {value}
+                      </dd>
+                    </div>
+                  ))}
                 </dl>
 
-                <div className="mt-auto w-full">
-                  {guild.botPresent ? (
-                    <span
-                      className={cn(
-                        "inline-flex h-9 w-full items-center justify-center gap-2 rounded-lg text-[12.5px] font-semibold transition-all duration-200",
-                        "bg-gradient-to-r from-[color:var(--aurora-1)] to-[color:var(--aurora-2)] text-white shadow-[0_8px_22px_-10px_color-mix(in_srgb,var(--aurora-1)_90%,transparent)]",
-                        hoverId === guild.id && "brightness-110",
-                      )}
+                <div className="mt-auto border-t border-[color:var(--glass-brd)] p-5">
+                  {preview.botPresent ? (
+                    <button
+                      onClick={() => preview.botPresent && onSelect(preview)}
+                      className="group inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl text-[13px] font-semibold text-white transition-all duration-200 hover:brightness-110 focus-visible:outline-ring"
+                      style={{
+                        background: "linear-gradient(120deg, var(--aurora-1), var(--aurora-2))",
+                        boxShadow: "0 10px 26px -12px color-mix(in srgb, var(--aurora-1) 90%, transparent)",
+                      }}
                     >
                       Open workspace
                       <ArrowRightIcon
                         className="size-4 transition-transform duration-200 group-hover:translate-x-0.5"
                         aria-hidden="true"
                       />
-                    </span>
+                    </button>
                   ) : (
-                    <span className="inline-flex h-9 w-full items-center justify-center rounded-lg border border-[color:var(--glass-brd)] text-[12.5px] font-semibold text-muted-foreground">
+                    <Button
+                      variant="outline"
+                      disabled
+                      className="h-10 w-full rounded-xl border-[color:var(--glass-brd)] bg-white/[0.02] text-[13px]"
+                    >
                       Bot install required
-                    </span>
+                    </Button>
                   )}
                 </div>
-              </button>
+              </div>
             </TiltCard>
-          ))}
+          ) : null}
         </div>
       </main>
     </div>
