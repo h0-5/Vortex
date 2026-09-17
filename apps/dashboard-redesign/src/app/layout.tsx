@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Unbounded, Outfit, IBM_Plex_Sans_Arabic, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import { DevToolsGate } from "@/components/vortex/devtools-gate";
 
 const unbounded = Unbounded({
   variable: "--font-unbounded",
@@ -54,6 +55,7 @@ export default function RootLayout({
         className={`${unbounded.variable} ${outfit.variable} ${plexArabic.variable} ${jbMono.variable} font-sans antialiased bg-background text-foreground`}
       >
         {children}
+        <DevToolsGate />
         <Toaster position="bottom-right" richColors />
       </body>
     </html>

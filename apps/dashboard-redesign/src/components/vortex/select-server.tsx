@@ -135,9 +135,10 @@ export function SelectServerScreen({
             </ul>
           </div>
 
-          {/* Live preview pane */}
+          {/* Live preview pane — sticks to the viewport and follows the scroll */}
           {preview ? (
-            <TiltCard key={preview.id} max={5} className="anim-fade" style={{ "--i": 2 } as React.CSSProperties}>
+            <div key={preview.id} className="anim-fade self-start lg:sticky lg:top-20">
+              <TiltCard max={5} className="w-full">
               <div className="vx-panel vx-panel--beam flex flex-col overflow-hidden rounded-2xl">
                 <div className="flex flex-col items-center gap-4 border-b border-[color:var(--glass-brd)] px-6 py-8 text-center">
                   <GuildAvatar
@@ -228,7 +229,8 @@ export function SelectServerScreen({
                   )}
                 </div>
               </div>
-            </TiltCard>
+              </TiltCard>
+            </div>
           ) : null}
         </div>
       </main>
