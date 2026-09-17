@@ -104,8 +104,6 @@ const DEFAULTS: ModerationSettings = {
     invite: { enabled: true },
   },
 };
-
-const SEND_MESSAGES = 2048n;
 const COLORS = {
   join: 0x22c55e,
   leave: 0xf97316,
@@ -551,56 +549,10 @@ function registerCommands(ctx: PluginContext): void {
   const c = settings.commands;
   const registrations: Array<() => Promise<void>> = [];
 
-  if (c.clear.enabled) {
-    registrations.push(() =>
-      ctx.commands.register(
-        {
-          name: 'clear',
-          description: 'مسح عدد محدد من الرسائل في قناة',
-          type: 'SLASH',
-          autoDeleteAuthorMessage: true,
-          options: [
-            { name: 'amount', description: 'عدد الرسائل (1-100)', type: 'INTEGER', required: false },
-            { name: 'channel', description: 'معرّف القناة (الافتراضي: القناة الحالية)', type: 'STRING', required: false },
-          ],
-          handler: async (inv) => {
-            if (!isModerator(inv)) return;
-            const amount = clamp(Math.floor(typeof inv.options.amount === 'number' ? inv.options.amount : 20), 1, 100);
-            const channelId = asString(inv.options.channel) || inv.channelId;
-            const entries = await ctx.messages.readChannel(channelId, amount + 1);
-            let deleted = 0;
-            for (const entry of entries) {
-              try {
-                await ctx.messages.delete(entry.channelId, entry.id);
-                deleted += 1;
-              } catch {
-                void 0;
-              }
-            }
-            await inv.respond(text(`🗑️ تم مسح ${deleted} رسالة في <#${channelId}>.`));
-          },
-        },
-        { autoDeleteAuthorMessage: true },
-      ),
-    );
-  }
-
-  if (c.say.enabled) {
-    registrations.push(() =>
-      ctx.commands.register({
-        name: 'say',
-        description: 'إرسال رسالة نصية باسم البوت',
-        type: 'SLASH',
-        autoDeleteAuthorMessage: true,
-        options: [{ name: 'message', description: 'نص الرسالة', type: 'STRING', required: true }],
-        handler: async (inv) => {
-          if (!isModerator(inv)) return;
-          await ctx.messages.sendChannel(inv.channelId, text(asString(inv.options.message)));
-          await inv.respond(text('✅ تم الإرسال.'));
-        },
-      }),
-    );
-  }
+  // NOTE: `clear`, `say`, `lock`, `unlock` and `warn` are intentionally NOT
+  // registered here. They are provided by the `admin` plugin (BOTH type), and the
+  // command registry enforces globally unique names per guild. Registering them in
+  // both plugins would make one of them fail silently.
 
   if (c.embed.enabled) {
     registrations.push(() =>
@@ -650,75 +602,6 @@ function registerCommands(ctx: PluginContext): void {
           });
           await ctx.messages.sendChannel(channelId, embed);
           await inv.respond(text(`✅ تم نشر الإعلان في <#${channelId}>.`));
-        },
-      }),
-    );
-  }
-
-  if (c.lock.enabled) {
-    registrations.push(() =>
-      ctx.commands.register({
-        name: 'lock',
-        description: 'إغلاق قناة أمام @everyone',
-        type: 'SLASH',
-        autoDeleteAuthorMessage: true,
-        options: [{ name: 'channel', description: 'معرّف القناة (الافتراضي: الحالية)', type: 'STRING', required: false }],
-        handler: async (inv) => {
-          if (!isModerator(inv)) return;
-          const channelId = asString(inv.options.channel) || inv.channelId;
-          await ctx.channels.setPermissions(
-            channelId,
-            [{ id: inv.guildId, type: 'role', allow: 0n, deny: SEND_MESSAGES }],
-            'Moderation /lock',
-          );
-          await inv.respond(text(`🔒 تم إغلاق <#${channelId}>.`));
-        },
-      }),
-    );
-  }
-
-  if (c.unlock.enabled) {
-    registrations.push(() =>
-      ctx.commands.register({
-        name: 'unlock',
-        description: 'فتح قناة مغلقة أمام @everyone',
-        type: 'SLASH',
-        autoDeleteAuthorMessage: true,
-        options: [{ name: 'channel', description: 'معرّف القناة (الافتراضي: الحالية)', type: 'STRING', required: false }],
-        handler: async (inv) => {
-          if (!isModerator(inv)) return;
-          const channelId = asString(inv.options.channel) || inv.channelId;
-          await ctx.channels.setPermissions(
-            channelId,
-            [{ id: inv.guildId, type: 'role', allow: SEND_MESSAGES, deny: 0n }],
-            'Moderation /unlock',
-          );
-          await inv.respond(text(`🔓 تم فتح <#${channelId}>.`));
-        },
-      }),
-    );
-  }
-
-  if (c.warn.enabled) {
-    registrations.push(() =>
-      ctx.commands.register({
-        name: 'warn',
-        description: 'توجيه إنذار لعضو وحفظه في السجل',
-        type: 'SLASH',
-        autoDeleteAuthorMessage: true,
-        options: [
-          { name: 'user', description: 'العضو المستهدف (منشن أو معرّف)', type: 'STRING', required: true },
-          { name: 'reason', description: 'سبب الإنذار', type: 'STRING', required: true },
-        ],
-        handler: async (inv) => {
-          if (!isModerator(inv)) return;
-          const targetId = extractUserId(asString(inv.options.user));
-          if (!targetId) {
-            await inv.respond(text('❌ معرّف العضو غير صالح.'));
-            return;
-          }
-          await addWarn(ctx, targetId, inv.userId, asString(inv.options.reason));
-          await inv.respond(text(`⚠️ تم توجيه إنذار لـ <@${targetId}>.`));
         },
       }),
     );

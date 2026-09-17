@@ -37,6 +37,7 @@ interface ActionMeta {
   color?: string;
   emoji?: string;
   enabled?: boolean;
+  log?: boolean;
 }
 
 interface CaseRecord {
@@ -172,12 +173,26 @@ const ADMIN_COMMANDS = new Set([
   'say', 'ban', 'kick', 'mute', 'unmute', 'unban', 'unban_all', 'jail', 'unjail',
   'warn', 'unwarn', 'clear', 'lock', 'unlock', 'slowmode', 'rename', 'temp_role',
   'add_role', 'remove_role', 'multi_role', 'auto_role', 'set_prefix', 'set_perm',
-  'set_perm_all', 'set_perm_reset', 'set_whitelist', 'actions_role_mute',
+  'set_perm_all', 'set_perm_reset', 'set_whitelist', 'come', 'actions_role_mute',
   'actions_role_jail', 'actions_show_room_jail', 'actions_color', 'actions_enabled',
   'actions_label', 'actions_log', 'court_set_color', 'court_set_log', 'court_set_logo',
   'court_set_name', 'anti_ban', 'anti_kick', 'anti_bots', 'anti_webhooks',
   'anti_channel_create', 'anti_channel_delete', 'anti_role_create', 'anti_role_delete',
 ]);
+
+const SPECIFIC_PERMS: Record<string, string> = {
+  add_role: 'ManageRoles',
+  remove_role: 'ManageRoles',
+  multi_role: 'ManageRoles',
+  auto_role: 'ManageRoles',
+  temp_role: 'ManageRoles',
+  lock: 'ManageChannels',
+  unlock: 'ManageChannels',
+  rename: 'ManageChannels',
+  slowmode: 'ManageChannels',
+  clear: 'ManageMessages',
+  unban_all: 'BanMembers',
+};
 
 // ---------- utilities ----------
 
@@ -407,6 +422,12 @@ async function mayRun(
   if (cfg.enabledChannels.length > 0 && !cfg.enabledChannels.includes(inv.channelId)) {
     return { ok: false, reason: text('📍 هذا الأمر مقيد بقنوات معينة') };
   }
+  const specific = SPECIFIC_PERMS[commandId];
+  if (specific) {
+    const allowed = await ctx.guild.hasPermission(inv.userId, specific).catch(() => false);
+    if (!allowed) return { ok: false, reason: text('🚫 ليس لديك صلاحية لاستخدام هذا الأمر') };
+    return { ok: true };
+  }
   if (cfg.requireAdministrator || ADMIN_COMMANDS.has(commandId)) {
     const allowed = await ctx.guild.hasPermission(inv.userId, 'Administrator').catch(() => false);
     if (!allowed) return { ok: false, reason: text('🚫 ليس لديك صلاحية لاستخدام هذا الأمر') };
@@ -511,10 +532,13 @@ async function roleDisplay(ctx: PluginContext, roleId: string): Promise<string> 
 async function logToChannel(
   ctx: PluginContext,
   settings: AdminSettings,
+  commandId: string,
   message: CoreMessage,
 ): Promise<void> {
   const channelId = settings.court.logChannel;
   if (!channelId) return;
+  const meta = await getMeta(ctx, commandId);
+  if (meta.log === false) return;
   await ctx.messages.sendChannel(channelId, message).catch(() => undefined);
 }
 
@@ -891,7 +915,7 @@ async function handleBan(ctx: PluginContext, inv: CommandInvocation): Promise<Co
     duration,
     caseInfo: caseId,
   });
-  await logToChannel(ctx, settings, card);
+  await logToChannel(ctx, settings, 'ban', card);
   return card;
 }
 
@@ -930,7 +954,7 @@ async function handleKick(ctx: PluginContext, inv: CommandInvocation): Promise<C
     reason,
     caseInfo: caseId,
   });
-  await logToChannel(ctx, settings, card);
+  await logToChannel(ctx, settings, 'kick', card);
   return card;
 }
 
@@ -982,7 +1006,7 @@ async function handleMute(ctx: PluginContext, inv: CommandInvocation): Promise<C
     duration,
     caseInfo: caseId,
   });
-  await logToChannel(ctx, settings, card);
+  await logToChannel(ctx, settings, 'mute', card);
   return card;
 }
 
@@ -1062,7 +1086,7 @@ async function releaseJail(ctx: PluginContext, userId: string, reason: string): 
     mod: 'النظام',
     reason,
   });
-  await logToChannel(ctx, settings, card);
+  await logToChannel(ctx, settings, 'unjail', card);
   return true;
 }
 
@@ -1137,7 +1161,7 @@ async function handleJail(ctx: PluginContext, inv: CommandInvocation): Promise<C
     duration,
     caseInfo: caseId,
   });
-  await logToChannel(ctx, settings, card);
+  await logToChannel(ctx, settings, 'jail', card);
   return card;
 }
 
@@ -1190,22 +1214,39 @@ async function handleWarn(ctx: PluginContext, inv: CommandInvocation): Promise<C
     reason,
     caseInfo: caseId,
   });
-  await logToChannel(ctx, settings, card);
+  await logToChannel(ctx, settings, 'warn', card);
   return card;
 }
 
 async function handleUnwarn(ctx: PluginContext, inv: CommandInvocation): Promise<CoreMessage> {
-  const resolved = await resolveUserId(ctx, inv, 'user');
-  if (!resolved) return text('⛔ يرجى تحديد المستخدم');
   const caseId = optStringOrArg(inv, 'case').trim().toUpperCase();
   if (!caseId) return text('⛔ يرجى تحديد معرّف الإنذار');
+  let userId: string | null = null;
+  let display = '';
+  const resolved = await resolveUserId(ctx, inv, 'user');
+  if (resolved) {
+    userId = resolved.userId;
+    display = resolved.display;
+  }
+  let removed = false;
+  if (userId) {
+    removed = await removeCase(ctx, userId, caseId);
+  } else {
+    const records = await getRecords(ctx);
+    for (const [recordUserId, record] of Object.entries(records)) {
+      if (record.cases.some((entry) => entry.caseId === caseId)) {
+        removed = await removeCase(ctx, recordUserId, caseId);
+        display = `\`${record.username}\``;
+        break;
+      }
+    }
+  }
+  if (!removed) return text('⛔ لا يوجد إنذار بهذا المعرّف');
   const settings = await getSettings(ctx);
   const mod = await userDisplay(ctx, inv.userId);
-  const removed = await removeCase(ctx, resolved.userId, caseId);
-  if (!removed) return text('⛔ لا يوجد إنذار بهذا المعرّف');
   return buildCard(ctx, 'unwarn', {
     title: '✅ حذف الإنذار',
-    target: resolved.display,
+    target: display || '<@unknown>',
     mod,
     reason: `معرّف الإنذار: ${caseId}`,
     caseInfo: caseId,
@@ -1250,25 +1291,41 @@ async function handleClear(ctx: PluginContext, inv: CommandInvocation): Promise<
   }
   if (amount <= 0) return text('⛔ يرجى تحديد عدد الرسائل المراد حذفها');
   amount = Math.min(100, amount);
-  const channelId = resolveChannelId(inv, amount.toString() === inv.args[0] ? 1 : 0) ?? inv.channelId;
-  const messages = await ctx.messages.readChannel(channelId, amount).catch(() => []);
+  let targetUserId: string | null = null;
+  const userOpt = optString(inv, 'user');
+  if (userOpt) targetUserId = userOpt;
+  else {
+    const argUser = inv.args[1];
+    if (argUser) {
+      const stripped = stripMention(argUser);
+      if (/^\d{15,20}$/.test(stripped)) targetUserId = stripped;
+    }
+  }
+  const reason = optStringOrArg(inv, 'reason', targetUserId ? 2 : 1).trim() || 'لم يتم تحديد سبب';
+  const channelId = resolveChannelId(inv) ?? inv.channelId;
+  const limit = targetUserId ? Math.max(100, amount * 4) : amount;
+  const messages = await ctx.messages.readChannel(channelId, limit).catch(() => []);
   const cutoff = Date.now() - 14 * 86_400_000;
-  const deletable = messages.filter((entry) => {
-    const sentAt = entry.sentAt ? new Date(entry.sentAt).getTime() : Date.now();
-    return !Number.isNaN(sentAt) && sentAt >= cutoff;
-  });
+  const deletable = messages
+    .filter((entry) => {
+      if (targetUserId && entry.authorId !== targetUserId) return false;
+      const sentAt = entry.sentAt ? new Date(entry.sentAt).getTime() : Date.now();
+      return !Number.isNaN(sentAt) && sentAt >= cutoff;
+    })
+    .slice(0, amount);
   for (const entry of deletable) {
     await ctx.messages.delete(channelId, entry.id).catch(() => undefined);
   }
+  const targetLabel = targetUserId ? ` عن العضو <@${targetUserId}>` : '';
   if (deletable.length > 0 && settings.court.logChannel) {
-    await logToChannel(ctx, settings, await buildCard(ctx, 'clear', {
+    await logToChannel(ctx, settings, 'clear', await buildCard(ctx, 'clear', {
       title: '🧹 تنظيف',
       mod,
       target: `<#${channelId}>`,
-      reason: `تم حذف **${deletable.length}** رسالة`,
+      reason: `تم حذف **${deletable.length}** رسالة${targetLabel} — ${reason}`,
     }));
   }
-  return text(`✅ تم حذف **${deletable.length}** رسالة من <#${channelId}>`);
+  return text(`✅ تم حذف **${deletable.length}** رسالة${targetLabel} من <#${channelId}>`);
 }
 
 // ---------- command name/alias table ----------
@@ -1290,7 +1347,7 @@ const COMMAND_NAMES: Record<string, { name: string; aliases: string[] }> = {
   mute: { name: 'mute', aliases: [] },
   unmute: { name: 'unmute', aliases: [] },
   unban: { name: 'unban', aliases: [] },
-  unban_all: { name: 'unban_all', aliases: [] },
+  unban_all: { name: 'unban_all', aliases: ['unbanall'] },
   jail: { name: 'jail', aliases: [] },
   unjail: { name: 'unjail', aliases: [] },
   warn: { name: 'warn', aliases: [] },
@@ -1301,16 +1358,17 @@ const COMMAND_NAMES: Record<string, { name: string; aliases: string[] }> = {
   unlock: { name: 'unlock', aliases: [] },
   slowmode: { name: 'slowmode', aliases: [] },
   rename: { name: 'rename', aliases: [] },
-  temp_role: { name: 'temp_role', aliases: [] },
+  temp_role: { name: 'temp_role', aliases: ['tr'] },
   add_role: { name: 'add_role', aliases: ['ad'] },
   remove_role: { name: 'remove_role', aliases: ['rr'] },
-  multi_role: { name: 'multi_role', aliases: ['mr'] },
+  come: { name: 'come', aliases: [] },
+  multi_role: { name: 'multi_role', aliases: ['mr', 'multipe_role'] },
   auto_role: { name: 'auto_role', aliases: ['ar'] },
-  set_prefix: { name: 'prefix', aliases: ['set_prefix'] },
-  set_perm: { name: 'setperm', aliases: ['set_perm'] },
-  set_perm_all: { name: 'setpermall', aliases: ['set_perm_all'] },
-  set_perm_reset: { name: 'setpermreset', aliases: ['set_perm_reset'] },
-  set_whitelist: { name: 'sw', aliases: ['set_whitelist'] },
+  set_prefix: { name: 'set_prefix', aliases: ['prefix'] },
+  set_perm: { name: 'set_perm', aliases: ['setperm'] },
+  set_perm_all: { name: 'set_perm_all', aliases: ['setpermall'] },
+  set_perm_reset: { name: 'set_perm_reset', aliases: ['setpermreset'] },
+  set_whitelist: { name: 'set_whitelist', aliases: ['sw'] },
   actions_role_mute: { name: 'actions_role_mute', aliases: ['arm'] },
   actions_role_jail: { name: 'actions_role_jail', aliases: ['arj'] },
   actions_show_room_jail: { name: 'actions_show_room_jail', aliases: ['asrj'] },
@@ -1322,14 +1380,14 @@ const COMMAND_NAMES: Record<string, { name: string; aliases: string[] }> = {
   court_set_color: { name: 'court_set_color', aliases: ['cscolor'] },
   court_set_logo: { name: 'court_set_logo', aliases: ['cslogo'] },
   court_set_log: { name: 'court_set_log', aliases: ['cslog'] },
-  anti_ban: { name: 'antiban', aliases: ['anti-ban', 'anti_ban'] },
-  anti_kick: { name: 'antikick', aliases: ['anti-kick', 'anti_kick'] },
-  anti_bots: { name: 'antibot', aliases: ['anti-bot', 'anti_bots'] },
-  anti_webhooks: { name: 'antiwebhook', aliases: ['anti-webhook', 'anti_webhooks'] },
-  anti_channel_create: { name: 'antichcreate', aliases: ['anti-channel-create', 'anti_channel_create'] },
-  anti_channel_delete: { name: 'antichdelete', aliases: ['anti-channel-delete', 'anti_channel_delete'] },
-  anti_role_create: { name: 'antirolecreate', aliases: ['anti-role-create', 'anti_role_create'] },
-  anti_role_delete: { name: 'antiroledelete', aliases: ['anti-role-delete', 'anti_role_delete'] },
+  anti_ban: { name: 'anti_ban', aliases: ['antiban', 'anti-ban'] },
+  anti_kick: { name: 'anti_kick', aliases: ['antikick', 'anti-kick'] },
+  anti_bots: { name: 'anti_bots', aliases: ['antibot', 'anti-bot'] },
+  anti_webhooks: { name: 'anti_webhooks', aliases: ['antiwebhook', 'anti-webhook'] },
+  anti_channel_create: { name: 'anti_channel_create', aliases: ['antichcreate', 'anti-channel-create'] },
+  anti_channel_delete: { name: 'anti_channel_delete', aliases: ['antichdelete', 'anti-channel-delete'] },
+  anti_role_create: { name: 'anti_role_create', aliases: ['antirolecreate', 'anti-role-create'] },
+  anti_role_delete: { name: 'anti_role_delete', aliases: ['antiroledelete', 'anti-role-delete'] },
   anti_role_add: { name: 'antiroleadd', aliases: ['anti-role-add', 'anti_role_add'] },
 };
 
@@ -1423,22 +1481,33 @@ async function handleLock(ctx: PluginContext, inv: CommandInvocation, locked: bo
     reason,
   });
   await ctx.messages.sendChannel(channelId, card).catch(() => undefined);
-  await logToChannel(ctx, settings, card);
+  await logToChannel(ctx, settings, locked ? 'lock' : 'unlock', card);
   return card;
+}
+
+function parseSlowSeconds(input: string | undefined): number | null {
+  if (input === undefined) return null;
+  const raw = input.trim();
+  if (raw === '0') return 0;
+  const match = /^(\d+)\s*(s|m|h|d)?$/i.exec(raw);
+  if (!match) return null;
+  const amount = parseInt(match[1] ?? '', 10);
+  if (!Number.isFinite(amount) || amount < 0) return null;
+  const unit = (match[2] || 'm').toLowerCase();
+  const multipliers: Record<string, number> = { s: 1, m: 60, h: 3600, d: 86_400 };
+  return amount * (multipliers[unit] ?? 60);
 }
 
 async function handleSlowmode(ctx: PluginContext, inv: CommandInvocation): Promise<CoreMessage> {
   const settings = await getSettings(ctx);
   const mod = await userDisplay(ctx, inv.userId);
   const channelId = resolveChannelId(inv, 1) ?? inv.channelId;
-  let seconds = 0;
-  const rawNum = optNum(inv, 'seconds');
-  if (typeof rawNum === 'number') seconds = rawNum;
-  else {
-    const arg = inv.args[0];
-    if (arg) seconds = parseInt(arg, 10);
+  const rawTime = optString(inv, 'time') ?? inv.args[0];
+  const seconds = parseSlowSeconds(rawTime);
+  if (seconds === null) {
+    return text('⛔ صيغة المدة غير صحيحة (مثال: 5s، 10m، 1h، 0)');
   }
-  if (Number.isNaN(seconds) || seconds < 0 || seconds > 21_600) {
+  if (seconds < 0 || seconds > 21_600) {
     return text('⛔ المدة يجب أن تكون بين 0 و 21600 ثانية');
   }
   await ctx.channels.setSlowmode(channelId, seconds).catch(() => undefined);
@@ -1498,24 +1567,36 @@ async function handleMultiRole(ctx: PluginContext, inv: CommandInvocation): Prom
   const mod = await userDisplay(ctx, inv.userId);
   const action = (optString(inv, 'action') ?? inv.args[0] ?? '').toLowerCase().trim();
   const roleRaw = inv.args[1] ? stripMention(inv.args[1]) : optString(inv, 'role');
+  const rawType = inv.args[2] ? inv.args[2].toLowerCase() : (optString(inv, 'type') ?? '').toLowerCase();
+  const type = rawType === 'bots' || rawType === 'humans' ? rawType : 'all';
   if (!(action === 'add' || action === 'remove') || !roleRaw) {
-    return text('⛔ الاستخدام الصحيح: الملف!mr <add|remove> <رتبة>');
+    return text('⛔ الاستخدام الصحيح: الملف!mr <add|remove> <رتبة> [all|humans|bots]');
   }
   const members = await getMembers(ctx);
   const ids = Object.keys(members);
   if (ids.length === 0) return text('⚠️ لا توجد بيانات أعضاء متاحة (يتم التحديث تلقائياً عند دخول الأعضاء)');
   let changed = 0;
+  let skipped = 0;
   for (const userId of ids) {
+    if (type !== 'all') {
+      const user = await ctx.guild.fetchUser(userId).catch(() => null);
+      const isBot = user?.isBot ?? false;
+      if ((type === 'bots' && !isBot) || (type === 'humans' && isBot)) {
+        skipped += 1;
+        continue;
+      }
+    }
     const done = action === 'add'
       ? await ctx.guild.addRole(userId, roleRaw).catch(() => false)
       : await ctx.guild.removeRole(userId, roleRaw).catch(() => false);
     if (done) changed += 1;
   }
   const roleName = await roleDisplay(ctx, roleRaw);
+  const targetCount = ids.length - skipped;
   return buildCard(ctx, 'multi_role', {
     title: action === 'add' ? '➕ إضافة رتبة للجميع' : '➖ إزالة رتبة من الجميع',
     mod,
-    reason: `الرتبة: **${roleName}** — تم التعديل على **${changed}** عضواً من **${ids.length}**`,
+    reason: `الرتبة: **${roleName}** — تم التعديل على **${changed}** عضواً من **${targetCount}**${type !== 'all' ? ` (المستهدف: ${type})` : ''}`,
   });
 }
 
@@ -1639,7 +1720,11 @@ async function handleSetPermReset(ctx: PluginContext, inv: CommandInvocation): P
 async function handleSetWhitelist(ctx: PluginContext, inv: CommandInvocation): Promise<CoreMessage> {
   const roleRaw = inv.args[0] ? stripMention(inv.args[0]) : optString(inv, 'role');
   if (!roleRaw) return text('⛔ يرجى تحديد الرتبة');
-  const removing = optBool(inv, 'remove') ?? inv.args.includes('remove');
+  const rawAction = (optString(inv, 'action') ?? inv.args[1] ?? 'add').toLowerCase().trim();
+  const removing = rawAction === 'remove';
+  if (rawAction !== 'add' && rawAction !== 'remove') {
+    return text('⛔ قم بتحديد الإجراء: add أو remove');
+  }
   const settings = await getSettings(ctx);
   const existing = settings.whitelistRoles ?? [];
   if (removing) {
@@ -1662,14 +1747,16 @@ async function handleSetWhitelist(ctx: PluginContext, inv: CommandInvocation): P
 }
 
 async function handleActionsLog(ctx: PluginContext, inv: CommandInvocation): Promise<CoreMessage> {
-  const channelId = resolveChannelId(inv) ?? inv.channelId;
-  if (!channelId) return text('⛔ يرجى تحديد القناة');
-  const settings = await getSettings(ctx);
-  settings.court.logChannel = channelId;
-  await ctx.storage.set('settings', settings);
-  const sec = await readSecurity(ctx);
-  await writeSecurity(ctx, { ...sec, security: { ...((sec.security as Record<string, unknown>) ?? {}), channelId } });
-  return text(`✅ تم تعيين قناة السجلات إلى <#${channelId}>`);
+  const commandInput = optString(inv, 'command') ?? inv.args[0] ?? '';
+  const commandId = findCommand(commandInput);
+  if (!commandId) return text('⛔ الأمر غير موجود');
+  const log = optBool(inv, 'enabled');
+  if (log === undefined) return text('⛔ يرجى تحديد الحالة (true/false)');
+  await saveActionMeta(ctx, commandId, { log });
+  const name = COMMAND_NAMES[commandId]?.name ?? commandId;
+  return log
+    ? text(`✅ تم تفعيل تسجيل أمر **${name}**`)
+    : text(`✅ تم تعطيل تسجيل أمر **${name}**`);
 }
 
 async function handleActionsColor(ctx: PluginContext, inv: CommandInvocation): Promise<CoreMessage> {
@@ -1884,38 +1971,39 @@ const OPTIONS: Record<string, CommandOptionRegistration[]> = {
   mute: [
     { name: 'user', description: 'المستخدم', type: 'USER', required: true },
     { name: 'duration', description: 'المدة (مثال: 10m، 2h، 1d)', type: 'STRING', required: true },
-    { name: 'reason', description: 'السبب', type: 'STRING' },
+    { name: 'reason', description: 'السبب', type: 'STRING', required: true },
   ],
   unmute: [
     { name: 'user', description: 'المستخدم', type: 'USER', required: true },
-    { name: 'reason', description: 'السبب', type: 'STRING' },
+    { name: 'reason', description: 'السبب', type: 'STRING', required: true },
   ],
   unban: [
     { name: 'user', description: 'معرف المستخدم', type: 'STRING', required: true },
-    { name: 'reason', description: 'السبب', type: 'STRING' },
+    { name: 'reason', description: 'السبب', type: 'STRING', required: true },
   ],
   unban_all: [],
   jail: [
     { name: 'user', description: 'المستخدم', type: 'USER', required: true },
-    { name: 'reason', description: 'السبب', type: 'STRING' },
-    { name: 'duration', description: 'مدة السجن (اختياري)', type: 'STRING' },
+    { name: 'duration', description: 'المدة (مثال: 10m، 2h، 1d، 0=دائم)', type: 'STRING', required: true },
+    { name: 'reason', description: 'السبب', type: 'STRING', required: true },
   ],
   unjail: [
     { name: 'user', description: 'المستخدم', type: 'USER', required: true },
-    { name: 'reason', description: 'السبب', type: 'STRING' },
+    { name: 'reason', description: 'السبب', type: 'STRING', required: true },
   ],
   warn: [
     { name: 'user', description: 'المستخدم', type: 'USER', required: true },
     { name: 'reason', description: 'السبب', type: 'STRING', required: true },
   ],
   unwarn: [
-    { name: 'user', description: 'المستخدم', type: 'USER', required: true },
+    { name: 'user', description: 'المستخدم', type: 'USER' },
     { name: 'case', description: 'معرّف الإنذار', type: 'STRING', required: true },
   ],
-  warning: [{ name: 'user', description: 'المستخدم', type: 'USER' }],
+  warning: [{ name: 'user', description: 'المستخدم', type: 'USER', required: true }],
   clear: [
     { name: 'amount', description: 'عدد الرسائل', type: 'INTEGER', required: true },
-    { name: 'channel', description: 'القناة', type: 'CHANNEL' },
+    { name: 'user', description: 'حذف رسائل مستخدم معين فقط', type: 'USER' },
+    { name: 'reason', description: 'السبب', type: 'STRING' },
   ],
   lock: [
     { name: 'channel', description: 'القناة', type: 'CHANNEL' },
@@ -1926,7 +2014,7 @@ const OPTIONS: Record<string, CommandOptionRegistration[]> = {
     { name: 'reason', description: 'السبب', type: 'STRING' },
   ],
   slowmode: [
-    { name: 'seconds', description: 'المدة بالثواني', type: 'INTEGER', required: true },
+    { name: 'time', description: 'المدة (مثال: 5s، 10m، 1h، 0)', type: 'STRING', required: true },
     { name: 'channel', description: 'القناة', type: 'CHANNEL' },
   ],
   rename: [
@@ -1949,6 +2037,7 @@ const OPTIONS: Record<string, CommandOptionRegistration[]> = {
   multi_role: [
     { name: 'action', description: 'add أو remove', type: 'STRING', required: true },
     { name: 'role', description: 'الرتبة', type: 'ROLE', required: true },
+    { name: 'type', description: 'الاستهداف: all (الافتراضي) أو humans أو bots', type: 'STRING' },
   ],
   auto_role: [{ name: 'role', description: 'الرتبة', type: 'ROLE' }],
   come: [
@@ -1963,8 +2052,8 @@ const OPTIONS: Record<string, CommandOptionRegistration[]> = {
   set_perm_all: [{ name: 'role', description: 'الرتبة', type: 'ROLE', required: true }],
   set_perm_reset: [],
   set_whitelist: [
+    { name: 'action', description: 'add أو remove', type: 'STRING', required: true },
     { name: 'role', description: 'الرتبة', type: 'ROLE', required: true },
-    { name: 'remove', description: 'إزالة بدلاً من الإضافة', type: 'BOOLEAN' },
   ],
   actions_show_room_jail: [
     { name: 'channel', description: 'القناة', type: 'CHANNEL', required: true },
@@ -1982,7 +2071,10 @@ const OPTIONS: Record<string, CommandOptionRegistration[]> = {
     { name: 'command', description: 'اسم الأمر', type: 'STRING', required: true },
     { name: 'enabled', description: 'التفعيل أو التعطيل', type: 'BOOLEAN', required: true },
   ],
-  actions_log: [{ name: 'channel', description: 'القناة', type: 'CHANNEL', required: true }],
+  actions_log: [
+    { name: 'command', description: 'اسم الأمر', type: 'STRING', required: true },
+    { name: 'enabled', description: 'تفعيل أو تعطيل التسجيل', type: 'BOOLEAN', required: true },
+  ],
   court_set_name: [{ name: 'name', description: 'الاسم الجديد', type: 'STRING', required: true }],
   court_set_color: [{ name: 'color', description: 'اللون بصيغة HEX', type: 'STRING', required: true }],
   court_set_logo: [{ name: 'logo', description: 'رابط الشعار', type: 'STRING', required: true }],
