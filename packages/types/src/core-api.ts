@@ -233,6 +233,7 @@ const componentContainerSchema = z
     type: z.literal('container'),
     items: z.array(componentItemSchema).min(1).max(40),
     spoiler: z.boolean().default(false),
+    accentColor: z.number().int().min(0).max(0xffffff).optional(),
   })
   .strict();
 

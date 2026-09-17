@@ -193,6 +193,7 @@ async function loadSettings(context: PluginContext): Promise<Settings> {
 }
 
 function mergeSettings(stored: Partial<Settings>): Settings {
+  const rawTags = (stored.statusTags ?? {}) as unknown as Record<string, unknown>;
   return {
     enabled: stored.enabled ?? DEFAULT_SETTINGS.enabled,
     channel: stored.channel ?? DEFAULT_SETTINGS.channel,
@@ -233,20 +234,25 @@ function mergeSettings(stored: Partial<Settings>): Settings {
         stored.moderation?.requireRejectReason ?? DEFAULT_SETTINGS.moderation.requireRejectReason,
     },
     statusTags: {
-      accepted: {
-        label: stored.statusTags?.accepted?.label ?? DEFAULT_SETTINGS.statusTags.accepted.label,
-        color: stored.statusTags?.accepted?.color ?? DEFAULT_SETTINGS.statusTags.accepted.color,
-      },
-      rejected: {
-        label: stored.statusTags?.rejected?.label ?? DEFAULT_SETTINGS.statusTags.rejected.label,
-        color: stored.statusTags?.rejected?.color ?? DEFAULT_SETTINGS.statusTags.rejected.color,
-      },
-      considered: {
-        label: stored.statusTags?.considered?.label ?? DEFAULT_SETTINGS.statusTags.considered.label,
-        color: stored.statusTags?.considered?.color ?? DEFAULT_SETTINGS.statusTags.considered.color,
-      },
+      accepted: normalizeStatusTag(rawTags.accepted, DEFAULT_SETTINGS.statusTags.accepted),
+      rejected: normalizeStatusTag(rawTags.rejected, DEFAULT_SETTINGS.statusTags.rejected),
+      considered: normalizeStatusTag(rawTags.considered, DEFAULT_SETTINGS.statusTags.considered),
     },
   };
+}
+
+function normalizeStatusTag(value: unknown, fallback: StatusTag): StatusTag {
+  if (typeof value === 'string') {
+    return { label: value, color: fallback.color };
+  }
+  if (value && typeof value === 'object') {
+    const candidate = value as Partial<StatusTag>;
+    return {
+      label: typeof candidate.label === 'string' ? candidate.label : fallback.label,
+      color: typeof candidate.color === 'string' ? candidate.color : fallback.color,
+    };
+  }
+  return fallback;
 }
 
 function normalizeStringList(value: string | string[] | undefined): string[] {
@@ -262,9 +268,16 @@ function normalizeStringList(value: string | string[] | undefined): string[] {
 
 async function loadData(context: PluginContext): Promise<SuggestionData> {
   const stored = await context.storage.get<SuggestionData>(DATA_KEY);
-  if (stored && stored.suggestions && typeof stored.nextId === 'number') {
+  if (stored && stored.suggestions && typeof stored.suggestions === 'object') {
     stored.userCooldowns ??= {};
     stored._pendingRejects ??= {};
+    if (typeof stored.nextId !== 'number' || !Number.isFinite(stored.nextId)) {
+      const ids = Object.values(stored.suggestions).map((entry) =>
+        entry && typeof entry.id === 'number' ? entry.id : 0,
+      );
+      stored.nextId = ids.length > 0 ? Math.max(...ids) + 1 : 1;
+      await context.storage.set(DATA_KEY, stored);
+    }
     return stored;
   }
   const fresh = defaultData();
@@ -292,6 +305,24 @@ function media(url: string) {
 
 function button(config: Omit<ComponentsV2Button, 'type' | 'disabled'>): ComponentsV2Button {
   return { type: 'button', disabled: false, ...config };
+}
+
+const ACCENT_ACTIVE = 0x5865f2;
+const ACCENT_PENDING = 0xf0b232;
+
+function hexToInt(value: string | undefined): number | undefined {
+  if (!value) return undefined;
+  const parsed = parseInt(value.replace('#', ''), 16);
+  return Number.isNaN(parsed) ? undefined : parsed;
+}
+
+function accentForStatus(status: SuggestionStatus, settings: Settings): number | undefined {
+  if (status === 'active') return ACCENT_ACTIVE;
+  if (status === 'pending') return ACCENT_PENDING;
+  if (status === 'accepted') return hexToInt(settings.statusTags.accepted.color);
+  if (status === 'rejected') return hexToInt(settings.statusTags.rejected.color);
+  if (status === 'considered') return hexToInt(settings.statusTags.considered.color);
+  return undefined;
 }
 
 function statusLabel(status: SuggestionStatus, settings: Settings): string {
@@ -349,7 +380,7 @@ function buildCard(
     );
   }
 
-  return { type: 'container', items, spoiler: false };
+  return { type: 'container', items, spoiler: false, accentColor: accentForStatus(suggestion.status, settings) };
 }
 
 function buildPendingCard(suggestion: SuggestionRecord): ComponentsV2Container {
@@ -369,18 +400,19 @@ function buildPendingCard(suggestion: SuggestionRecord): ComponentsV2Container {
   items.push(text('> ' + suggestion.content.replace(/\n/g, '\n> ')));
   items.push(separator());
   items.push(
-    button({ id: `sg_accept_${suggestion.id}`, label: '✅  قبول', style: 'success' }),
+    button({ id: `sg_approve_${suggestion.id}`, label: '✅  قبول', style: 'success' }),
     button({ id: `sg_reject_${suggestion.id}`, label: '❌  رفض', style: 'danger' }),
     button({ id: `sg_consider_${suggestion.id}`, label: '🔍  قيد الدراسة', style: 'secondary' }),
   );
 
-  return { type: 'container', items, spoiler: false };
+  return { type: 'container', items, spoiler: false, accentColor: ACCENT_PENDING };
 }
 
 function buildOutcomeCard(
   suggestion: SuggestionRecord,
   moderatorTag: string,
   reason: string,
+  settings: Settings,
 ): ComponentsV2Container {
   const emoji =
     { accepted: '✅', rejected: '❌', considered: '🔍' }[
@@ -400,7 +432,7 @@ function buildOutcomeCard(
   if (reason) lines.push(`-# *${reason}*`);
 
   const items: ComponentsV2Item[] = [text(lines.join('\n'))];
-  return { type: 'container', items, spoiler: false };
+  return { type: 'container', items, spoiler: false, accentColor: accentForStatus(suggestion.status, settings) };
 }
 
 function cardMessage(container: ComponentsV2Container): ComponentsV2Message {
@@ -416,7 +448,7 @@ function registerSuggestionHandlers(context: PluginContext, id: number): void {
   context.interactions.onButton(`sg_vote_down_${id}`, (interaction) => {
     void handleVoteButton(context, interaction, id, false);
   });
-  context.interactions.onButton(`sg_accept_${id}`, (interaction) => {
+  context.interactions.onButton(`sg_approve_${id}`, (interaction) => {
     void handleModeration(context, interaction, id, 'accepted');
   });
   context.interactions.onButton(`sg_reject_${id}`, (interaction) => {
@@ -601,6 +633,15 @@ async function postActive(
   if (!channelId) return null;
   try {
     const receipt = await context.messages.sendChannel(channelId, cardMessage(buildCard(suggestion, settings, true)));
+    if (settings.voting.enabled && settings.voting.type !== 'buttons') {
+      const emojis =
+        settings.voting.type === 'multiple_reactions'
+          ? normalizeStringList(settings.voting.multipleReactions)
+          : [settings.voting.upvoteEmoji || '👍', settings.voting.downvoteEmoji || '👎'];
+      for (const emoji of emojis) {
+        await context.messages.addReaction(channelId, receipt.id, emoji).catch(() => undefined);
+      }
+    }
     let threadId: string | null = null;
     if (settings.allowThreads) {
       try {
@@ -608,6 +649,7 @@ async function postActive(
           channelId,
           receipt.id,
           `الاقتراح #${suggestion.id} — نقاش`,
+          1440,
         );
         threadId = thread?.id ?? null;
       } catch { /* swallow */ }
@@ -684,6 +726,9 @@ async function handleReactionAdd(context: PluginContext, payload: PluginEventPay
       if (prev === 'up') return;
       if (prev === 'down') {
         suggestion.downvotes = Math.max(0, suggestion.downvotes - 1);
+        await context.messages
+          .removeUserReaction(channelId, messageId, userId, downKey)
+          .catch(() => undefined);
       }
       suggestion.voters[userId] = 'up';
       suggestion.upvotes++;
@@ -691,6 +736,9 @@ async function handleReactionAdd(context: PluginContext, payload: PluginEventPay
       if (prev === 'down') return;
       if (prev === 'up') {
         suggestion.upvotes = Math.max(0, suggestion.upvotes - 1);
+        await context.messages
+          .removeUserReaction(channelId, messageId, userId, upKey)
+          .catch(() => undefined);
       }
       suggestion.voters[userId] = 'down';
       suggestion.downvotes++;
@@ -865,41 +913,25 @@ async function handleRejectButton(
   const settings = await loadSettings(context);
   if (!settings) return;
 
-  if (settings.moderation.requireRejectReason !== false) {
-    await interaction
-      .respond({
-        kind: 'showModal',
-        modal: {
-          id: `sg_reject_reason_${id}`,
-          title: `رفض الاقتراح #${id}`,
-          fields: [
-            {
-              id: 'reason',
-              label: 'سبب الرفض',
-              style: 'paragraph',
-              required: false,
-              placeholder: 'اكتب سبب الرفض...',
-              maxLength: 1000,
-            },
-          ],
-        },
-      })
-      .catch(() => {});
-    return;
-  }
-
-  const data = await loadData(context);
-  const suggestion = data.suggestions[String(id)];
-  if (!suggestion) {
-    await interaction
-      .respond({ kind: 'reply', message: textMessage('❌ الاقتراح غير موجود.'), ephemeral: true })
-      .catch(() => {});
-    return;
-  }
-
-  await interaction.respond({ kind: 'deferUpdate' }).catch(() => {});
-  const moderatorTag = await moderatorTagFor(context, interaction.userId);
-  await applyModeration(context, suggestion, 'rejected', '', moderatorTag, data);
+  await interaction
+    .respond({
+      kind: 'showModal',
+      modal: {
+        id: `sg_reject_reason_${id}`,
+        title: `رفض الاقتراح #${id}`,
+        fields: [
+          {
+            id: 'reason',
+            label: 'سبب الرفض',
+            style: 'paragraph',
+            required: false,
+            placeholder: 'اكتب سبب الرفض...',
+            maxLength: 1000,
+          },
+        ],
+      },
+    })
+    .catch(() => {});
 }
 
 async function handleRejectModal(
@@ -907,6 +939,18 @@ async function handleRejectModal(
   interaction: PluginComponentInteraction,
   id: number,
 ): Promise<void> {
+  const allowed = await context.guild.hasPermission(interaction.userId, 'ManageGuild');
+  if (!allowed) {
+    await interaction
+      .respond({
+        kind: 'reply',
+        message: textMessage('❌ تحتاج صلاحية **إدارة الخادم** للتعامل مع الاقتراحات.'),
+        ephemeral: true,
+      })
+      .catch(() => {});
+    return;
+  }
+
   const settings = await loadSettings(context);
   if (!settings) return;
 
@@ -947,7 +991,7 @@ async function applyModeration(
       await context.messages.edit(
         pendingChannel,
         suggestion.pendingMessageId,
-        cardMessage(buildOutcomeCard(suggestion, moderatorTag || 'إدارة', reason)),
+        cardMessage(buildOutcomeCard(suggestion, moderatorTag || 'إدارة', reason, settings)),
       );
     } catch { /* swallow */ }
   }

@@ -1045,10 +1045,40 @@ class DiscordPluginMessages implements PluginMessages {
     return { id: edited.id, channelId: edited.channelId };
   }
 
+  async addReaction(channelId: string, messageId: string, emoji: string): Promise<void> {
+    const channel = await this.client.channels.fetch(channelId);
+    if (!channel?.isTextBased() || !('messages' in channel)) {
+      return;
+    }
+    const target = await channel.messages.fetch(messageId).catch(() => null);
+    if (!target) {
+      return;
+    }
+    await target.react(emoji).catch(() => undefined);
+  }
+
+  async removeUserReaction(
+    channelId: string,
+    messageId: string,
+    userId: string,
+    emoji: string,
+  ): Promise<void> {
+    const channel = await this.client.channels.fetch(channelId);
+    if (!channel?.isTextBased() || !('messages' in channel)) {
+      return;
+    }
+    const target = await channel.messages.fetch(messageId).catch(() => null);
+    if (!target) {
+      return;
+    }
+    await target.reactions.cache.get(emoji)?.users.remove(userId).catch(() => undefined);
+  }
+
   async createThread(
     channelId: string,
     messageId: string,
     name: string,
+    archiveDuration?: number,
   ): Promise<PluginThread | null> {
     const channel = await this.client.channels.fetch(channelId);
     if (!channel?.isTextBased() || !('messages' in channel)) {
@@ -1058,7 +1088,15 @@ class DiscordPluginMessages implements PluginMessages {
     if (!target) {
       return null;
     }
-    const thread = await target.startThread({ name, reason: 'Vortex plugin command' }).catch(() => null);
+    const thread = await target
+      .startThread({
+        name,
+        reason: 'Vortex plugin command',
+        ...(archiveDuration === undefined
+          ? {}
+          : { autoArchiveDuration: archiveDuration as 60 | 1440 | 4320 | 10080 }),
+      })
+      .catch(() => null);
     if (!thread) {
       return null;
     }

@@ -13,6 +13,9 @@ export const pluginMessages: PluginMessages = {
   readChannel: () => Promise.reject(new Error('Message read adapter is not configured.')),
   delete: () => Promise.reject(new Error('Message delivery adapter is not configured.')),
   edit: () => Promise.reject(new Error('Message edit adapter is not configured.')),
+  addReaction: () => Promise.reject(new Error('Message reaction adapter is not configured.')),
+  removeUserReaction: () =>
+    Promise.reject(new Error('Message reaction adapter is not configured.')),
   createThread: () => Promise.reject(new Error('Message thread adapter is not configured.')),
 };
 

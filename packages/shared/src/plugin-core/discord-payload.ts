@@ -61,6 +61,7 @@ function toDiscordContainer(container: ComponentsV2Container): Record<string, un
   return {
     type: 17,
     spoiler: container.spoiler,
+    ...(container.accentColor === undefined ? {} : { accent_color: container.accentColor }),
     components: container.items.flatMap((item): unknown[] => {
       if (item.type === 'text_display') {
         return [{ type: 10, content: item.content }];

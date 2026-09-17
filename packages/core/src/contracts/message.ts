@@ -53,10 +53,18 @@ export interface PluginMessages {
   readChannel(channelId: string, limit?: number): Promise<PluginMessageEntry[]>;
   delete(channelId: string, messageId: string): Promise<void>;
   edit(channelId: string, messageId: string, message: CoreMessage): Promise<PluginMessageReceipt>;
+  addReaction(channelId: string, messageId: string, emoji: string): Promise<void>;
+  removeUserReaction(
+    channelId: string,
+    messageId: string,
+    userId: string,
+    emoji: string,
+  ): Promise<void>;
   createThread(
     channelId: string,
     messageId: string,
     name: string,
+    archiveDuration?: number,
   ): Promise<PluginThread | null>;
 }
 
