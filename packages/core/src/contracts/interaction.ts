@@ -23,6 +23,8 @@ export type PluginInteractionResponse =
   | { kind: 'reply'; message: CoreMessage; ephemeral?: boolean }
   | { kind: 'update'; message: CoreMessage }
   | { kind: 'deferUpdate' }
+  | { kind: 'deferReply'; ephemeral?: boolean }
+  | { kind: 'editReply'; message: CoreMessage }
   | { kind: 'showModal'; modal: PluginModal };
 
 export interface PluginComponentInteraction {

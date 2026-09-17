@@ -155,6 +155,14 @@ export async function respondComponent(
     case 'deferUpdate':
       await interaction.deferUpdate();
       break;
+    case 'deferReply':
+      await interaction.deferReply({ ephemeral: response.ephemeral ?? false });
+      break;
+    case 'editReply': {
+      const { flags: _flags, ...payload } = toDiscordReply(response.message);
+      await interaction.editReply(payload as Parameters<MessageComponentInteraction['editReply']>[0]);
+      break;
+    }
     case 'showModal':
       if ('showModal' in interaction) {
         await interaction.showModal(toDiscordModal(response.modal));

@@ -14,6 +14,19 @@ const STORAGE_STATS = 'ticket_stats';
 const STORAGE_COOLDOWNS = 'ticket_cooldowns';
 const STORAGE_FEEDBACK = 'ticket_feedback';
 const STORAGE_TRANSCRIPTS = 'transcripts';
+const STORAGE_STAFF_POINTS = 'staff_points';
+const STORAGE_STAFF_SCORES = 'staff_scores';
+
+const ACCENT_PANEL = 0x5865f2;
+const ACCENT_CLAIM = 0x5865f2;
+const ACCENT_UNCLAIM = 0xfee75c;
+const ACCENT_ADD = 0x57f287;
+const ACCENT_REMOVE = 0xed4245;
+const ACCENT_FEEDBACK_PROMPT = 0xfee75c;
+const ACCENT_POSITIVE = 0x57f287;
+const ACCENT_NEUTRAL = 0xfee75c;
+const ACCENT_NEGATIVE = 0xed4245;
+const ACCENT_REWARD = 0xf59e0b;
 
 const ID_OPEN = 'ticket_open:';
 const ID_MP_SELECT = 'ticket_mp_select:';
@@ -190,6 +203,37 @@ interface FeedbackData {
   entries: FeedbackEntry[];
 }
 
+interface StaffPointsConfig {
+  enabled: boolean;
+  ticketPoints: {
+    enabled: boolean;
+    claim: { enabled: boolean; points: number };
+    close: { enabled: boolean; points: number };
+  };
+  ratingPoints: { enabled: boolean; stars: Record<string, number> };
+  commandPoints: { enabled: boolean; commands: Array<{ id?: string; name?: string; points?: number }> };
+  logsChannelId: string | null;
+  antiAbuse: {
+    enabled: boolean;
+    noSelfClaim: boolean;
+    noSelfRate: boolean;
+    noDuplicatePoints: boolean;
+    cooldownMinutes: number;
+  };
+  rewards: {
+    enabled: boolean;
+    list: Array<{ id?: string; points?: number; roleId?: string; label?: string }>;
+  };
+}
+
+interface StaffScoreEntry {
+  points: number;
+  history: Array<Record<string, unknown>>;
+  lastActions: Record<string, string>;
+}
+
+type StaffScores = Record<string, StaffScoreEntry>;
+
 type Cv2Item =
   | { type: 'text_display'; content: string }
   | { type: 'separator'; spacing?: 'small' | 'large'; divider?: boolean }
@@ -283,6 +327,35 @@ const DEFAULT_OPEN_TICKETS: OpenTicketsData = { tickets: [], nextNumber: 1 };
 const DEFAULT_STATS: StatsState = { avg_response_ms: 0, total_closed: 0, last_reset_date: '', closed_today: 0 };
 const DEFAULT_FEEDBACK: FeedbackData = { entries: [] };
 const DEFAULT_COOLDOWNS: Record<string, string> = {};
+
+const DEFAULT_STAFF_POINTS: StaffPointsConfig = {
+  enabled: false,
+  ticketPoints: {
+    enabled: false,
+    claim: { enabled: true, points: 5 },
+    close: { enabled: true, points: 3 },
+  },
+  ratingPoints: {
+    enabled: false,
+    stars: { '5': 10, '4': 5, '3': 0, '2': -2, '1': -5 },
+  },
+  commandPoints: {
+    enabled: false,
+    commands: [],
+  },
+  logsChannelId: null,
+  antiAbuse: {
+    enabled: true,
+    noSelfClaim: true,
+    noSelfRate: true,
+    noDuplicatePoints: true,
+    cooldownMinutes: 60,
+  },
+  rewards: {
+    enabled: false,
+    list: [],
+  },
+};
 
 const pendingCloseTasks = new Set<string>();
 
@@ -427,23 +500,28 @@ async function openTicketFlow(
     return;
   }
 
-  await interaction.respond({ kind: 'deferUpdate' });
+  await interaction.respond({ kind: 'deferReply', ephemeral: true });
 
   const check = await runOpenChecks(context, interaction, panel, settings);
   if (!check.ok) {
-    await notifyDeferred(context, interaction.userId, check.message ?? '❌ حدث خطأ.');
+    await editReplyEphemeral(interaction, check.message ?? '❌ حدث خطأ.');
     return;
   }
 
   const created = await createTicketChannel(context, interaction, panel, settings);
   if (!created) {
-    await notifyDeferred(context, interaction.userId, '❌ تعذر إنشاء قناة التذكرة. يرجى التواصل مع الإدارة.');
+    await editReplyEphemeral(interaction, '❌ تعذر إنشاء قناة التذكرة. يرجى التواصل مع الإدارة.');
     return;
   }
 
-  await context.messages
-    .sendDirect(interaction.userId, text(`✅ تم إنشاء تذكرتك: <#${created.channelId}>`))
-    .catch(() => undefined);
+  await interaction.respond({
+    kind: 'editReply',
+    message: buildContainer(
+      context,
+      [{ type: 'text_display', content: `✅ تم إنشاء تذكرتك: <#${created.channelId}>` }],
+      openSuccessAccent(panel, settings),
+    ),
+  });
 }
 
 async function handleFormModal(context: PluginContext, interaction: PluginComponentInteraction): Promise<void> {
@@ -461,17 +539,17 @@ async function handleFormModal(context: PluginContext, interaction: PluginCompon
     answer: asString(interaction.modalFields?.[`q${i}`]),
   }));
 
-  await interaction.respond({ kind: 'deferUpdate' });
+  await interaction.respond({ kind: 'deferReply', ephemeral: true });
 
   const check = await runOpenChecks(context, interaction, panel, settings, { skipHours: true });
   if (!check.ok) {
-    await notifyDeferred(context, interaction.userId, check.message ?? '❌ حدث خطأ.');
+    await editReplyEphemeral(interaction, check.message ?? '❌ حدث خطأ.');
     return;
   }
 
   const created = await createTicketChannel(context, interaction, panel, settings);
   if (!created) {
-    await notifyDeferred(context, interaction.userId, '❌ تعذر إنشاء قناة التذكرة. يرجى التواصل مع الإدارة.');
+    await editReplyEphemeral(interaction, '❌ تعذر إنشاء قناة التذكرة. يرجى التواصل مع الإدارة.');
     return;
   }
 
@@ -488,13 +566,18 @@ async function handleFormModal(context: PluginContext, interaction: PluginCompon
       },
     ];
     await context.messages
-      .sendChannel(created.channelId, buildContainer(context, items))
+      .sendChannel(created.channelId, buildContainer(context, items, ACCENT_PANEL))
       .catch(() => undefined);
   }
 
-  await context.messages
-    .sendDirect(interaction.userId, text(`✅ تم إنشاء تذكرتك: <#${created.channelId}>`))
-    .catch(() => undefined);
+  await interaction.respond({
+    kind: 'editReply',
+    message: buildContainer(
+      context,
+      [{ type: 'text_display', content: `✅ تم إنشاء تذكرتك: <#${created.channelId}>` }],
+      openSuccessAccent(panel, settings),
+    ),
+  });
 }
 
 function buildFormModal(panel: TicketPanel): PluginModal {
@@ -558,24 +641,27 @@ async function runOpenChecks(
     const cooldowns = (await context.storage.get<Record<string, string>>(STORAGE_COOLDOWNS)) ?? {};
     const last = cooldowns[`${panel.id}_${interaction.userId}`];
     if (last) {
-      const remaining = panel.cooldown * 1000 - (Date.now() - new Date(last).getTime());
-      if (remaining > 0) {
-        return { ok: false, message: `⏳ يرجى الانتظار ${Math.ceil(remaining / 1000)} ثانية قبل فتح تذكرة جديدة.` };
+      const elapsed = Date.now() - new Date(last).getTime();
+      const total = panel.cooldown * 1000;
+      if (elapsed < total) {
+        const left = Math.ceil((total - elapsed) / 1000);
+        const unit = left >= 60 ? `${Math.ceil(left / 60)}m` : `${left}s`;
+        return { ok: false, message: `⏳ أنت في فترة انتظار. حاول مجددًا بعد **${unit}**.` };
       }
     }
+    cooldowns[`${panel.id}_${interaction.userId}`] = new Date().toISOString();
+    await context.storage.set(STORAGE_COOLDOWNS, cooldowns);
   }
 
   const panelLimit = panel.maxOpen;
   const otDb = await readOpenTickets(context);
-  const userOpen = otDb.tickets.filter((t) => t.userId === interaction.userId && t.status === 'open');
-  if (panelLimit > 0) {
-    const inPanel = userOpen.filter((t) => t.panelId === panel.id).length;
-    if (inPanel >= panelLimit) {
-      return {
-        ok: false,
-        message: `❌ لديك ${inPanel} تذكرة مفتوحة في هذه البانل (الحد الأقصى ${panelLimit}).`,
-      };
-    }
+  const userOpen = otDb.tickets.filter(
+    (t) => t.userId === interaction.userId && t.panelId === panel.id && t.status === 'open',
+  );
+  if (panelLimit > 0 && userOpen.length >= panelLimit) {
+    const existing = userOpen[0];
+    const target = existing?.channelId ? `<#${existing.channelId}>` : 'تذكرتك الحالية';
+    return { ok: false, message: `❌ لديك تذكرة مفتوحة بالفعل: ${target}` };
   }
 
   return { ok: true };
@@ -675,7 +761,7 @@ async function closeTicket(
     return;
   }
 
-  await interaction.respond({ kind: 'deferUpdate' });
+  await interaction.respond({ kind: 'deferReply', ephemeral: true });
 
   const closedAt = new Date().toISOString();
   const updated: TicketRecord = {
@@ -698,15 +784,19 @@ async function closeTicket(
   await context.messages
     .sendChannel(
       updated.channelId,
-      buildContainer(context, [
-        {
-          type: 'text_display',
-          content:
-            reason.length > 0
-              ? `🔒 تم إغلاق التذكرة بواسطة <@${interaction.userId}>\n> ${reason}\n\n-# ستحذف هذه القناة خلال 5 ثوانٍ.`
-              : `🔒 تم إغلاق التذكرة بواسطة <@${interaction.userId}>\n\n-# ستحذف هذه القناة خلال 5 ثوانٍ.`,
-        },
-      ]),
+      buildContainer(
+        context,
+        [
+          {
+            type: 'text_display',
+            content:
+              reason.length > 0
+                ? `🔒 تم إغلاق التذكرة بواسطة <@${interaction.userId}>\n> ${reason}\n\n-# ستحذف هذه القناة خلال 5 ثوانٍ.`
+                : `🔒 تم إغلاق التذكرة بواسطة <@${interaction.userId}>\n\n-# ستحذف هذه القناة خلال 5 ثوانٍ.`,
+          },
+        ],
+        hexToInt(settings.general['COLOR_FAILURE']) ?? ACCENT_NEGATIVE,
+      ),
     )
     .catch(() => undefined);
 
@@ -717,7 +807,14 @@ async function closeTicket(
     void context.channels.delete(updated.channelId, 'Ticket closed').catch(() => undefined);
   });
 
-  await notifyDeferred(context, interaction.userId, '✅ تم إغلاق التذكرة.');
+  await interaction.respond({
+    kind: 'editReply',
+    message: buildContainer(
+      context,
+      [{ type: 'text_display', content: '✅ تم إغلاق التذكرة.' }],
+      hexToInt(settings.general['COLOR_SUCCESS']) ?? ACCENT_POSITIVE,
+    ),
+  });
 }
 
 async function handleClaim(context: PluginContext, interaction: PluginComponentInteraction, ticketId?: string): Promise<void> {
@@ -761,7 +858,11 @@ async function handleClaim(context: PluginContext, interaction: PluginComponentI
 
   await interaction.respond({
     kind: 'reply',
-    message: buildContainer(context, [{ type: 'text_display', content: `🙋 تم استلام التذكرة بواسطة <@${interaction.userId}>` }]),
+    message: buildContainer(
+      context,
+      [{ type: 'text_display', content: `🙋 تم استلام التذكرة بواسطة <@${interaction.userId}>` }],
+      ACCENT_CLAIM,
+    ),
   });
 }
 
@@ -798,7 +899,11 @@ async function handleUnclaim(context: PluginContext, interaction: PluginComponen
 
   await interaction.respond({
     kind: 'reply',
-    message: buildContainer(context, [{ type: 'text_display', content: `↩️ تم إلغاء استلام التذكرة بواسطة <@${interaction.userId}>` }]),
+    message: buildContainer(
+      context,
+      [{ type: 'text_display', content: `↩️ تم إلغاء استلام التذكرة بواسطة <@${interaction.userId}>` }],
+      ACCENT_UNCLAIM,
+    ),
   });
 }
 
@@ -897,11 +1002,23 @@ async function handleAddRemoveModal(
   try {
     await context.channels.setPermissions(ticket.channelId, overrides, `Vortex Tickets plugin: ${mode} member ${raw}`);
     if (mode === 'add') {
-      await replyEphemeral(interaction, `✅ تمت إضافة <@${raw}> إلى هذه التذكرة.`);
+      await interaction.respond({
+        kind: 'reply',
+        message: buildContainer(
+          context,
+          [{ type: 'text_display', content: `✅ تمت إضافة <@${raw}> إلى هذه التذكرة.` }],
+          ACCENT_ADD,
+        ),
+        ephemeral: true,
+      });
     } else {
       await interaction.respond({
         kind: 'reply',
-        message: buildContainer(context, [{ type: 'text_display', content: `✅ تمت إزالة <@${raw}> من هذه التذكرة.` }]),
+        message: buildContainer(
+          context,
+          [{ type: 'text_display', content: `✅ تمت إزالة <@${raw}> من هذه التذكرة.` }],
+          ACCENT_REMOVE,
+        ),
       });
     }
   } catch {
@@ -1056,6 +1173,7 @@ async function handleFeedbackButton(context: PluginContext, interaction: PluginC
 
   const accent =
     rating >= 4 ? ('success' as const) : rating >= 3 ? ('primary' as const) : ('danger' as const);
+  const accentColor = rating >= 4 ? ACCENT_POSITIVE : rating >= 3 ? ACCENT_NEUTRAL : ACCENT_NEGATIVE;
   const stars = '⭐'.repeat(rating);
 
   const buttons: Cv2Button[] = [1, 2, 3, 4, 5].map((n) => ({
@@ -1068,7 +1186,11 @@ async function handleFeedbackButton(context: PluginContext, interaction: PluginC
 
   await interaction.respond({
     kind: 'update',
-    message: buildContainer(context, [{ type: 'text_display', content: `## ${stars} تم استلام تقييمك` }, ...buttons]),
+    message: buildContainer(
+      context,
+      [{ type: 'text_display', content: `## ${stars} تم استلام تقييمك` }, ...buttons],
+      accentColor,
+    ),
   });
 
   if (!ticket) {
@@ -1086,6 +1208,8 @@ async function handleFeedbackButton(context: PluginContext, interaction: PluginC
   });
   await context.storage.set(STORAGE_FEEDBACK, feedback);
 
+  await awardRatingPoints(context, ticket.claimedBy, rating, ticketId, interaction.userId);
+
   const panelOfTicket = panel ? panelOf(panel) : null;
   const feedbackChannel = panelOfTicket?.feedbackChannel;
   if (feedbackChannel) {
@@ -1097,14 +1221,18 @@ async function handleFeedbackButton(context: PluginContext, interaction: PluginC
         claimerMention ? `**مستلم التذكرة:** ${claimerMention}` : null,
         `**التقييم:** ${stars}`,
       ].filter((line): line is string => typeof line === 'string');
-      const card = buildContainer(context, [
-        {
-          type: 'text_display',
-          content: claimerMention ? `## 📩 تقييم جديد مستلم ${claimerMention}` : '## 📩 تقييم جديد مستلم',
-        },
-        { type: 'separator' },
-        { type: 'text_display', content: contentLines.join('\n') },
-      ]);
+      const card = buildContainer(
+        context,
+        [
+          {
+            type: 'text_display',
+            content: claimerMention ? `## 📩 تقييم جديد مستلم ${claimerMention}` : '## 📩 تقييم جديد مستلم',
+          },
+          { type: 'separator' },
+          { type: 'text_display', content: contentLines.join('\n') },
+        ],
+        accentColor,
+      );
       const receipt = await context.messages.sendChannel(feedbackChannel, card).catch(() => null);
       if (receipt) {
         await context.messages
@@ -1276,7 +1404,10 @@ async function sendWelcomeMessage(
   record: TicketRecord,
 ): Promise<void> {
   await context.messages
-    .sendChannel(channelId, buildContainer(context, buildWelcomeItems(panel, settings, username, record)))
+    .sendChannel(
+      channelId,
+      buildContainer(context, buildWelcomeItems(panel, settings, username, record), welcomeAccent(panel, settings)),
+    )
     .catch(() => undefined);
 }
 
@@ -1326,7 +1457,7 @@ function buildSinglePanelMessage(context: PluginContext, panel: TicketPanel): Co
     items.push(button);
   }
 
-  return buildContainer(context, items);
+  return buildContainer(context, items, hexToInt(panel.panelColor) ?? ACCENT_PANEL);
 }
 
 function buildMultiPanelMessage(context: PluginContext, mp: MultiPanel, panels: ResolvedPanel[]): CoreMessage {
@@ -1402,7 +1533,7 @@ function buildMultiPanelMessage(context: PluginContext, mp: MultiPanel, panels: 
     }
   }
 
-  return buildContainer(context, items);
+  return buildContainer(context, items, hexToInt(mp.accentColor) ?? ACCENT_PANEL);
 }
 
 function resolveBanner(bannerImage: string): string | null {
@@ -1533,6 +1664,7 @@ function panelContentKey(panel: TicketPanel): string {
     panel.btnText,
     panel.btnEmoji,
     panel.btnColor,
+    panel.panelColor,
   ]);
 }
 
@@ -1545,6 +1677,7 @@ function multiPanelContentKey(mp: MultiPanel, panels: ResolvedPanel[]): string {
     mp.placeholder,
     mp.showRefreshBtn,
     mp.refreshBtnLabel,
+    mp.accentColor,
     panels.map((p) => [
       p.panelId || p.id,
       p.overrideBtnText || p.btnText || p.panelTitle || p.name,
@@ -1565,7 +1698,7 @@ async function runTranscript(
   }
 
   const messages = await context.messages
-    .readChannel(ticket.channelId, 500)
+    .readChannel(ticket.channelId, 5000)
     .catch(() => [] as PluginMessageEntry[]);
   const html = buildTranscriptHtml(ticket, panel, [...messages].sort((a, b) => a.sentAt.localeCompare(b.sentAt)));
   const fileName = `transcript-${ticket.id}.html`;
@@ -1580,22 +1713,26 @@ async function runTranscript(
 
   let transcriptChannelMsgId: string | null = null;
   if (transcriptChannelId) {
-    const card = buildContainer(context, [
-      {
-        type: 'text_display',
-        content: `## 📄 نسخة التذكرة — \`#${String(ticket.number ?? ticket.id).padStart(4, '0')}\``,
-      },
-      { type: 'separator' },
-      {
-        type: 'text_display',
-        content: [
-          `> **المستخدم:** <@${ticket.userId}>`,
-          `> **البانل:** ${panel.panelTitle || ticket.panelId || '—'}`,
-          `> **أغلق:** <t:${Math.floor(Date.now() / 1000)}:f>`,
-          `> **السبب:** ${ticket.closeReason || '—'}`,
-        ].join('\n'),
-      },
-    ]);
+    const card = buildContainer(
+      context,
+      [
+        {
+          type: 'text_display',
+          content: `## 📄 نسخة التذكرة — \`#${String(ticket.number ?? ticket.id).padStart(4, '0')}\``,
+        },
+        { type: 'separator' },
+        {
+          type: 'text_display',
+          content: [
+            `> **المستخدم:** <@${ticket.userId}>`,
+            `> **البانل:** ${panel.panelTitle || ticket.panelId || '—'}`,
+            `> **أغلق:** <t:${Math.floor(Date.now() / 1000)}:f>`,
+            `> **السبب:** ${ticket.closeReason || '—'}`,
+          ].join('\n'),
+        },
+      ],
+      ACCENT_PANEL,
+    );
     const receipt = await context.messages.sendChannel(transcriptChannelId, card).catch(() => null);
     transcriptChannelMsgId = receipt?.id ?? null;
     await context.messages
@@ -1604,19 +1741,23 @@ async function runTranscript(
   }
 
   if (panel.transcriptDm) {
-    const dmCard = buildContainer(context, [
-      { type: 'text_display', content: '## 📄 نسختك الخاصة بالتذكرة' },
-      { type: 'separator' },
-      {
-        type: 'text_display',
-        content: [
-          `تم إغلاق تذكرتك \`#${String(ticket.number ?? ticket.id).padStart(4, '0')}\` من **${panel.panelTitle || 'الدعم'}**.`,
-          ticket.closeReason ? `\n> **السبب:** ${ticket.closeReason}` : '',
-        ]
-          .filter(Boolean)
-          .join('\n'),
-      },
-    ]);
+    const dmCard = buildContainer(
+      context,
+      [
+        { type: 'text_display', content: '## 📄 نسختك الخاصة بالتذكرة' },
+        { type: 'separator' },
+        {
+          type: 'text_display',
+          content: [
+            `تم إغلاق تذكرتك \`#${String(ticket.number ?? ticket.id).padStart(4, '0')}\` من **${panel.panelTitle || 'الدعم'}**.`,
+            ticket.closeReason ? `\n> **السبب:** ${ticket.closeReason}` : '',
+          ]
+            .filter(Boolean)
+            .join('\n'),
+        },
+      ],
+      ACCENT_POSITIVE,
+    );
     await context.messages.sendDirect(ticket.userId, dmCard).catch(() => undefined);
     await context.messages
       .sendDirectFile(ticket.userId, { name: fileName, data: html })
@@ -1787,11 +1928,15 @@ async function postCloseLog(
   await context.messages
     .sendChannel(
       logChannelId,
-      buildContainer(context, [
-        { type: 'text_display', content: `## 🔒 تذكرة مغلقة — ${ticketNum}` },
-        { type: 'separator' },
-        { type: 'text_display', content: lines.join('\n') },
-      ]),
+      buildContainer(
+        context,
+        [
+          { type: 'text_display', content: `## 🔒 تذكرة مغلقة — ${ticketNum}` },
+          { type: 'separator' },
+          { type: 'text_display', content: lines.join('\n') },
+        ],
+        hexToInt(settings.general['COLOR_FAILURE']) ?? ACCENT_NEGATIVE,
+      ),
     )
     .catch(() => undefined);
 
@@ -1831,7 +1976,7 @@ async function sendFeedbackPrompt(
   }
 
   await context.messages
-    .sendDirect(ticket.userId, buildContainer(context, items))
+    .sendDirect(ticket.userId, buildContainer(context, items, ACCENT_FEEDBACK_PROMPT))
     .catch(() => undefined);
 }
 
@@ -1952,6 +2097,7 @@ function buildChannelName(
   settings: TicketSettings,
   username: string,
   number: number,
+  userId: string,
 ): string {
   const mode = panel.namingMode || 'global';
   const globalScheme = asStr(settings.general['NAMING_SCHEME']) || 'ticket-{number}';
@@ -1959,7 +2105,7 @@ function buildChannelName(
   const sanitized = template
     .replace('{number}', String(number).padStart(4, '0'))
     .replace('{username}', username.toLowerCase().replace(/[^a-z0-9]/g, ''))
-    .replace('{userid}', '')
+    .replace('{userid}', userId)
     .toLowerCase()
     .replace(/[^a-z0-9-]/g, '-')
     .replace(/-{2,}/g, '-')
@@ -2013,7 +2159,7 @@ function createTicketChannel(
     const ticketNumber = await nextTicketNumber(context);
     const userRecord = await context.guild.fetchUser(interaction.userId).catch(() => null);
     const username = userRecord?.username ?? interaction.userId;
-    const channelName = buildChannelName(panel, settings, username, ticketNumber);
+    const channelName = buildChannelName(panel, settings, username, ticketNumber, interaction.userId);
 
     const overrides = buildChannelOverrides(context, panel, settings, interaction.userId, []);
     const categoryId = panel.category || asNullableStr(settings.general['CHANNEL_CATEGORY']);
@@ -2088,20 +2234,50 @@ function createTicketChannel(
     otDb.nextNumber = ticketNumber + 1;
     await context.storage.set(STORAGE_OPEN_TICKETS, otDb);
 
-    if (panel.cooldown > 0) {
-      const cooldowns = (await context.storage.get<Record<string, string>>(STORAGE_COOLDOWNS)) ?? {};
-      cooldowns[`${panel.id}_${interaction.userId}`] = new Date().toISOString();
-      await context.storage.set(STORAGE_COOLDOWNS, cooldowns);
-    }
-
     await sendWelcomeMessage(context, channel.id, panel, settings, username, record);
 
     return { channelId: channel.id, number: ticketNumber };
   })();
 }
 
-function buildContainer(context: PluginContext, items: Cv2Item[]): CoreMessage {
-  return context.components.build({ components: [{ type: 'container', items }] });
+function buildContainer(context: PluginContext, items: Cv2Item[], accentColor?: number): CoreMessage {
+  return context.components.build({
+    components: [
+      {
+        type: 'container',
+        items,
+        ...(accentColor === undefined ? {} : { accentColor }),
+      },
+    ],
+  });
+}
+
+function hexToInt(value: unknown): number | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+  const clean = value.trim().replace(/^#/, '');
+  if (!/^[0-9a-fA-F]{6}$/.test(clean)) {
+    return undefined;
+  }
+  return parseInt(clean, 16);
+}
+
+function openSuccessAccent(panel: TicketPanel, settings: TicketSettings): number {
+  return (
+    hexToInt(panel.welcomeColor) ??
+    hexToInt(settings.general['COLOR_SUCCESS']) ??
+    ACCENT_POSITIVE
+  );
+}
+
+function welcomeAccent(panel: TicketPanel, settings: TicketSettings): number {
+  return (
+    hexToInt(panel.welcomeColor) ??
+    hexToInt(panel.panelColor) ??
+    hexToInt(settings.general['COLOR_SUCCESS']) ??
+    ACCENT_PANEL
+  );
 }
 
 function panelOf(panel: Record<string, unknown>): TicketPanel {
@@ -2254,6 +2430,190 @@ function gStrArr(value: unknown): string[] {
   return [];
 }
 
+async function loadStaffPointsConfig(context: PluginContext): Promise<StaffPointsConfig> {
+  const stored = (await context.storage.get<Partial<StaffPointsConfig>>(STORAGE_STAFF_POINTS)) ?? {};
+  return mergeDeep(
+    DEFAULT_STAFF_POINTS as unknown as Record<string, unknown>,
+    stored as unknown as Record<string, unknown>,
+  ) as unknown as StaffPointsConfig;
+}
+
+function mergeDeep(
+  base: Record<string, unknown>,
+  override: Record<string, unknown>,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...base };
+  for (const key of Object.keys(override)) {
+    const ov = override[key];
+    const bv = base[key];
+    if (
+      ov !== null &&
+      typeof ov === 'object' &&
+      !Array.isArray(ov) &&
+      bv !== null &&
+      typeof bv === 'object' &&
+      !Array.isArray(bv)
+    ) {
+      out[key] = mergeDeep(bv as Record<string, unknown>, ov as Record<string, unknown>);
+    } else {
+      out[key] = ov;
+    }
+  }
+  return out;
+}
+
+async function awardRatingPoints(
+  context: PluginContext,
+  claimedById: string | null | undefined,
+  rating: number,
+  ticketId: string,
+  voterId: string,
+): Promise<void> {
+  if (!claimedById) {
+    return;
+  }
+  const config = await loadStaffPointsConfig(context);
+  if (!config.enabled || !config.ratingPoints?.enabled) {
+    return;
+  }
+  if (config.antiAbuse?.enabled && config.antiAbuse?.noSelfRate && voterId === claimedById) {
+    return;
+  }
+
+  const ratings = config.ratingPoints.stars ?? {};
+  const clamped = Math.min(5, Math.max(1, Math.round(rating)));
+  const delta = gNum(ratings[String(clamped)], 0);
+  if (delta === 0) {
+    return;
+  }
+
+  const scores = (await context.storage.get<StaffScores>(STORAGE_STAFF_SCORES)) ?? {};
+
+  const dedupeKey = `rate_${voterId}_${ticketId}`;
+  if (config.antiAbuse?.enabled && config.antiAbuse?.noDuplicatePoints) {
+    if (scores[claimedById]?.lastActions?.[dedupeKey]) {
+      return;
+    }
+    if (!scores[claimedById]) {
+      scores[claimedById] = { points: 0, history: [], lastActions: {} };
+    }
+    const staffEntry = scores[claimedById];
+    if (staffEntry) {
+      if (!staffEntry.lastActions) {
+        staffEntry.lastActions = {};
+      }
+      staffEntry.lastActions[dedupeKey] = new Date().toISOString();
+      await context.storage.set(STORAGE_STAFF_SCORES, scores);
+    }
+  }
+
+  await awardStaffPoints(context, config, claimedById, delta, `تقييم التذكرة (${'⭐'.repeat(clamped)})`, {
+    ticketId,
+    voterId,
+    rating: clamped,
+  });
+}
+
+async function awardStaffPoints(
+  context: PluginContext,
+  config: StaffPointsConfig,
+  staffId: string,
+  delta: number,
+  reason: string,
+  meta: Record<string, unknown>,
+): Promise<void> {
+  const scores = (await context.storage.get<StaffScores>(STORAGE_STAFF_SCORES)) ?? {};
+  if (!scores[staffId]) {
+    scores[staffId] = { points: 0, history: [], lastActions: {} };
+  }
+  const entry = scores[staffId];
+  if (!entry) {
+    return;
+  }
+  entry.points = (entry.points || 0) + delta;
+  if (!Array.isArray(entry.history)) {
+    entry.history = [];
+  }
+  entry.history.push({ delta, reason, ...meta, at: new Date().toISOString() });
+  if (entry.history.length > 100) {
+    entry.history = entry.history.slice(-100);
+  }
+  await context.storage.set(STORAGE_STAFF_SCORES, scores);
+
+  if (config.logsChannelId) {
+    await sendStaffPointsLog(context, config.logsChannelId, staffId, delta, reason, entry.points).catch(
+      () => undefined,
+    );
+  }
+  if (config.rewards?.enabled && (config.rewards.list?.length ?? 0) > 0) {
+    await checkStaffRewards(context, config, staffId, entry.points).catch(() => undefined);
+  }
+}
+
+async function sendStaffPointsLog(
+  context: PluginContext,
+  channelId: string,
+  staffId: string,
+  delta: number,
+  reason: string,
+  totalPoints: number,
+): Promise<void> {
+  const isPos = delta >= 0;
+  const sign = isPos ? '+' : '';
+  await context.messages.sendChannel(
+    channelId,
+    buildContainer(
+      context,
+      [
+        { type: 'text_display', content: `## ${isPos ? '📈' : '📉'} تحديث نقاط الإدارة` },
+        { type: 'separator' },
+        {
+          type: 'text_display',
+          content: `<@${staffId}> — **${sign}${delta} نقطة**\n-# ${reason} • الرصيد الكلي: **${totalPoints} نقطة**`,
+        },
+      ],
+      isPos ? ACCENT_POSITIVE : ACCENT_NEGATIVE,
+    ),
+  );
+}
+
+async function checkStaffRewards(
+  context: PluginContext,
+  config: StaffPointsConfig,
+  staffId: string,
+  totalPoints: number,
+): Promise<void> {
+  for (const reward of config.rewards.list ?? []) {
+    if (!reward.points || totalPoints < reward.points) {
+      continue;
+    }
+    if (reward.roleId) {
+      await context.guild.addRole(staffId, reward.roleId).catch(() => false);
+    }
+    if (config.logsChannelId && (reward.roleId || reward.label)) {
+      const rolePart = reward.roleId ? `\n<@&${reward.roleId}>` : '';
+      const labelPart = reward.label ? `\n-# ${reward.label}` : '';
+      await context.messages
+        .sendChannel(
+          config.logsChannelId,
+          buildContainer(
+            context,
+            [
+              { type: 'text_display', content: '## 🏅 مكافأة نقاط الإدارة' },
+              { type: 'separator' },
+              {
+                type: 'text_display',
+                content: `<@${staffId}> وصل إلى **${reward.points} نقطة**!${rolePart}${labelPart}`,
+              },
+            ],
+            ACCENT_REWARD,
+          ),
+        )
+        .catch(() => undefined);
+    }
+  }
+}
+
 function text(content: string): CoreMessage {
   return { type: 'text', content };
 }
@@ -2270,6 +2630,6 @@ async function replyEphemeral(interaction: PluginComponentInteraction, content: 
   await interaction.respond({ kind: 'reply', message: text(content), ephemeral: true }).catch(() => undefined);
 }
 
-async function notifyDeferred(context: PluginContext, userId: string, content: string): Promise<void> {
-  await context.messages.sendDirect(userId, text(content)).catch(() => undefined);
+async function editReplyEphemeral(interaction: PluginComponentInteraction, content: string): Promise<void> {
+  await interaction.respond({ kind: 'editReply', message: text(content) }).catch(() => undefined);
 }
