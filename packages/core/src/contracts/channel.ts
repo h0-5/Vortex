@@ -28,6 +28,7 @@ export interface PluginChannel {
 }
 
 export interface PluginChannels {
+  describe(channelId: string): Promise<PluginChannel | null>;
   createText(options: PluginChannelCreateOptions): Promise<PluginChannel>;
   createPrivateThread(parentChannelId: string, options: PluginThreadCreateOptions): Promise<PluginChannel | null>;
   addThreadMember(threadId: string, userId: string): Promise<boolean>;

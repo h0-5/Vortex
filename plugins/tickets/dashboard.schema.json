@@ -46,7 +46,8 @@
     "settings.general.RULES_BTN_LABEL": "",
     "settings.general.RULES_BTN_STYLE": "2",
     "settings.general.ESCALATE_ENABLED": false,
-    "settings.general.ESCALATE_CATEGORIES": ""
+    "settings.general.ESCALATE_CATEGORIES": "",
+    "settings.general.ESCALATE_ROLES": ""
   },
   "defaultMessages": {},
   "tabs": [
@@ -424,6 +425,16 @@
               "description": "معرفات التصنيفات، سطر لكل تصنيف.",
               "storageKey": "settings",
               "path": "general.ESCALATE_CATEGORIES",
+              "defaultValue": ""
+            },
+            {
+              "id": "general.escalate-roles",
+              "type": "text",
+              "multiline": true,
+              "label": "أدوار التصعيد",
+              "description": "معرفات الأدوار المسموح لها بالتصعيد، سطر لكل دور. اتركه فارغًا للسماح للجميع.",
+              "storageKey": "settings",
+              "path": "general.ESCALATE_ROLES",
               "defaultValue": ""
             }
           ],

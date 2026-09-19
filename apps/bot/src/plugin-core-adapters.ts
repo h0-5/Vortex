@@ -496,6 +496,17 @@ class DiscordPluginChannels implements PluginChannels {
     private readonly guildId: string,
   ) {}
 
+  async describe(channelId: string): Promise<PluginChannel | null> {
+    const channel = await this.client.channels.fetch(channelId).catch(() => null);
+    if (!channel || !('guildId' in channel) || channel.guildId !== this.guildId) {
+      return null;
+    }
+    if (!('name' in channel)) {
+      return null;
+    }
+    return toPluginChannel(channel);
+  }
+
   async createText(options: PluginChannelCreateOptions): Promise<PluginChannel> {
     const guild = await this.guild();
     const created = await guild.channels.create({
@@ -585,7 +596,9 @@ class DiscordPluginChannels implements PluginChannels {
 
   async moveToCategory(channelId: string, categoryId: string | null): Promise<void> {
     const channel = await this.viewable(channelId);
-    await channel.setParent(categoryId ?? null);
+    // lockPermissions: false keeps the channel's own permission overwrites
+    // (ticket channels must not be synced with the category on move).
+    await channel.setParent(categoryId ?? null, { lockPermissions: false });
   }
 
   async delete(channelId: string, reason?: string): Promise<void> {

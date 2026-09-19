@@ -27,6 +27,8 @@ const ACCENT_POSITIVE = 0x57f287;
 const ACCENT_NEUTRAL = 0xfee75c;
 const ACCENT_NEGATIVE = 0xed4245;
 const ACCENT_REWARD = 0xf59e0b;
+const ACCENT_RULES = 0x5865f2;
+const ACCENT_ESCALATE = 0x7c3aed;
 
 const ID_OPEN = 'ticket_open:';
 const ID_MP_SELECT = 'ticket_mp_select:';
@@ -167,6 +169,7 @@ interface TicketRecord {
   channelId: string;
   userId: string;
   claimedBy: string | null;
+  claimedAt?: string | null;
   status: string;
   openedAt: string;
   closedAt: string | null;
@@ -321,6 +324,7 @@ const DEFAULT_GENERAL: GeneralSettings = {
   RULES_BTN_STYLE: 2,
   ESCALATE_ENABLED: false,
   ESCALATE_CATEGORIES: [],
+  ESCALATE_ROLES: [],
 };
 
 const DEFAULT_OPEN_TICKETS: OpenTicketsData = { tickets: [], nextNumber: 1 };
@@ -634,7 +638,14 @@ async function runOpenChecks(
     return { ok: false, message: '❌ لا تملك إذنًا لفتح تذكرة في هذه البانل.' };
   }
   if (!opts.skipHours && !panel.alwaysOpen && !isPanelOpenNow(panel)) {
-    return { ok: false, message: '❌ التذاكر مغلقة حاليًا في هذه البانل.' };
+    // Legacy parity: include the configured open window and timezone in the notice.
+    const window = describeOpenWindow(panel);
+    return {
+      ok: false,
+      message: window
+        ? `❌ التذاكر مغلقة حاليًا. ساعات العمل: ${window}.`
+        : '❌ التذاكر مغلقة حاليًا في هذه البانل.',
+    };
   }
 
   if (panel.cooldown > 0) {
@@ -705,6 +716,38 @@ function isPanelOpenNow(panel: TicketPanel): boolean {
     return minutes >= open && minutes < close;
   }
   return minutes >= open || minutes < close;
+}
+
+/** Legacy parity: "08:00 – 20:00 (UTC)" summary of the panel's open window. */
+function describeOpenWindow(panel: TicketPanel): string | null {
+  const tz = panel.timezone || 'UTC';
+  const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  let today: string | null = null;
+  try {
+    today = new Intl.DateTimeFormat('en-US', { timeZone: tz, weekday: 'long' })
+      .format(new Date())
+      .toLowerCase();
+  } catch {
+    today = null;
+  }
+  const ordered = [...days].sort((a, b) => (a === today ? -1 : b === today ? 1 : 0));
+  for (const day of ordered) {
+    const rule = panel.hours?.[day];
+    if (!rule) {
+      continue;
+    }
+    const open = (rule.open ?? '00:00').trim();
+    const close = (rule.close ?? '24:00').trim();
+    if (!open || !close) {
+      continue;
+    }
+    const fmt = (value: string) => {
+      const [h, m] = value.split(':');
+      return `${String(h ?? '00').padStart(2, '0')}:${String(m ?? '00').padStart(2, '0')}`;
+    };
+    return `**${fmt(open)} – ${fmt(close)}** (${tz})`;
+  }
+  return null;
 }
 
 async function closeTicket(
@@ -817,6 +860,79 @@ async function closeTicket(
   });
 }
 
+/**
+ * Legacy parity: adjust channel permissions for all support roles based on claim
+ * state. When claimed, the claimer always gets an explicit View/Send/History
+ * allow, and each support role loses View/Send when CLAIM_SUPPORT_VIEW or
+ * CLAIM_SUPPORT_TYPE is disabled. When unclaimed, support roles are restored
+ * and the claimer's member overwrite is dropped.
+ */
+function buildClaimOverrides(
+  context: PluginContext,
+  panel: TicketPanel | null,
+  settings: TicketSettings,
+  ownerId: string,
+  members: string[],
+  claimerId: string | null,
+): Array<{ id: string; type: 'role' | 'member'; allow: bigint; deny: bigint }> {
+  const overrides = buildChannelOverrides(context, panel, settings, ownerId, members);
+
+  const supportView = asBool(settings.general['CLAIM_SUPPORT_VIEW'], true);
+  const supportType = asBool(settings.general['CLAIM_SUPPORT_TYPE'], true);
+
+  const supportRoles = [...settings.supportRoles, ...(panel?.supportRoles ?? [])].filter(
+    (roleId, index, all) => roleId && all.indexOf(roleId) === index,
+  );
+
+  // Replace the support-role allow entries produced by the base builder with
+  // claim-aware entries (deny bits applied when the corresponding flag is off).
+  let cursor = 2; // skip everyone-deny + owner-allow entries
+  for (const roleId of supportRoles) {
+    const idx = overrides.findIndex((o, i) => i >= cursor && o.id === roleId && o.type === 'role');
+    if (idx === -1) {
+      continue;
+    }
+    if (claimerId) {
+      // Claimed: support roles keep or lose View/Send per the claim flags.
+      let allow = SUPPORT_ALLOW;
+      let deny = 0n;
+      if (!supportView) {
+        allow &= ~VIEW_CHANNEL;
+        deny |= VIEW_CHANNEL;
+      }
+      if (!supportType) {
+        allow &= ~SEND_MESSAGES;
+        deny |= SEND_MESSAGES;
+      }
+      overrides[idx] = { id: roleId, type: 'role', allow, deny };
+    } else {
+      // Unclaimed: restore the original full support allow.
+      overrides[idx] = { id: roleId, type: 'role', allow: SUPPORT_ALLOW, deny: 0n };
+    }
+    cursor = idx + 1;
+  }
+
+  if (claimerId) {
+    overrides.push({ id: claimerId, type: 'member', allow: ACL_ALLOW, deny: 0n });
+  }
+  return overrides;
+}
+
+async function applyClaimState(
+  context: PluginContext,
+  ticket: TicketRecord,
+  panel: TicketPanel | null,
+  settings: TicketSettings,
+  claimerId: string | null,
+  removedMemberId: string | null = null,
+): Promise<void> {
+  const members = (ticket.members ?? []).filter((m) => m && m !== removedMemberId);
+  const overrides = buildClaimOverrides(context, panel, settings, ticket.userId, members, claimerId);
+  await context.channels
+    .setPermissions(ticket.channelId, overrides, `Vortex Tickets plugin: ${claimerId ? 'claim' : 'unclaim'} ticket`)
+    .catch(() => undefined);
+}
+
 async function handleClaim(context: PluginContext, interaction: PluginComponentInteraction, ticketId?: string): Promise<void> {
   const resolvedId = ticketId ?? interaction.customId.slice(ID_CLAIM.length);
   const otDb = await readOpenTickets(context);
@@ -835,8 +951,9 @@ async function handleClaim(context: PluginContext, interaction: PluginComponentI
 
   const settings = await loadSettings(context);
   const panelRecord = settings.panels.find((p) => asStr(p?.['id']) === ticket.panelId);
+  const panel = panelRecord ? panelOf(panelRecord) : null;
 
-  if (!(await isStaff(context, interaction, panelRecord ? panelOf(panelRecord) : null, settings))) {
+  if (!(await isStaff(context, interaction, panel, settings))) {
     await replyEphemeral(interaction, '❌ لا تملك صلاحية استلام هذه التذكرة.');
     return;
   }
@@ -846,10 +963,21 @@ async function handleClaim(context: PluginContext, interaction: PluginComponentI
     return;
   }
 
-  otDb.tickets[idx] = { ...ticket, claimedBy: interaction.userId };
+  otDb.tickets[idx] = {
+    ...ticket,
+    claimedBy: interaction.userId,
+    claimedAt: new Date().toISOString(),
+  };
   await context.storage.set(STORAGE_OPEN_TICKETS, otDb);
 
-  const awaitingCat = panelRecord ? panelOf(panelRecord).awaitingCat : null;
+  // Legacy parity: claimer gains explicit access, support roles are restricted
+  // per CLAIM_SUPPORT_VIEW / CLAIM_SUPPORT_TYPE.
+  const claimed = otDb.tickets[idx];
+  if (claimed) {
+    await applyClaimState(context, claimed, panel, settings, interaction.userId);
+  }
+
+  const awaitingCat = panel?.awaitingCat ?? null;
   if (awaitingCat) {
     await context.channels
       .moveToCategory(ticket.channelId, awaitingCat)
@@ -886,16 +1014,28 @@ async function handleUnclaim(context: PluginContext, interaction: PluginComponen
   const panelRecord = settings.panels.find((p) => asStr(p?.['id']) === ticket.panelId);
   const claimedBy = ticket.claimedBy ?? null;
 
-  if (
-    !(await isStaff(context, interaction, panelRecord ? panelOf(panelRecord) : null, settings)) &&
-    interaction.userId !== claimedBy
-  ) {
-    await replyEphemeral(interaction, '❌ لا تملك صلاحية إلغاء استلام هذه التذكرة.');
+  // Legacy parity: only the claimer themselves or a server admin can unclaim —
+  // regular staff who did not claim the ticket cannot.
+  const isAdmin = await context.guild.hasPermission(interaction.userId, 'ManageGuild').catch(() => false);
+  if (interaction.userId !== claimedBy && !isAdmin) {
+    await replyEphemeral(
+      interaction,
+      claimedBy
+        ? `❌ فقط الموظف الذي استلم التذكرة (<@${claimedBy}>) أو الإدارة يمكنهم إلغاء الاستلام.`
+        : '❌ لم يتم استلام هذه التذكرة.',
+    );
     return;
   }
 
-  otDb.tickets[idx] = { ...ticket, claimedBy: null };
+  otDb.tickets[idx] = { ...ticket, claimedBy: null, claimedAt: null };
   await context.storage.set(STORAGE_OPEN_TICKETS, otDb);
+
+  // Legacy parity: restore full support-role access and drop the claimer's
+  // member overwrite entirely.
+  const unclaimed = otDb.tickets[idx];
+  if (unclaimed) {
+    await applyClaimState(context, unclaimed, panelRecord ? panelOf(panelRecord) : null, settings, null, claimedBy);
+  }
 
   await interaction.respond({
     kind: 'reply',
@@ -1065,7 +1205,7 @@ async function handleRulesButton(context: PluginContext, interaction: PluginComp
       { type: 'text_display', content: '## 📜 قواعد السيرفر' },
       { type: 'separator' },
       { type: 'text_display', content: rulesText },
-    ]),
+    ], hexToInt(settings.general['COLOR_SUCCESS']) ?? ACCENT_RULES),
     ephemeral: true,
   });
 }
@@ -1073,13 +1213,30 @@ async function handleRulesButton(context: PluginContext, interaction: PluginComp
 async function handleEscalateButton(context: PluginContext, interaction: PluginComponentInteraction): Promise<void> {
   const ticketId = interaction.customId.slice(ID_ESCALATE.length);
   const settings = await loadSettings(context);
-  const cats = gStrArr(settings.general['ESCALATE_CATEGORIES']);
+  const cats = gLineList(settings.general['ESCALATE_CATEGORIES']);
   if (cats.length === 0) {
     await replyEphemeral(interaction, '❌ لم يتم إعداد تصنيفات للتصعيد.');
     return;
   }
 
-  const options = cats.slice(0, 125).map((id) => ({ id, name: id }));
+  // Legacy parity: when ESCALATE_ROLES is configured, only members holding one
+  // of those roles may escalate the ticket.
+  const allowedRoles = gLineList(settings.general['ESCALATE_ROLES']);
+  if (allowedRoles.length > 0) {
+    const hasRole = allowedRoles.some((roleId) => interaction.memberRoleIds.includes(roleId));
+    if (!hasRole) {
+      await replyEphemeral(interaction, '❌ لا تملك صلاحية تصعيد هذه التذكرة.');
+      return;
+    }
+  }
+
+  // Legacy parity: resolve category names from the guild channel list.
+  const options = await Promise.all(
+    cats.slice(0, 125).map(async (id) => {
+      const channel = await context.channels.describe(id).catch(() => null);
+      return { id, name: channel?.name || id };
+    }),
+  );
   const chunks = chunk(options, 25);
 
   const items: Cv2Item[] = [
@@ -1099,7 +1256,7 @@ async function handleEscalateButton(context: PluginContext, interaction: PluginC
 
   await interaction.respond({
     kind: 'reply',
-    message: buildContainer(context, items),
+    message: buildContainer(context, items, ACCENT_ESCALATE),
     ephemeral: true,
   });
 }
@@ -1124,9 +1281,15 @@ async function handleEscalateSelect(context: PluginContext, interaction: PluginC
       }
     }
 
+    // Legacy parity: show the resolved category name in the confirmation.
+    const channel = await context.channels.describe(categoryId).catch(() => null);
     await interaction.respond({
       kind: 'reply',
-      message: buildContainer(context, [{ type: 'text_display', content: `✅ تم نقل التذكرة إلى **${categoryId}**` }]),
+      message: buildContainer(
+        context,
+        [{ type: 'text_display', content: `✅ تم نقل التذكرة إلى **${channel?.name ?? categoryId}**` }],
+        ACCENT_POSITIVE,
+      ),
       ephemeral: true,
     });
   } catch (err) {
@@ -1171,6 +1334,9 @@ async function handleFeedbackButton(context: PluginContext, interaction: PluginC
   const settings = await loadSettings(context);
   const panel = ticket ? settings.panels.find((p) => asStr(p?.['id']) === ticket.panelId) ?? null : null;
 
+  // Legacy parity: feedback copy switches on general.LANGUAGE ('en' → English).
+  const s = feedbackI18n(settings.general['LANGUAGE']);
+
   const accent =
     rating >= 4 ? ('success' as const) : rating >= 3 ? ('primary' as const) : ('danger' as const);
   const accentColor = rating >= 4 ? ACCENT_POSITIVE : rating >= 3 ? ACCENT_NEUTRAL : ACCENT_NEGATIVE;
@@ -1188,7 +1354,7 @@ async function handleFeedbackButton(context: PluginContext, interaction: PluginC
     kind: 'update',
     message: buildContainer(
       context,
-      [{ type: 'text_display', content: `## ${stars} تم استلام تقييمك` }, ...buttons],
+      [{ type: 'text_display', content: `## ${stars} ${s.ratingReceived}` }, ...buttons],
       accentColor,
     ),
   });
@@ -1216,17 +1382,17 @@ async function handleFeedbackButton(context: PluginContext, interaction: PluginC
     try {
       const claimerMention = ticket.claimedBy ? `<@${ticket.claimedBy}>` : null;
       const contentLines = [
-        `**التذكرة:** \`${ticketId}\``,
-        `**المستخدم:** <@${interaction.userId}>`,
-        claimerMention ? `**مستلم التذكرة:** ${claimerMention}` : null,
-        `**التقييم:** ${stars}`,
+        `${s.ticketLabel} \`${ticketId}\``,
+        `${s.userLabel} <@${interaction.userId}>`,
+        claimerMention ? `${s.claimerLabel} ${claimerMention}` : null,
+        `${s.ratingLabel} ${stars}`,
       ].filter((line): line is string => typeof line === 'string');
       const card = buildContainer(
         context,
         [
           {
             type: 'text_display',
-            content: claimerMention ? `## 📩 تقييم جديد مستلم ${claimerMention}` : '## 📩 تقييم جديد مستلم',
+            content: `## ${s.newFeedback}${claimerMention ? ` ${claimerMention}` : ''}`,
           },
           { type: 'separator' },
           { type: 'text_display', content: contentLines.join('\n') },
@@ -1236,13 +1402,39 @@ async function handleFeedbackButton(context: PluginContext, interaction: PluginC
       const receipt = await context.messages.sendChannel(feedbackChannel, card).catch(() => null);
       if (receipt) {
         await context.messages
-          .createThread(feedbackChannel, receipt.id, `خيط التقييم — ${ticketId}`)
+          .createThread(feedbackChannel, receipt.id, `${s.threadName} — ${ticketId}`)
           .catch(() => null);
       }
     } catch (err) {
       context.logger.error('Feedback result error', { error: getErrorMessage(err) });
     }
   }
+}
+
+interface FeedbackStrings {
+  ratingReceived: string;
+  newFeedback: string;
+  ticketLabel: string;
+  userLabel: string;
+  claimerLabel: string;
+  ratingLabel: string;
+  commentLabel: string;
+  threadName: string;
+}
+
+/** Legacy parity: feedback copy is Arabic by default and English when LANGUAGE === 'en'. */
+function feedbackI18n(lang: unknown): FeedbackStrings {
+  const isEn = lang === 'en';
+  return {
+    ratingReceived: isEn ? 'Your rating has been received' : 'تم استلام تقييمك',
+    newFeedback: isEn ? '📩 New Feedback Received' : '📩 تقييم جديد مستلم',
+    ticketLabel: isEn ? '**Ticket:**' : '**التذكرة:**',
+    userLabel: isEn ? '**User:**' : '**المستخدم:**',
+    claimerLabel: isEn ? '**Received by:**' : '**مستلم التذكرة:**',
+    ratingLabel: isEn ? '**Rating:**' : '**التقييم:**',
+    commentLabel: isEn ? '**Comment:**' : '**التعليق:**',
+    threadName: isEn ? 'Feedback Thread' : 'خيط التقييم',
+  };
 }
 
 function buildWelcomeItems(
@@ -1293,7 +1485,7 @@ function buildWelcomeItems(
   const rulesEnabled =
     asBool(settings.general['RULES_BTN_ENABLED'], false) && asStr(settings.general['RULES_BTN_TEXT']).length > 0;
   const escalateEnabled =
-    asBool(settings.general['ESCALATE_ENABLED'], false) && gStrArr(settings.general['ESCALATE_CATEGORIES']).length > 0;
+    asBool(settings.general['ESCALATE_ENABLED'], false) && gLineList(settings.general['ESCALATE_CATEGORIES']).length > 0;
 
   const rulesButton = (): Cv2Button => {
     const rEmoji = asStr(settings.general['RULES_BTN_EMOJI']).trim();
@@ -1457,7 +1649,7 @@ function buildSinglePanelMessage(context: PluginContext, panel: TicketPanel): Co
     items.push(button);
   }
 
-  return buildContainer(context, items, hexToInt(panel.panelColor) ?? ACCENT_PANEL);
+  return buildContainer(context, items, hexToInt(panel.panelColor));
 }
 
 function buildMultiPanelMessage(context: PluginContext, mp: MultiPanel, panels: ResolvedPanel[]): CoreMessage {
@@ -1533,7 +1725,7 @@ function buildMultiPanelMessage(context: PluginContext, mp: MultiPanel, panels: 
     }
   }
 
-  return buildContainer(context, items, hexToInt(mp.accentColor) ?? ACCENT_PANEL);
+  return buildContainer(context, items, hexToInt(mp.accentColor));
 }
 
 function resolveBanner(bannerImage: string): string | null {
@@ -1935,14 +2127,19 @@ async function postCloseLog(
           { type: 'separator' },
           { type: 'text_display', content: lines.join('\n') },
         ],
-        hexToInt(settings.general['COLOR_FAILURE']) ?? ACCENT_NEGATIVE,
+        ACCENT_NEGATIVE,
       ),
     )
     .catch(() => undefined);
 
   if (transcript) {
+    // Legacy parity: caption + file as a plain follow-up so Discord delivers it.
     await context.messages
-      .sendFile(logChannelId, { name: transcript.fileName, data: transcript.html })
+      .sendFile(
+        logChannelId,
+        { name: transcript.fileName, data: transcript.html },
+        `📎 نسخة التذكرة \`#${String(ticket.number ?? ticket.id).padStart(4, '0')}\``,
+      )
       .catch(() => undefined);
   }
 }
@@ -2200,12 +2397,16 @@ function createTicketChannel(
       await context.messages
         .sendChannel(
           panel.threadNotifChannel,
-          buildContainer(context, [
-            {
-              type: 'text_display',
-              content: `🎫 فتحت تذكرة جديدة بواسطة <@${interaction.userId}>: <#${channel.id}>`,
-            },
-          ]),
+          buildContainer(
+            context,
+            [
+              {
+                type: 'text_display',
+                content: `🎫 فتحت تذكرة جديدة بواسطة <@${interaction.userId}>: <#${channel.id}>`,
+              },
+            ],
+            hexToInt(panel.panelColor) ?? ACCENT_POSITIVE,
+          ),
         )
         .catch(() => undefined);
     }
@@ -2420,12 +2621,16 @@ function gNum(value: unknown, fallback: number): number {
   return fallback;
 }
 
-function gStrArr(value: unknown): string[] {
+/** Parse a value that may be an array or a multiline string (one entry per line). */
+function gLineList(value: unknown): string[] {
   if (Array.isArray(value)) {
-    return value.filter((x): x is string => typeof x === 'string');
+    return value.map((x) => asString(x).trim()).filter((x) => x.length > 0);
   }
-  if (typeof value === 'string' && value.trim()) {
-    return [value.trim()];
+  if (typeof value === 'string') {
+    return value
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
   }
   return [];
 }
